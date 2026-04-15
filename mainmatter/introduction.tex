@@ -1,26 +1,11 @@
 \chapter{Introduction}
 \label{chapter:introduction}
 
-%% ---------------------------------------------------------------
-\section{Overview and Team}
-\label{sec:overview}
-%% ---------------------------------------------------------------
+MASFE (Multi-Algorithm Scheduling and Fusion Engine) is an Orbital Edge AI system that addresses NASA’s challenge to \emph{“orchestrate existing land observation algorithms into an efficient, responsive onboard intelligence layer”}~\cite{nasa-challenge-brief}. A reinforcement-learning-inspired MDP scheduler on a radiation-tolerant LEON4FT CPU dynamically allocates compute across MODIS MOD13A1 (EVI) and MOD11A1 (LST), fused onboard via an FPGA into a Crop Stress Composite (CSC). The system makes real-time sensing, processing, and downlink decisions, delivering sub-90-minute crop risk alerts while reducing data downlink by 97\,\%. It is deployed as a hosted payload on a Loft Orbital YAM platform, integrating with OpenET~\cite{openet-api} for irrigation and disease advisory services.
 
-\textbf{Solution overview.}
-MASFE (Multi-Algorithm Scheduling and Fusion Engine) is an Orbital Edge AI system that directly answers NASA's challenge objective: to \emph{``orchestrate existing land observation algorithms into an efficient, responsive onboard intelligence layer''}~\cite{nasa-challenge-brief}. A reinforcement-learning-inspired Markov Decision Process (MDP) scheduler runs on a radiation-tolerant LEON4FT CPU, dynamically allocating compute across two NASA algorithms---MODIS MOD13A1 (Enhanced Vegetation Index) and MOD11A1 (Land Surface Temperature)---fused onboard via an FPGA preprocessing stage into a per-field Crop Stress Composite (CSC). The satellite makes real-time, on-orbit decisions about where to sense, which algorithms to execute, and what to downlink, delivering sub-90-minute crop pathogen risk alerts while reducing unnecessary data downlink by 97\,\% compared to naive raw-dump acquisition. The system deploys as a hosted payload on a Loft Orbital YAM platform, integrating with the OpenET ground service~\cite{openet-api} for complete farmer-facing irrigation and disease advisory capability.
+[Your Name] is a BSc Aerospace Engineering student at TU Delft. Relevant coursework includes spacecraft systems engineering, AOCS, mission analysis, and embedded flight software. MASFE’s core challenge is partitioning computation between an FPGA and a radiation-tolerant CPU under SWAP constraints.
 
-\medskip
-\noindent\textbf{Team.}
-[Your Name] is completing a Bachelor of Science in Aerospace Engineering at TU Delft, Faculty of Aerospace Engineering. Relevant coursework includes spacecraft systems engineering, attitude and orbit control systems (AOCS---the Kalman filter and MDP share the same Bayesian state estimation mathematical framework), mission analysis and design, and embedded flight software. The core technical challenge in MASFE---partitioning computation between an FPGA and a radiation-tolerant CPU under SWAP constraints---is a direct application of TU Delft aerospace systems engineering training. Market and domain evidence is drawn from primary sources including Dr.\ Katie Gold's Cornell University research presented at NASA Space-to-Soil Webinar~1~\cite{gold-webinar1} and Loft Orbital's deployment experience presented at Webinar~2~\cite{mytkowicz-webinar2}.
-
-%% ---------------------------------------------------------------
-\section{Summary of All Five Judging Criteria}
-\label{sec:criteria-summary}
-%% ---------------------------------------------------------------
-
-Table~\ref{tab:criteria} provides a condensed mapping of MASFE to all five judging criteria, as required by the submission guidelines.
-
-\begin{table}[htb]
+\begin{table}[H]
   \centering
   \caption{MASFE response to all five NASA Space-to-Soil judging criteria.}
   \label{tab:criteria}

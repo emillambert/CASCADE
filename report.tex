@@ -1,5 +1,29 @@
-\documentclass{tudelft-report}
+\documentclass[11pt,letterpaper]{tudelft-report}
 
+%% Font: Times New Roman (pdfLaTeX)
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
+
+%% Geometry: 1 inch margins, US letter paper
+
+%% Header and footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\small MASFE: An Onboard Multi-Algorithm Scheduling and Fusion Engine}
+\fancyhead[R]{\small May 4, 2026}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{14pt}
+
+%% Line spacing: single (default in LaTeX; explicit for clarity)
+\usepackage{setspace}
+\singlespacing
+
+%% Text alignment: left justified (ragged right)
+\raggedright
 %% Bibliography
 \usepackage{biblatex}
 \addbibresource{report.bib}
@@ -53,6 +77,16 @@
 %% Table row height
 \renewcommand{\arraystretch}{1.25}
 
+% Chapter title left, chapter number right, same line, same size
+\titleformat{\chapter}[display]
+  {\normalfont}
+  {\filleft\bfseries\LARGE\thechapter}
+  {-1.6em}
+  {\filright\bfseries\LARGE\normalfont}
+  
+\titlespacing*{\chapter}{0pt}{0pt}{12pt}
+
+
 %% ---------------------------------------------------------------
 %%    Document
 %% ---------------------------------------------------------------
@@ -62,16 +96,15 @@
 
 \title{MASFE: An Onboard Multi-Algorithm \\ Scheduling and Fusion Engine}
 \subtitle{For Regenerative Agriculture SmallSat Missions}
-\author{[Your Name]}
+\author{Emil Wes Lambert}
 
 \subject{NASA Space-to-Soil Challenge 2026}
-\affiliation{Delft University of Technology}
 \coverimage{figures/cover.jpg}
 \definecolor{title}{HTML}{1D6B48}
 
 \makecover
 
-\input{frontmatter/title-page}
+%\input{frontmatter/title-page}
 %\input{frontmatter/summary}
 
 \tableofcontents
