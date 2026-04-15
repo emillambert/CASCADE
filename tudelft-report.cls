@@ -58,7 +58,7 @@
 \newcommand*{\covertable}[1]{\def\@covertable{#1}}
 
 %% Scale the margins to be slightly smaller than default (.7)
-\geometry{a4paper,hscale=0.75,vscale=0.8}
+\geometry{margin=1in,letterpaper}
 
 %% ----------------------------------------------------------------------
 %%    Setting up the fonts
@@ -170,8 +170,8 @@
             \ifdefvoid{\@affiliation}{}{\color{white}\titlestyle\@affiliation}};
 
         %% Add the logo in the bottom left
-        \node[above right=10mm] at (current page.south west) {%
-            \includegraphics[width=0.35\linewidth]{figures/logo-white.pdf}};
+        %\node[above right=10mm] at (current page.south west) {%
+            %\includegraphics[width=0.35\linewidth]{figures/logo-white.pdf}};
 
         %% Add the banner with the title, subtitle, subject and author(s)
         \node[below=2cm,fill=black!85,minimum width={\paperwidth},inner ysep=25pt,opacity=0.6,text opacity=1] at (current page.north) {%
