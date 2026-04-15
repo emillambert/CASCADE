@@ -9,6 +9,7 @@
   "n_priority_alerts": 13,
   "min_battery_soc": 0.86,
   "peak_power_w": 9.6,
+  "avg_payload_power_w": 5.05,
   "compute_utilisation_pct": 92.5,
   "cloud_obscured_passes": 38
 }

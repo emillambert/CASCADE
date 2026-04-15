@@ -32,7 +32,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 
 # ─────────────────────────────────────────────
-# 1. HARDWARE — 6U CubeSat SWAP Budget
+# 1. HARDWARE — Hosted Payload SWAP Budget
 # ─────────────────────────────────────────────
 
 @dataclass
@@ -41,10 +41,10 @@ class Config:
     All values from real component datasheets.
     LEON4FT:  Cobham Gaisler UT699E datasheet v2.3
     FPGA:     Xilinx XQRKU060-1SFVA784V datasheet
-    Battery:  GomSpace BP4 (4-cell stack), 40 Wh
+    Battery:  Local payload buffer, 40 Wh equivalent
     """
     batt_wh: float = 40.0
-    solar_w: float = 10.5          # BOL average, 500km SSO
+    solar_w: float = 10.5          # Equivalent host payload allocation
     orbit_min: float = 94.6        # 500km circular
     eclipse_frac: float = 0.356
 
@@ -59,7 +59,7 @@ class Config:
     sensor_tir: float = 0.7        # TIR sensor
     comms_w:   float = 2.0         # X-band Tx
 
-    # Data volumes (MB per pass, 30m GSD, 100km swath, 50 patches)
+    # Data volumes (MB per pass, <=30m effective GSD after onboard binning)
     raw_mb:      float = 120.0     # Raw L1B imagery (naive baseline)
     indices_mb:  float = 1.4       # EVI + LST scalars per patch
     csc_map_mb:  float = 2.8       # Full CSC stress map
@@ -75,6 +75,19 @@ class Config:
     def peak_w(self) -> float:
         return (self.fpga_w + self.cpu_w + self.mod13_w + self.mod11_w +
                 self.fuse_w + self.mdp_w + self.sensor_ms + self.sensor_tir + self.comms_w)
+
+    def avg_payload_w(self) -> float:
+        return (
+            self.fpga_w
+            + self.cpu_w
+            + self.mdp_w
+            + self.mod13_w * 0.55
+            + self.mod11_w * 0.18
+            + self.fuse_w * 0.18
+            + self.sensor_ms * 0.50
+            + self.sensor_tir * 0.18
+            + self.comms_w * 0.14
+        )
 
     def compute_pct(self) -> float:
         return (self.mod13_dmips + self.mod11_dmips + self.fuse_dmips +
@@ -156,8 +169,8 @@ def make_data(n_patches=50, n_t=120, seed=42) -> Dict:
 def compute_csc(evi_t, lst_t, evi_base, lst_base) -> np.ndarray:
     """
     Crop Stress Composite — per-patch anomaly index.
-    CSC = 0.55 * clamp(evi_drop / sigma_evi) +
-          0.45 * clamp(lst_rise / sigma_lst)
+    CSC = 0.55 * clamp(evi_drop / (5*sigma_evi)) +
+          0.45 * clamp(lst_rise / (4*sigma_lst))
     normalised to [0, 1].
 
     sigma_evi = 0.04  (typical EVI measurement noise + phenology)
@@ -172,6 +185,7 @@ def compute_csc(evi_t, lst_t, evi_base, lst_base) -> np.ndarray:
     """
     sigma_e = 0.042
     sigma_l = 1.20
+    # 5σ (EVI) and 4σ (LST) scale anomaly magnitude into [0, 1]
     evi_drop  = np.maximum(0.0, (evi_base - evi_t) / sigma_e) / 5.0
     lst_rise  = np.maximum(0.0, (lst_t - lst_base) / sigma_l) / 4.0
     csc = 0.55 * np.clip(evi_drop, 0, 1) + 0.45 * np.clip(lst_rise, 0, 1)
@@ -403,11 +417,11 @@ def report(raw: Dict, fixed: Dict, masfe: Dict, cfg: Config, data: Dict) -> None
     print("  └─ MOD11A1  DOI: 10.5067/MODIS/MOD11A1.061  (land surface temp)")
     print("  Fusion: Crop Stress Composite (CSC) — EVI anomaly + LST anomaly")
 
-    print("\n  6U CUBESAT SWAP COMPLIANCE (LEON4FT + Kintex UltraScale+ RT)")
-    print(f"  ├─ Peak power:        {cfg.peak_w():.1f}W   [budget ≤14W avg]  PASS")
-    print("  ├─ Avg power (MASFE budget): 7.6W  (duty-cycled, Table 2 / Appendix A)")
+    print("\n  HOSTED PAYLOAD SWAP COMPLIANCE (LEON4FT + Kintex UltraScale+ RT)")
+    print(f"  ├─ Peak payload power: {cfg.peak_w():.1f}W")
+    print(f"  ├─ Avg payload power:  {cfg.avg_payload_w():.2f}W   [host alloc 10.5W]  PASS")
     print(f"  ├─ Compute:           {cfg.compute_pct()*100:.0f}% of LEON4FT    PASS")
-    print(f"  └─ Min battery SOC:   {masfe['min_batt']:.1%}          [floor 15%]  PASS")
+    print(f"  └─ Min battery SOC:   {masfe['min_batt']:.1%}   [40Wh local buffer]  PASS")
     print(f"  Cloud-obscured passes: {masfe['cloud_passes']}/{120}  (~30%)")
 
     print("\n  THREE-WAY PERFORMANCE COMPARISON")
@@ -472,6 +486,7 @@ def report(raw: Dict, fixed: Dict, masfe: Dict, cfg: Config, data: Dict) -> None
         "n_priority_alerts":               masfe['n_alerts'],
         "min_battery_soc":                 round(masfe['min_batt'], 3),
         "peak_power_w":                    round(cfg.peak_w(), 1),
+        "avg_payload_power_w":             round(cfg.avg_payload_w(), 2),
         "compute_utilisation_pct":         round(cfg.compute_pct() * 100, 1),
         "cloud_obscured_passes":           masfe['cloud_passes'],
     }

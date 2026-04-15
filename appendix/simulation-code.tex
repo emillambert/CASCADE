@@ -11,8 +11,8 @@ This appendix contains the key components of the MASFE Python simulation submitt
   \item Energy saving vs raw: \textbf{22.0\,\%}
   \item Science retention: \textbf{100\,\%}
   \item False-positive rate: \textbf{1.0\,\%} with cloud and benign-stress confounders
-  \item Peak power: \textbf{9.6\,W} $\leq$ 14\,W budget \quad PASS
-  \item Minimum battery SOC: \textbf{86\,\%} $>$ 15\,\% floor \quad PASS
+  \item Peak / duty-cycled average payload power: \textbf{9.6\,W} / \textbf{5.05\,W}
+  \item Minimum battery SOC: \textbf{86\,\%} in a local \textbf{40\,Wh} battery buffer
 \end{itemize}
 
 %% -----------------------------------------------
@@ -34,6 +34,7 @@ def compute_csc(evi_t, lst_t, evi_base, lst_base):
     sigma_e = 0.042   # EVI noise + phenology (dimensionless)
     sigma_l = 1.20    # LST noise (K)
 
+    # 5σ (EVI) and 4σ (LST) normalize anomaly magnitudes to [0, 1]
     evi_drop = np.maximum(0.0, (evi_base - evi_t) / sigma_e) / 5.0
     lst_rise = np.maximum(0.0, (lst_t - lst_base) / sigma_l) / 4.0
 

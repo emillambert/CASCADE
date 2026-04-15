@@ -1,14 +1,14 @@
 \section{Proposed Solution Detail}
 
-MASFE uses a two-stage adaptive sensing loop. Stage 1 executes an EVI anomaly screen derived from MOD13A1 logic on every observed field patch. When a patch departs from its stored healthy baseline, Stage 2 runs a thermal retrieval derived from MOD11A1 and fuses both signals into a Crop Stress Composite (CSC) a normalized anomaly index conceptually related to temperature–vegetation dryness indices (e.g., TVDI). Only confirmed anomalous tiles are buffered for priority downlink. This makes sensing content-driven rather than timeline-driven and distinguishes MASFE from ASPEN/CASPER-style planners, which optimize scheduled activities rather than per-patch stress belief \cite{jpl-scheduling}.
+MASFE uses a two-stage adaptive sensing loop. Stage 1 executes an EVI anomaly screen derived from MOD13A1 logic on every observed field patch. When a patch departs from its stored healthy baseline, Stage 2 runs a thermal retrieval derived from MOD11A1 and fuses both signals into a Crop Stress Composite (CSC), a normalized anomaly index conceptually related to temperature--vegetation dryness indices (e.g., TVDI). Only confirmed anomalous tiles are buffered for priority downlink. This makes sensing content-driven rather than timeline-driven and distinguishes MASFE from ASPEN/CASPER-style planners, which optimize scheduled activities rather than per-patch stress belief \cite{jpl-scheduling}.
 
 \begin{equation}
-\text{CSC} = 0.55 \cdot \text{clip}\!\left(\frac{\Delta\text{EVI}}{\sigma_e}, 0, 1\right)
-           + 0.45 \cdot \text{clip}\!\left(\frac{\Delta\text{LST}}{\sigma_l}, 0, 1\right)
+\text{CSC} = 0.55 \cdot \text{clip}\!\left(\frac{\Delta\text{EVI}}{5\sigma_e}, 0, 1\right)
+           + 0.45 \cdot \text{clip}\!\left(\frac{\Delta\text{LST}}{4\sigma_l}, 0, 1\right)
 \label{eq:csc}
 \end{equation}
 
-Here $\Delta\text{EVI} = \max(0, \text{EVI}_{base} - \text{EVI}_{obs})$ and $\Delta\text{LST} = \max(0, \text{LST}_{obs} - \text{LST}_{base})$. The implementation is intentionally deterministic even though the policy is MDP-formulated: that choice favors flight qualification and traceable verification on LEON4FT hardware over a learned black-box controller.
+Here $\Delta\text{EVI} = \max(0, \text{EVI}_{base} - \text{EVI}_{obs})$ and $\Delta\text{LST} = \max(0, \text{LST}_{obs} - \text{LST}_{base})$. The factors of 5 and 4 normalize approximately five-sigma EVI excursions and four-sigma thermal excursions into the unit interval before clipping, matching the implemented flight code. The implementation is intentionally deterministic even though the policy is MDP-formulated: that choice favors flight qualification and traceable verification on LEON4FT hardware over a learned black-box controller.
 
 \begin{table}[H]
 \centering
@@ -19,9 +19,9 @@ Here $\Delta\text{EVI} = \max(0, \text{EVI}_{base} - \text{EVI}_{obs})$ and $\De
 \textbf{Requirement} & \textbf{MASFE response} \\
 \midrule
 Alert latency $\leq$ 90 min & One-pass onboard screening, fusion, and alerting pipeline with X-band priority downlink. \\
-Spatial resolution $\leq$ 30 m GSD & Simera xScape100-class multispectral imager; MODIS-derived EVI/LST logic executed at sensor-native resolution rather than MODIS ground-product resolution. \\
+Spatial resolution $\leq$ 30 m GSD & Simera xScape100-class multispectral imager operated at $\leq$30\,m effective GSD after onboard spatial binning; MODIS-derived EVI/LST logic is applied to the binned products rather than MODIS ground-product resolution. \\
 False-positive rate $\leq$ 15\% & 1.0\% in a 120-pass simulation with 38 cloud-obscured passes, injected measurement noise, and benign stress confounders. \\
-SmallSat SWAP compliance & 9.6 W peak, 7.6 W duty-cycled average, 92.5\% LEON4FT utilization, and 86\% minimum battery state of charge. \\
+SmallSat SWAP compliance & 9.6 W peak, 5.05 W duty-cycled payload average, 92.5\% LEON4FT utilization, and 86\% minimum state of charge in a local 40 Wh battery buffer. \\
 Downlink efficiency & 97.8\% reduction versus raw downlink baseline while retaining 100\% disease-event recall. \\
 \bottomrule
 \end{tabularx}
@@ -73,6 +73,6 @@ Downlink efficiency & 97.8\% reduction versus raw downlink baseline while retain
 \label{fig:architecture}
 \end{figure}
 
-The FPGA performs radiometric preprocessing and per-pixel CSC computation, then transfers frames to the LEON4FT over AXI4-Stream in under 1 ms. The Kintex UltraScale+ RT component is rated to 100 krad total ionizing dose, which supports low-Earth-orbit deployment margin. MASFE is framed as a hosted payload module within a Loft Orbital YAM bus rather than as a full standalone 6U satellite; the SWAP budget therefore describes the payload module itself, not the host spacecraft.
+The FPGA performs radiometric preprocessing and per-pixel CSC computation, then transfers frames to the LEON4FT over AXI4-Stream in under 1 ms. The Kintex UltraScale+ RT component is rated to 100 krad total ionizing dose, which supports low-Earth-orbit deployment margin. MASFE is framed as a hosted payload module within a Loft Orbital YAM bus rather than as a full standalone 6U satellite; the SWAP budget therefore describes the payload module itself, not the host spacecraft. Spacecraft bus functions such as ADCS, OBC, and platform communications are provided by YAM, while MASFE carries a local 40 Wh battery and power-conditioning stage to preserve autonomy through eclipse periods and peak compute windows.
 
 Operational degradation is explicit. Above 35\% battery state of charge, MASFE runs the full two-stage policy. Between 15\% and 35\%, it falls back to Stage 1 screening only. Below 15\%, it preserves energy for stored alert downlink. This satisfies the challenge requirement to degrade gracefully under onboard resource stress \cite{nasa-challenge-brief}.
