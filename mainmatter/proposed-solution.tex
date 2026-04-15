@@ -82,3 +82,5 @@ Operational degradation is explicit. Above 35\% battery state of charge, MASFE r
 The quoted 92.5\% LEON4FT figure is a worst-case simultaneous-execution ceiling rather than nominal load; because Stage~2 is invoked only on anomaly-triggered passes, typical utilization is materially lower and retains margin for RTOS overhead, watchdog servicing, and fault handling.
 
 Each priority alert packet contains a geo-tagged field-patch polygon with centroid coordinates, CSC severity score, contributing EVI/LST anomaly components, timestamp and pass ID, and a confidence flag derived from consecutive confirming passes. These packets are delivered through Loft Orbital's ground network to farm software as geo-tagged overlays via the OpenET-linked API, enabling push notifications within 15 minutes of contact.
+
+Full simulation source code (\texttt{masfe\_simulation.py}) is submitted as Code Component 3 at \href{https://github.com/emillambert/Emil_MASFE}{github.com/emillambert/Emil\_MASFE}.
