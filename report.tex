@@ -1,64 +1,63 @@
-\documentclass[11pt,letterpaper]{tudelft-report}
+\documentclass[11pt,letterpaper]{article}
 
-%% Font: Times New Roman (pdfLaTeX)
+\usepackage[margin=1in,letterpaper]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{mathptmx}
-
-%% Geometry: 1 inch margins, US letter paper
-
-%% Header and footer
+\usepackage{times}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{caption}
 \usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{setspace}
+\usepackage{tabularx}
+\usepackage{tikz}
+\usepackage{xcolor}
+
+\usetikzlibrary{arrows.meta, backgrounds, decorations.pathreplacing, fit, positioning}
+\renewcommand{\ttdefault}{cmtt}
+
+\singlespacing
+\raggedright
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\headheight}{14pt}
+\setlength{\textfloatsep}{8pt plus 1pt minus 2pt}
+\setlength{\intextsep}{8pt plus 1pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{0pt}
+\setlength{\abovedisplayskip}{6pt}
+\setlength{\belowdisplayskip}{6pt}
+\setlength{\emergencystretch}{2em}
+
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[C]{\small MASFE: An Onboard Multi-Algorithm Scheduling and Fusion Engine}
-\fancyhead[R]{\small May 4, 2026}
+\fancyhead[C]{MASFE: An Onboard Multi-Algorithm Scheduling and Fusion Engine}
+\fancyhead[R]{May 4, 2026}
 \fancyfoot[R]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0pt}
-\setlength{\headheight}{14pt}
 
-%% Line spacing: single (default in LaTeX; explicit for clarity)
-\usepackage{setspace}
-\singlespacing
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}
+  {0.7\baselineskip}
+  {0.25\baselineskip}
+  {\normalfont\large\bfseries}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}
+  {0.5\baselineskip}
+  {0.2\baselineskip}
+  {\normalfont\normalsize\bfseries}}
+\makeatother
 
-%% Text alignment: left justified (ragged right)
-\raggedright
-
-%% TikZ libraries for architecture diagram
-\usetikzlibrary{fit, backgrounds, arrows.meta, decorations.pathreplacing}
-
-%% Euro symbol
-\usepackage{eurosym}
-
-%% Bibliography
-\usepackage{biblatex}
-\addbibresource{report.bib}
-
-%% Additional packages
-\usepackage{parskip}
-\usepackage{booktabs}
-\usepackage{tabularx}
-\usepackage{multirow}
-\usepackage{array}
-\usepackage{longtable}
-\usepackage{microtype}
-\usepackage{xcolor}
-\usepackage{hyperref}
-\usepackage{listings}
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{geometry}
-
-\setlist{itemsep=-2pt}
-
-%% Custom colours
 \definecolor{codeblue}{RGB}{0,90,160}
 \definecolor{codegray}{RGB}{100,100,100}
 \definecolor{codegreen}{RGB}{0,110,50}
 \definecolor{codered}{RGB}{160,30,30}
 
-%% Code listing style
 \lstdefinestyle{masfe}{
   backgroundcolor=\color{gray!6},
   commentstyle=\color{codegreen},
@@ -80,68 +79,80 @@
   captionpos=b
 }
 \lstset{style=masfe}
+\renewcommand{\arraystretch}{1.15}
 
-%% Table row height
-\renewcommand{\arraystretch}{1.25}
-
-% Chapter title left, chapter number right, same line, same size
-\titleformat{\chapter}[display]
-  {\normalfont}
-  {\filleft\bfseries\LARGE\thechapter}
-  {-1.6em}
-  {\filright\bfseries\LARGE\normalfont}
-  
-\titlespacing*{\chapter}{0pt}{0pt}{12pt}
-
-
-%% ---------------------------------------------------------------
-%%    Document
-%% ---------------------------------------------------------------
 \begin{document}
+\thispagestyle{fancy}
 
-\frontmatter
-
-\title{MASFE: An Onboard Multi-Algorithm \\ Scheduling and Fusion Engine}
-\subtitle{For Regenerative Agriculture SmallSat Missions}
-\author{Emil Wes Lambert}
-
-\subject{NASA Space-to-Soil Challenge 2026}
-\coverimage{figures/cover.jpg}
-\definecolor{title}{HTML}{1D6B48}
-
-
-\makecover
-
-%\input{frontmatter/title-page}
-%\input{frontmatter/summary}
-
-\tableofcontents
-
-%\input{frontmatter/nomenclature}
-
-%% ---------------------------------------------------------------
-%%    Main matter
-%% ---------------------------------------------------------------
-\mainmatter
+\begin{center}
+{\LARGE\bfseries MASFE: An Onboard Multi-Algorithm Scheduling and Fusion Engine}\\[2pt]
+{\large For Regenerative Agriculture SmallSat Missions}\\[6pt]
+Emil Wes Lambert\\
+BSc Aerospace Engineering, TU Delft\\
+Solo submission; NASA challenge eligibility: U.S.\ citizen
+\end{center}
 
 \input{mainmatter/introduction}
 \input{mainmatter/proposed-solution}
 \input{mainmatter/impact}
 \input{mainmatter/team-market}
 \input{mainmatter/next-steps}
-\input{mainmatter/conclusion}
 
-\setcounter{biburlnumpenalty}{7000}
-\setcounter{biburllcpenalty}{7000}
-\setcounter{biburlucpenalty}{7000}
+\clearpage
+\begin{thebibliography}{9}
 
-\printbibliography[heading=bibintoc, title=References]
+\bibitem{nasa-challenge-brief}
+NASA Earth Science Technology Office,
+\emph{Space-to-Soil Challenge: Challenge Brief and Guidelines},
+2026.
+\url{https://nasa-space-to-soil.org}.
 
-%% ---------------------------------------------------------------
-%%    Appendix
-%% ---------------------------------------------------------------
+\bibitem{mod13a1}
+NASA EOSDIS Land Processes DAAC,
+\emph{MOD13A1 MODIS/Terra Vegetation Indices 16-Day L3 Global 500 m SIN Grid V061},
+2021.
+DOI: \url{https://doi.org/10.5067/MODIS/MOD13A1.061}.
+
+\bibitem{mod11a1}
+NASA EOSDIS Land Processes DAAC,
+\emph{MOD11A1 MODIS/Terra Land Surface Temperature/Emissivity Daily L3 Global 1 km SIN Grid V061},
+2021.
+DOI: \url{https://doi.org/10.5067/MODIS/MOD11A1.061}.
+
+\bibitem{gold-webinar1}
+K. Gold,
+\emph{Spectral Early Detection of Crop Pathogens for Regenerative Agriculture Applications},
+NASA Space-to-Soil Challenge Informational Webinar 1,
+Cornell University Plant Disease Diagnostics Laboratory, February 12, 2026.
+
+\bibitem{mytkowicz-webinar2}
+J. Mytkowicz,
+\emph{AI-Enabled Satellites and On-Orbit Decision-Making: Lessons from Loft Orbital},
+NASA Space-to-Soil Challenge Informational Webinar 2,
+Loft Orbital, March 25, 2026.
+
+\bibitem{openet-api}
+OpenET Consortium,
+\emph{FARMS API Documentation},
+2025.
+\url{https://openet.gitbook.io/docs/additional-resources/farms}.
+
+\bibitem{jpl-scheduling}
+JPL Artificial Intelligence Group,
+\emph{Scheduling and Planning Technology},
+2024.
+\url{https://ai.jpl.nasa.gov/public/projects/}.
+
+\bibitem{cubesat-spec}
+California Polytechnic State University,
+\emph{CubeSat Design Specification Rev.\ 14.1},
+2022.
+\url{https://www.cubesat.org}.
+
+\end{thebibliography}
+
+\clearpage
 \appendix
-
 \input{appendix/swap-budget}
 \input{appendix/simulation-code}
 

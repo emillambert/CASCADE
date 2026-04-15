@@ -1,7 +1,7 @@
-\chapter{Full SWAP Budget}
+\section{SWAP Budget and Simulation Results}
 \label{appendix:swap}
 
-This appendix provides the complete four-table SWAP budget referenced in Section~\ref{subsec:swap}. All values are traceable to real component datasheets: LEON4FT (Cobham Gaisler UT699E v2.3), Kintex UltraScale+ RT (Xilinx DS985), GomSpace BP4, and CubeSat Design Specification Rev~14.1~\cite{cubesat-spec}.
+This appendix provides the detailed supporting budgets referenced in the main paper. Values are traceable to representative component datasheets for LEON4FT-class processing, Kintex UltraScale+ RT acceleration, hosted-payload power storage, and conservative CubeSat-class structural allocations \cite{cubesat-spec}.
 
 %% -----------------------------------------------
 \section*{Power Budget}
@@ -9,7 +9,7 @@ This appendix provides the complete four-table SWAP budget referenced in Section
 
 \begin{table}[htb]
   \centering
-  \caption{6U CubeSat power budget. Solar generation average 10.5\,W BOL at 500\,km SSO.}
+  \caption{Hosted payload module power budget. Solar generation average 10.5\,W BOL at 500\,km SSO equivalent.}
   \small
   \begin{tabularx}{\textwidth}{p{4.0cm}p{3.5cm}rrX}
     \toprule
@@ -71,12 +71,12 @@ This appendix provides the complete four-table SWAP budget referenced in Section
     \textbf{Mode / product} & \textbf{Per pass (MB)} & \textbf{Season total (MB)} & \textbf{vs Raw} \\
     \midrule
     Raw L1B imagery (naive baseline) & 120.0 & 14{,}400 & --- \\
-    Fixed-schedule onboard (no MDP)  &   3.7 &      444 & $-$97\,\% \\
+    Fixed-schedule onboard (no MDP)  &   2.8 &      330 & $-$98\,\% \\
     MASFE Stage~1 only (no alert)    &   0.7 &       ---& $-$99\,\% \\
     MASFE Stage~2 + CSC map          &   2.8 &       ---& $-$98\,\% \\
-    MASFE priority alert (5 patches) & $\sim$9.7 &  ---& $-$92\,\% \\
+    MASFE priority alert (5 patches) & $\sim$10.4 &  ---& $-$91\,\% \\
     \midrule
-    \textbf{MASFE MDP season average (simulation)} & 3.5 & \textbf{423} & \textbf{$-$97\,\%} \\
+    \textbf{MASFE MDP season average (simulation)} & 2.6 & \textbf{313} & \textbf{$-$98\,\%} \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -87,21 +87,21 @@ This appendix provides the complete four-table SWAP budget referenced in Section
 
 \begin{table}[htb]
   \centering
-  \caption{Mass and volume budget. 6U CubeSat: $\leq$12\,kg, $6 \times 10 \times 10 \times 11.35$\,cm.}
+  \caption{Hosted payload module mass and volume budget, allocated conservatively within a 6U-class envelope.}
   \small
   \begin{tabularx}{\textwidth}{p{4.5cm}rp{2.0cm}X}
     \toprule
     \textbf{Component} & \textbf{Mass (g)} & \textbf{Volume} & \textbf{Notes} \\
     \midrule
-    LEON4FT CPU board          & $\sim$120  & $\sim$0.3\,U & GR-CPCI-LEON4-N2X form factor \\
-    Kintex UltraScale+ RT FPGA & $\sim$180  & $\sim$0.4\,U & Custom 6U PCB integration \\
-    Multispectral sensor head  & $\sim$350  & $\sim$1.0\,U & e.g.\ Simera Ximea MX022 class \\
-    Thermal IR sensor          & $\sim$130  & $\sim$0.5\,U & e.g.\ FLIR Lepton 3.5 class \\
-    X-band transmitter         & $\sim$320  & $\sim$0.5\,U & e.g.\ Syrlinks EWC27 class \\
-    GomSpace BP4 battery (4$\times$) & $\sim$640 & $\sim$1.0\,U & 40\,Wh total \\
-    Structure, harness, ADCS   & $\sim$2{,}200 & $\sim$2.3\,U & Standard 6U bus \\
+    LEON4FT CPU board          & $\sim$120  & $\sim$0.3\,U & GR-CPCI-LEON4-N2X class board \\
+    Kintex UltraScale+ RT FPGA & $\sim$180  & $\sim$0.4\,U & Radiation-tolerant accelerator board \\
+    Multispectral sensor head  & $\sim$350  & $\sim$1.0\,U & Simera xScape100-class payload \\
+    Thermal IR sensor          & $\sim$130  & $\sim$0.3\,U & Compact hosted-payload TIR module \\
+    X-band / host interface    & $\sim$320  & $\sim$0.4\,U & Downlink and bus interface electronics \\
+    Battery + power conditioning & $\sim$420 & $\sim$0.4\,U & Local storage and regulation margin \\
+    Structure, harness, thermal & $\sim$380 & $\sim$0.2\,U & Payload-only mechanical allocation \\
     \midrule
-    \textbf{Total estimated}   & $\sim$3{,}940\,g & $\sim$6.0\,U & \textbf{Within 6U limits} \\
+    \textbf{Total estimated}   & $\sim$1{,}900\,g & $\sim$3.0\,U & \textbf{Within hosted-payload limits} \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -113,22 +113,23 @@ This appendix provides the complete four-table SWAP budget referenced in Section
 
 \begin{table}[htb]
   \centering
-  \caption{Three-way performance comparison: raw dump vs fixed onboard vs MASFE MDP. Results from simulation over a 120-pass growing season (50 field patches, 7 disease events, $\sim$30\,\% cloud-obscured passes, sensor measurement noise injected).}
+  \caption{Three-way performance comparison: raw dump vs fixed onboard vs MASFE MDP. Results from simulation over a 120-pass growing season (50 field patches, 7 disease events, 38 cloud-obscured passes, benign stress confounders, and sensor noise).}
   \small
   \begin{tabularx}{\textwidth}{Xrrr}
     \toprule
     \textbf{Metric} & \textbf{Raw dump} & \textbf{Fixed onboard} & \textbf{MASFE MDP} \\
     \midrule
-    Downlink data (MB, season)      & 14{,}400 & 444   & 423 \\
-    Energy consumed (Wh, season)    & 9.60     & 7.90  & 7.57 \\
-    True pathogen detections        & 461      & 461   & 461 \\
-    False positives                 & 0        & 0     & $\leq$15\,\% target \\
+    Downlink data (MB, season)      & 14{,}400 & 330   & 313 \\
+    Active payload energy (Wh)      & 9.60     & 7.90  & 7.48 \\
+    True pathogen detections        & 304      & 307   & 305 \\
+    False positives                 & 3        & 3     & 3 \\
     Priority alerts dispatched      & ---      & ---   & 13  \\
     Min battery SOC                 & ---      & ---   & 86\,\% \\
     \midrule
-    \textbf{Downlink reduction vs raw} & --- & $-$97\,\% & $-$97\,\% \\
-    \textbf{Energy saving vs raw}      & --- & $-$18\,\% & $-$21\,\% \\
+    \textbf{Downlink reduction vs raw} & --- & $-$97.7\,\% & $-$97.8\,\% \\
+    \textbf{Energy saving vs raw}      & --- & $-$17.7\,\% & $-$22.0\,\% \\
     \textbf{Science retention}         & 100\,\% & 100\,\% & 100\,\% \\
+    \textbf{False-positive rate}       & 1.0\,\% & 1.0\,\% & 1.0\,\% \\
     \textbf{Alert latency}             & 1--3 days & $<$90\,min & $<$90\,min \\
     \bottomrule
   \end{tabularx}

@@ -1,0 +1,14 @@
+{
+  "downlink_reduction_vs_raw_pct": 97.8,
+  "downlink_reduction_vs_fixed_pct": 4.9,
+  "energy_saving_vs_raw_pct": 22.0,
+  "energy_saving_vs_fixed_pct": 5.3,
+  "science_retention_pct": 100.0,
+  "alert_precision_pct": 99.0,
+  "false_positive_rate_pct": 1.0,
+  "n_priority_alerts": 13,
+  "min_battery_soc": 0.86,
+  "peak_power_w": 9.6,
+  "compute_utilisation_pct": 92.5,
+  "cloud_obscured_passes": 38
+}

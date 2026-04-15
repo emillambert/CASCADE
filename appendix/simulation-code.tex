@@ -1,4 +1,4 @@
-\chapter{Python Simulation: MASFE MDP Scheduler}
+\section{Python Simulation Code Excerpts}
 \label{appendix:code}
 
 This appendix contains the key components of the MASFE Python simulation submitted as Code Submission Component~3. The full source file (\texttt{masfe\_simulation.py}) is available in the linked GitHub repository. The simulation runs with only \texttt{numpy} as a dependency (\texttt{pip install numpy}).
@@ -7,9 +7,10 @@ This appendix contains the key components of the MASFE Python simulation submitt
 \noindent Running the simulation produces the three-way comparison output (MASFE MDP vs fixed-schedule onboard vs naive raw-dump baseline) and exports the JSON metrics block used in the paper. Verified output:
 
 \begin{itemize}
-  \item Downlink reduction vs raw: \textbf{97\,\%}
-  \item Energy saving vs raw: \textbf{21\,\%}
+  \item Downlink reduction vs raw: \textbf{97.8\,\%}
+  \item Energy saving vs raw: \textbf{22.0\,\%}
   \item Science retention: \textbf{100\,\%}
+  \item False-positive rate: \textbf{1.0\,\%} with cloud and benign-stress confounders
   \item Peak power: \textbf{9.6\,W} $\leq$ 14\,W budget \quad PASS
   \item Minimum battery SOC: \textbf{86\,\%} $>$ 15\,\% floor \quad PASS
 \end{itemize}
