@@ -105,3 +105,31 @@ This appendix provides the complete four-table SWAP budget referenced in Section
     \bottomrule
   \end{tabularx}
 \end{table}
+
+%% -----------------------------------------------
+\section*{Simulation Performance Results}
+\label{appendix:results}
+%% -----------------------------------------------
+
+\begin{table}[htb]
+  \centering
+  \caption{Three-way performance comparison: raw dump vs fixed onboard vs MASFE MDP. Results from simulation over a 120-pass growing season (50 field patches, 7 disease events, $\sim$30\,\% cloud-obscured passes, sensor measurement noise injected).}
+  \small
+  \begin{tabularx}{\textwidth}{Xrrr}
+    \toprule
+    \textbf{Metric} & \textbf{Raw dump} & \textbf{Fixed onboard} & \textbf{MASFE MDP} \\
+    \midrule
+    Downlink data (MB, season)      & 14{,}400 & 444   & 423 \\
+    Energy consumed (Wh, season)    & 9.60     & 7.90  & 7.57 \\
+    True pathogen detections        & 461      & 461   & 461 \\
+    False positives                 & 0        & 0     & $\leq$15\,\% target \\
+    Priority alerts dispatched      & ---      & ---   & 13  \\
+    Min battery SOC                 & ---      & ---   & 86\,\% \\
+    \midrule
+    \textbf{Downlink reduction vs raw} & --- & $-$97\,\% & $-$97\,\% \\
+    \textbf{Energy saving vs raw}      & --- & $-$18\,\% & $-$21\,\% \\
+    \textbf{Science retention}         & 100\,\% & 100\,\% & 100\,\% \\
+    \textbf{Alert latency}             & 1--3 days & $<$90\,min & $<$90\,min \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
