@@ -1,4 +1,30 @@
-\documentclass{tudelft-report}
+\documentclass[11pt,letterpaper]{article}
+
+%% Font: Times New Roman (pdfLaTeX)
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
+
+%% Geometry: 1 inch margins, US letter paper
+\usepackage[margin=1in,letterpaper]{geometry}
+
+%% Header and footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\small MASFE: An Onboard Multi-Algorithm Scheduling and Fusion Engine}
+\fancyhead[R]{\small May 4, 2026}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{14pt}
+
+%% Line spacing: single (default in LaTeX; explicit for clarity)
+\usepackage{setspace}
+\singlespacing
+
+%% Text alignment: left justified (ragged right)
+\raggedright
 
 %% Bibliography
 \usepackage{biblatex}
@@ -6,6 +32,7 @@
 
 %% Additional packages
 \usepackage{parskip}
+\setlength{\parskip}{3pt}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{multirow}
@@ -17,9 +44,18 @@
 \usepackage{listings}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
 
-\setlist{itemsep=-2pt}
+%% Compact list spacing
+\setlist{itemsep=-2pt, topsep=2pt}
+
+%% Compact section spacing
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+\titlespacing*{\subsection}{0pt}{4pt}{2pt}
+\titlespacing*{\subsubsection}{0pt}{3pt}{1pt}
 
 %% Custom colours
 \definecolor{codeblue}{RGB}{0,90,160}
@@ -33,7 +69,7 @@
   commentstyle=\color{codegreen},
   keywordstyle=\color{codeblue}\bfseries,
   stringstyle=\color{codered},
-  basicstyle=\ttfamily\footnotesize,
+  basicstyle=\ttfamily\small,
   breakatwhitespace=false,
   breaklines=true,
   keepspaces=true,
@@ -51,37 +87,12 @@
 \lstset{style=masfe}
 
 %% Table row height
-\renewcommand{\arraystretch}{1.25}
+\renewcommand{\arraystretch}{1.15}
 
 %% ---------------------------------------------------------------
 %%    Document
 %% ---------------------------------------------------------------
 \begin{document}
-
-\frontmatter
-
-\title{MASFE: An Onboard Multi-Algorithm \\ Scheduling and Fusion Engine}
-\subtitle{For Regenerative Agriculture SmallSat Missions}
-\author{[Your Name]}
-
-\subject{NASA Space-to-Soil Challenge 2026}
-\affiliation{Delft University of Technology}
-\coverimage{figures/cover.jpg}
-\definecolor{title}{HTML}{1D6B48}
-
-\makecover
-
-\input{frontmatter/title-page}
-\input{frontmatter/summary}
-
-\tableofcontents
-
-\input{frontmatter/nomenclature}
-
-%% ---------------------------------------------------------------
-%%    Main matter
-%% ---------------------------------------------------------------
-\mainmatter
 
 \input{mainmatter/introduction}
 \input{mainmatter/proposed-solution}
@@ -94,14 +105,6 @@
 \setcounter{biburllcpenalty}{7000}
 \setcounter{biburlucpenalty}{7000}
 
-\printbibliography[heading=bibintoc, title=References]
-
-%% ---------------------------------------------------------------
-%%    Appendix
-%% ---------------------------------------------------------------
-\appendix
-
-\input{appendix/swap-budget}
-\input{appendix/simulation-code}
+\printbibliography[title=References]
 
 \end{document}
