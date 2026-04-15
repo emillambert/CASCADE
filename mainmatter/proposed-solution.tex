@@ -8,7 +8,7 @@ MASFE uses a two-stage adaptive sensing loop. Stage 1 executes an EVI anomaly sc
 \label{eq:csc}
 \end{equation}
 
-Here $\Delta\text{EVI} = \max(0, \text{EVI}_{base} - \text{EVI}_{obs})$ and $\Delta\text{LST} = \max(0, \text{LST}_{obs} - \text{LST}_{base})$. The factors of 5 and 4 normalize approximately five-sigma EVI excursions and four-sigma thermal excursions into the unit interval before clipping, matching the implemented flight code. The implementation is intentionally deterministic even though the policy is MDP-formulated: that choice favors flight qualification and traceable verification on LEON4FT hardware over a learned black-box controller.
+Here $\Delta\text{EVI} = \max(0, \text{EVI}_{base} - \text{EVI}_{obs})$ and $\Delta\text{LST} = \max(0, \text{LST}_{obs} - \text{LST}_{base})$. The factors of 5 and 4 are simulation-calibrated saturation constants with an agronomic interpretation as the expected upper bounds of healthy seasonal EVI and thermal variability for the tested crop regime; they map anomaly magnitude into $[0,1]$ before CSC composition. They are therefore tunable hyperparameters rather than fixed physical constants and would be re-calibrated on flight and field data. The implementation is intentionally deterministic even though the policy is MDP-formulated: that choice favors flight qualification and traceable verification on LEON4FT hardware over a learned black-box controller.
 
 The scheduling logic is modeled as a finite-horizon MDP with state vector $s = (\text{CSC}_{\max}, \text{SOC}, d, k)$, where $\text{CSC}_{\max}$ is the maximum patch stress score, SOC is battery state of charge, $d \in \{0,1\}$ indicates downlink availability, and $k$ counts passes since last fusion. The action set is \{SKIP, MOD13, FUSE, FUSE\_PRIORITY\}. The reward trades information gain against energy cost and missed-alert risk. The deployed solver is a hand-tuned deterministic policy that approximates the Bellman-optimal solution, chosen over learned policies because radiation-tolerant CPUs cannot justify neural inference at acceptable V\&V cost.
 
@@ -21,10 +21,10 @@ The scheduling logic is modeled as a finite-horizon MDP with state vector $s = (
 \textbf{Requirement} & \textbf{MASFE response} \\
 \midrule
 Alert latency $\leq$ 90 min & One-pass onboard screening, fusion, and alerting pipeline with X-band priority downlink. \\
-Spatial resolution $\leq$ 30 m GSD & Simera xScape100-class multispectral imager operated at $\leq$30\,m effective GSD after onboard spatial binning; MODIS-derived EVI/LST logic is applied to the binned products rather than MODIS ground-product resolution. \\
+Spatial resolution $\leq$ 30 m GSD & Native xScape100-class imagery is intentionally binned from $\sim$4.6\,m sampling to $\leq$30\,m effective GSD to match field-patch management scale and reduce SWAP load; confirmed anomalies can still trigger higher-resolution tile downlink. \\
 False-positive rate $\leq$ 15\% & 1.0\% in a 120-pass simulation with 38 cloud-obscured passes, injected measurement noise, and benign stress confounders. \\
-SmallSat SWAP compliance & 9.6 W peak, 5.05 W duty-cycled payload average, 92.5\% LEON4FT utilization, and 86\% minimum state of charge in a local 40 Wh battery buffer. \\
-Downlink efficiency & 97.8\% reduction versus raw downlink baseline while retaining 100\% disease-event recall. \\
+SmallSat SWAP compliance & 9.6 W peak, 5.05 W duty-cycled payload average, 92.5\% worst-case simultaneous LEON4FT ceiling, and 86\% minimum state of charge in a local 40 Wh battery buffer. \\
+Downlink efficiency & 97.8\% reduction versus raw downlink baseline while retaining 100\% disease-event recall in simulation. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -75,8 +75,10 @@ Downlink efficiency & 97.8\% reduction versus raw downlink baseline while retain
 \label{fig:architecture}
 \end{figure}
 
-The FPGA performs radiometric preprocessing and per-pixel CSC computation, then transfers frames to the LEON4FT over AXI4-Stream in under 1 ms. The Kintex UltraScale+ RT component is rated to 100 krad total ionizing dose, which supports low-Earth-orbit deployment margin. MASFE is framed as a hosted payload module within a Loft Orbital YAM bus rather than as a full standalone 6U satellite; the SWAP budget therefore describes the payload module itself, not the host spacecraft. Spacecraft bus functions such as ADCS, OBC, and platform communications are provided by YAM, while MASFE carries a local 40 Wh battery and power-conditioning stage to preserve autonomy through eclipse periods and peak compute windows.
+The FPGA performs radiometric preprocessing and per-pixel CSC computation, then transfers frames to the LEON4FT over AXI4-Stream in under 1 ms. Onboard preprocessing includes radiometric calibration and cloud screening, while CSC itself is evaluated as a pass-to-pass relative anomaly detector rather than a fully atmosphere-corrected biophysical retrieval; full atmospheric correction is deferred to later validation because CSC is used for change detection rather than absolute retrieval. The Kintex UltraScale+ RT component is rated to 100 krad total ionizing dose, which supports low-Earth-orbit deployment margin. MASFE is framed as a hosted payload module within a Loft Orbital YAM bus rather than as a full standalone 6U satellite; the SWAP budget therefore describes the payload module itself, not the host spacecraft. Spacecraft bus functions such as ADCS, OBC, and platform communications are provided by YAM, while MASFE carries a local 40 Wh battery and power-conditioning stage to preserve autonomy through eclipse periods and peak compute windows (40 Wh / 5.05 W $\approx$ 7.9 h, comfortably above the $\sim$35 min eclipse at 500 km SSO).
 
 Operational degradation is explicit. Above 35\% battery state of charge, MASFE runs the full two-stage policy. Between 15\% and 35\%, it falls back to Stage 1 screening only. Below 15\%, it preserves energy for stored alert downlink. This satisfies the challenge requirement to degrade gracefully under onboard resource stress \cite{nasa-challenge-brief}.
+
+The quoted 92.5\% LEON4FT figure is a worst-case simultaneous-execution ceiling rather than nominal load; because Stage~2 is invoked only on anomaly-triggered passes, typical utilization is materially lower and retains margin for RTOS overhead, watchdog servicing, and fault handling.
 
 Each priority alert packet contains a geo-tagged field-patch polygon with centroid coordinates, CSC severity score, contributing EVI/LST anomaly components, timestamp and pass ID, and a confidence flag derived from consecutive confirming passes. These packets are delivered through Loft Orbital's ground network to farm software as geo-tagged overlays via the OpenET-linked API, enabling push notifications within 15 minutes of contact.
