@@ -6,7 +6,7 @@
 \label{sec:qualifications}
 %% ---------------------------------------------------------------
 
-[Your Name] is completing a Bachelor of Science in Aerospace Engineering at TU Delft, Faculty of Aerospace Engineering. Relevant technical qualifications include:
+Emil Wes Lambert is completing a Bachelor of Science in Aerospace Engineering at TU Delft, Faculty of Aerospace Engineering. Relevant technical qualifications include:
 
 \begin{itemize}
   \item \textbf{Spacecraft systems engineering}: SWAP budget analysis, hardware--software co-design, and system-level trade studies --- the methodology applied throughout this submission.
@@ -15,32 +15,19 @@
   \item \textbf{Embedded flight software}: Real-time operating systems, hardware--software partitioning, and resource-constrained computing --- the exact challenge of deploying the MDP policy on a LEON4FT + FPGA stack.
 \end{itemize}
 
-\noindent The agronomy and domain-expertise gap inherent in a solo aerospace submission is bridged through cited primary sources: Dr.\ Gold's Cornell spectral detection methodology~\cite{gold-webinar1}, USDA Economic Research Service crop loss data, and Loft Orbital's operational deployment experience~\cite{mytkowicz-webinar2}. The solo submission itself reflects MASFE's architectural leanness --- a system designed to be operable by a small team, which is a commercial virtue.
+\noindent The agronomy and domain-expertise gap inherent in a solo aerospace submission is bridged through cited primary sources: Dr.\ Gold's Cornell spectral detection methodology~\cite{gold-webinar1}, USDA Economic Research Service crop loss data, and Loft Orbital's operational deployment experience~\cite{mytkowicz-webinar2}. MASFE is architected for single-operator mission management, validated by its solo development --- this lean operational concept reduces mission operations cost and reflects a commercial deployment philosophy where the orchestration engine is autonomous.
 
 %% ---------------------------------------------------------------
 \section{Past Projects and Relevant Research}
 \label{sec:past-projects}
 %% ---------------------------------------------------------------
 
-% ---------------------------------------------------------------
-% FILL IN YOUR OWN CONTENT HERE
-% Suggested approach: mention 1-2 specific TU Delft projects.
-% Examples of what to include:
-%   - DSE (Design Synthesis Exercise): systems-level spacecraft design
-%   - Any project involving optimisation under constraints
-%   - Control theory coursework (Kalman filter, state estimation)
-%   - Embedded systems or real-time programming lab work
-%   - Any satellite-related project or literature study
-% ---------------------------------------------------------------
-
-[Your Name]'s relevant project experience at TU Delft includes:
+Emil Wes Lambert's relevant project experience includes:
 
 \begin{itemize}
-  \item \textbf{[Project 1 title]}: [Brief description, 1--2 sentences. Link to MASFE if possible.]
-  \item \textbf{[Project 2 title]}: [Brief description, 1--2 sentences.]
+  \item \textbf{Venus Atmosphere Mission Design (TU Delft DSE)}: Completed the Design Synthesis Exercise --- a 10-week full spacecraft design project delivering a balloon-based aerobot mission for long-duration Venus atmospheric and seismic investigation. Designed for 5$+$ year operational lifetime using in-situ nitrogen replenishment, within a \euro{}400\,M budget and 700\,kg mass constraint. Applied SWAP budgeting, subsystem trade-offs, and requirements tracing --- the same methodology used in this submission.
+  \item \textbf{AeroDelft, Partnerships \& Business Manager (2 years)}: Served as Partnerships and Business Manager at AeroDelft, TU Delft's student team developing a hydrogen-powered aircraft. Led sponsorship negotiations, industry partnership development, and commercial market positioning --- directly applicable to MASFE's three-stream revenue model and MVP roadmap.
 \end{itemize}
-
-\noindent Participation in the TU Delft Design Synthesis Exercise (DSE) provided direct experience with the spacecraft systems design process: requirements definition, subsystem trade-offs, SWAP budgeting, and technical review --- the same methodology applied in this submission.
 
 %% ---------------------------------------------------------------
 \section{Scaling and Future Market Integration}
@@ -63,6 +50,14 @@ Target users were identified and design criteria were validated through three ch
 \noindent Design criteria derived directly from user needs: the $\leq$90\,min latency requirement reflects the 24--48\,hour intervention window for fungicide application; the $\leq$30\,m GSD requirement reflects field-patch-level management practice; the REST API delivery requirement reflects the existing software ecosystem already deployed on commercial farms.
 
 %% -----------------------------------
+\subsection{Market Sizing}
+\label{subsec:market-sizing}
+%% -----------------------------------
+
+\noindent\textbf{TAM/SAM/SOM.}
+The global precision agriculture market is projected at $\sim$\$12\,B by 2028 (TAM). The satellite-derived crop analytics segment is $\sim$\$2.5\,B (SAM). Sub-day adaptive pathogen alerting represents a $<$\$50\,M greenfield segment today (SOM) --- no current product combines adaptive onboard MDP scheduling with multi-algorithm fusion for crop disease detection at field-patch scale. MASFE enters this uncontested position. Break-even at $\approx$500{,}000\,ha coverage is achievable with a three-satellite constellation at \$3--5/ha/year subscription pricing.
+
+%% -----------------------------------
 \subsection{Market Applications Beyond Agriculture and Forestry}
 \label{subsec:beyond-ag}
 %% -----------------------------------
@@ -74,13 +69,13 @@ MASFE's MDP orchestration engine is domain-agnostic. The scheduler, state repres
   \caption{MASFE generalisation beyond agriculture: the orchestration engine as a platform.}
   \label{tab:generalisation}
   \small
-  \begin{tabularx}{\textwidth}{p{3.5cm}p{3.5cm}X}
+  \begin{tabularx}{\textwidth}{p{3.0cm}p{3.5cm}X}
     \toprule
     \textbf{Application} & \textbf{Swap algorithms to} & \textbf{Value proposition} \\
     \midrule
     Wildfire fuel moisture monitoring
       & FIRMS thermal anomaly + NDWI
-      & Detect drying vegetation before ignition; adaptive revisit over high-risk terrain \\
+      & Detect drying vegetation before ignition; adaptive revisit over high-risk terrain. Market: $\sim$\$600\,M by 2028, 12\,\% CAGR. \\
     \addlinespace
     Flood inundation mapping
       & SAR coherence change detection
@@ -97,4 +92,4 @@ MASFE's MDP orchestration engine is domain-agnostic. The scheduler, state repres
   \end{tabularx}
 \end{table}
 
-\noindent The orchestration engine is the licensable IP. Agriculture is the first and primary market; the platform architecture serves any multi-algorithm Earth observation mission requiring intelligent onboard resource allocation. This structural generalisation directly satisfies Business Model criterion~2 (\emph{market applications beyond agricultural or forestry purposes}).
+\noindent The orchestration engine is the licensable IP. Agriculture is the first and primary market; the platform architecture serves any multi-algorithm Earth observation mission requiring intelligent onboard resource allocation.
