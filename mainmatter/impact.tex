@@ -1,8 +1,8 @@
-\chapter{Potential Impact}
+\section{Potential Impact}
 \label{chapter:impact}
 
 %% ---------------------------------------------------------------
-\section{How MASFE Builds on Current Research and Market Capabilities}
+\subsection{How MASFE Builds on Current Research and Market Capabilities}
 \label{sec:builds-on}
 %% ---------------------------------------------------------------
 
@@ -14,7 +14,7 @@ Current state-of-the-art onboard processing SmallSats (e.g.\ Planet Dove, Satell
 \end{enumerate}
 
 %% ---------------------------------------------------------------
-\section{Technical Variable Effects vs Traditional Methods}
+\subsection{Technical Variable Effects vs Traditional Methods}
 \label{sec:technical-effects}
 %% ---------------------------------------------------------------
 
@@ -47,19 +47,19 @@ Table~\ref{tab:comparison} quantifies the improvement of MASFE against two basel
 \noindent In addition to the engineering metrics in Table~\ref{tab:comparison}, MASFE delivers a spatial resolution improvement from 250--500\,m (standard MODIS ground products) to \textbf{30\,m GSD}---enabling field-patch-level management. These three dimensions (latency, resolution, bandwidth efficiency) represent simultaneous improvements unavailable from any current operational system.
 
 %% ---------------------------------------------------------------
-\section{Concrete Examples, Scenarios, and Limitations}
+\subsection{Concrete Examples, Scenarios, and Limitations}
 \label{sec:scenarios}
 %% ---------------------------------------------------------------
 
-\subsection*{Scenario 1: Early blight detection on a regenerative cover-crop farm}
+\subsubsection*{Scenario 1: Early blight detection on a regenerative cover-crop farm}
 
 A regenerative farm operator running no-till cover-crop tomatoes receives a MASFE alert at 07:42 on day~14 of the season, identifying three field patches with CSC $>$ 0.55 --- fourteen days before visible symptoms would appear. Targeted fungicide application to those three patches only costs approximately 8\,\% of the chemical input of preventative whole-field treatment. Without MASFE, the farmer applies preventative fungicide across the entire field, contributing to the 8\,billion\,lb/year pesticide burden documented by Dr.\ Gold~\cite{gold-webinar1}. Estimated pesticide reduction: $>$85\,\% on this farm.
 
-\subsection*{Scenario 2: Irrigation stress on an arid regenerative farm}
+\subsubsection*{Scenario 2: Irrigation stress on an arid regenerative farm}
 
 A thermal anomaly triggers MASFE Stage~2 over five patches in early morning before the ground station window. The alert is downlinked at 09:15, with OpenET ET data appended. The farmer receives a combined soil moisture proxy and water-use advisory two days before wilting symptoms would appear, preserving both yield and soil carbon stock integrity.
 
-\subsection*{Limitations}
+\subsubsection*{Limitations}
 
 \begin{itemize}
   \item CSC accuracy degrades under $>$30\,\% cloud cover; cloud-screening preprocessing is required in the production pipeline.
