@@ -1,8 +1,8 @@
-\section{Proposed Solution Detail}
+\chapter{Proposed Solution Detail}
 \label{chapter:solution}
 
 %% ---------------------------------------------------------------
-\subsection{Adaptive Sensing and Onboard Processing Approach}
+\section{Adaptive Sensing and Onboard Processing Approach}
 \label{sec:adaptive-sensing}
 %% ---------------------------------------------------------------
 
@@ -15,14 +15,14 @@ MASFE advances onboard processing via a two-stage adaptive scheduling architectu
 \noindent\textbf{Stage~2} runs the full MOD11A1 thermal retrieval, fuses both algorithms into a Crop Stress Composite (CSC), and if stress is confirmed, only the anomalous field patches are downlinked at high resolution. This is \emph{adaptive sensing}: the satellite decides what to observe next based on what it has already seen, rather than following a fixed acquisition plan.
 
 %% ---------------------------------------------------------------
-\subsection{Problem Statement}
+\section{Problem Statement}
 \label{sec:problem}
 %% ---------------------------------------------------------------
 
 Every year, an estimated \textbf{\$220\,billion} in crop losses and \textbf{8\,billion\,pounds of pesticides} result from the inability to detect plant disease before visible symptoms appear~\cite{gold-webinar1}. Current operational satellites provide 1--3 day latency at 250--500\,m resolution on fixed schedules---too slow and coarse for field-level intervention. The decision window for effective targeted fungicide application is 24--48 hours after early spectral stress onset. MASFE closes this gap by moving algorithm execution onboard and reducing response time to one orbital pass ($<$90 minutes).
 
 %% -----------------------------------
-\subsubsection{Land Use Algorithms and SmallSat Technical Requirements}
+\subsection{Land Use Algorithms and SmallSat Technical Requirements}
 \label{subsec:algorithms}
 %% -----------------------------------
 
@@ -45,11 +45,11 @@ Stage~2 fusion algorithm. Run on demand when Stage~1 flags EVI anomaly $>$ thres
 \noindent\textbf{User requirements.} Alert latency $\leq$90\,min (one orbital pass). Spatial resolution $\leq$30\,m (field-patch level). Crop stress false-positive rate $\leq$15\,\%. Alert delivery via REST API to existing farm management platforms.
 
 %% -----------------------------------
-\subsubsection{Mission Requirements and SmallSat Onboard Constraints}
+\subsection{Mission Requirements and SmallSat Onboard Constraints}
 \label{subsec:swap}
 %% -----------------------------------
 
-Table~\ref{tab:swap} presents the quantitative SWAP budget. All values are referenced to real component datasheets. The simulation (available as supplementary material) confirms all resource constraints are satisfied with positive margin.
+Table~\ref{tab:swap} presents the quantitative SWAP budget. All values are referenced to real component datasheets. The simulation (see Appendix~\ref{appendix:code}) confirms all resource constraints are satisfied with positive margin.
 
 \begin{table}[htb]
   \centering
@@ -70,10 +70,10 @@ Table~\ref{tab:swap} presents the quantitative SWAP budget. All values are refer
   \end{tabularx}
 \end{table}
 
-\noindent The full four-table SWAP budget (power, compute, data, and mass/volume) is provided in the supplementary appendix.
+\noindent The full four-table SWAP budget (power, compute, data, and mass/volume) is provided in Appendix~\ref{appendix:swap}.
 
 %% -----------------------------------
-\subsubsection{Full-Stack Commercial Integration}
+\subsection{Full-Stack Commercial Integration}
 \label{subsec:fullstack}
 %% -----------------------------------
 
