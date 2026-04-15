@@ -1,74 +1,107 @@
 \documentclass{tudelft-report}
 
-%% Set up the bibliography
+%% Bibliography
 \usepackage{biblatex}
 \addbibresource{report.bib}
 
-%% Additional packages and commands
+%% Additional packages
 \usepackage{parskip}
-\setlist{itemsep=-2pt} % Reducing white space in lists slightly
-\renewcommand{\deg}{\si{\degree}\xspace} % Use \deg easily, everywhere
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{geometry}
 
-%% ----------------------------------------------------------------------
-%%    Begin of document + Frontmatter (Roman page numbering)
-%% ----------------------------------------------------------------------
+\setlist{itemsep=-2pt}
 
+%% Custom colours
+\definecolor{codeblue}{RGB}{0,90,160}
+\definecolor{codegray}{RGB}{100,100,100}
+\definecolor{codegreen}{RGB}{0,110,50}
+\definecolor{codered}{RGB}{160,30,30}
+
+%% Code listing style
+\lstdefinestyle{masfe}{
+  backgroundcolor=\color{gray!6},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{codeblue}\bfseries,
+  stringstyle=\color{codered},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,
+  breaklines=true,
+  keepspaces=true,
+  numbers=left,
+  numbersep=8pt,
+  numberstyle=\tiny\color{codegray},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2,
+  frame=single,
+  rulecolor=\color{gray!40},
+  captionpos=b
+}
+\lstset{style=masfe}
+
+%% Table row height
+\renewcommand{\arraystretch}{1.25}
+
+%% ---------------------------------------------------------------
+%%    Document
+%% ---------------------------------------------------------------
 \begin{document}
 
 \frontmatter
 
-%% Define the main parameters
-\title{A Title to the Report}
-\subtitle{A Catchy Optional Subtitle \\ that Grabs the Attention}
-\author{Author}
+\title{MASFE: An Onboard Multi-Algorithm \\ Scheduling and Fusion Engine}
+\subtitle{For Regenerative Agriculture SmallSat Missions}
+\author{[Your Name]}
 
-\subject{AB1234: Optional Course Name} % Cover only
-\affiliation{Delft University of Technology} % Cover only
-\coverimage{figures/cover.jpg} % Aspect ratio of 2:3 (portrait) recommended
-\definecolor{title}{HTML}{4884d6} % Color for cover title
+\subject{NASA Space-to-Soil Challenge 2026}
+\affiliation{Delft University of Technology}
+\coverimage{figures/cover.jpg}
+\definecolor{title}{HTML}{1D6B48}
 
 \makecover
 
-\input{frontmatter/title-report}
-\input{frontmatter/preface}
+\input{frontmatter/title-page}
 \input{frontmatter/summary}
 
 \tableofcontents
-%\listoffigures
-%\listoftables
 
 \input{frontmatter/nomenclature}
 
-%% ----------------------------------------------------------------------
-%%    Mainmatter (Arabic page numbering)
-%% ----------------------------------------------------------------------
-
+%% ---------------------------------------------------------------
+%%    Main matter
+%% ---------------------------------------------------------------
 \mainmatter
 
 \input{mainmatter/introduction}
-
-\input{mainmatter/chapter-2}
-\input{mainmatter/chapter-3}
-%\input{mainmatter/chapter-4} % Create file to add
-
+\input{mainmatter/proposed-solution}
+\input{mainmatter/impact}
+\input{mainmatter/team-market}
+\input{mainmatter/next-steps}
 \input{mainmatter/conclusion}
 
-%% Prevent urls running into margins in bibliography
 \setcounter{biburlnumpenalty}{7000}
 \setcounter{biburllcpenalty}{7000}
 \setcounter{biburlucpenalty}{7000}
 
-%% Add bibliography
-\printbibliography[heading=bibintoc,title=References]
+\printbibliography[heading=bibintoc, title=References]
 
-%% ----------------------------------------------------------------------
-%%    Appendix (Letters for chapters)
-%% ----------------------------------------------------------------------
-
+%% ---------------------------------------------------------------
+%%    Appendix
+%% ---------------------------------------------------------------
 \appendix
 
-\input{appendix/appendix-a}
-\input{appendix/appendix-b}
-%\input{appendix/appendix-c} % Create file to add
+\input{appendix/swap-budget}
+\input{appendix/simulation-code}
 
 \end{document}

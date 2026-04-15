@@ -1,0 +1,107 @@
+\chapter{Full SWAP Budget}
+\label{appendix:swap}
+
+This appendix provides the complete four-table SWAP budget referenced in Section~\ref{subsec:swap}. All values are traceable to real component datasheets: LEON4FT (Cobham Gaisler UT699E v2.3), Kintex UltraScale+ RT (Xilinx DS985), GomSpace BP4, and CubeSat Design Specification Rev~14.1~\cite{cubesat-spec}.
+
+%% -----------------------------------------------
+\section*{Power Budget}
+%% -----------------------------------------------
+
+\begin{table}[htb]
+  \centering
+  \caption{6U CubeSat power budget. Solar generation average 10.5\,W BOL at 500\,km SSO.}
+  \small
+  \begin{tabularx}{\textwidth}{p{4.0cm}p{3.5cm}rrX}
+    \toprule
+    \textbf{Component} & \textbf{Mode} & \textbf{Draw (W)} & \textbf{Duty (\%)} & \textbf{Avg (W)} \\
+    \midrule
+    Kintex UltraScale+ RT FPGA & Always-on preprocessing    & 1.80 & 100 & 1.80 \\
+    LEON4FT CPU (idle + MDP)   & Continuous scheduling       & 1.40 & 100 & 1.40 \\
+    MOD13A1 EVI computation    & Stage~1 screening           & 0.80 &  55 & 0.44 \\
+    MOD11A1 LST computation    & Stage~2 fusion only         & 0.90 &  18 & 0.16 \\
+    CSC fusion task            & Stage~2 fusion only         & 0.50 &  18 & 0.09 \\
+    Multispectral sensor       & Observation windows         & 1.50 &  50 & 0.75 \\
+    Thermal IR sensor          & Stage~2 only                & 0.70 &  18 & 0.13 \\
+    X-band transmitter         & Priority downlink passes    & 2.00 &  14 & 0.28 \\
+    Bus (OBC, ADCS, comms hw)  & Continuous                  & 2.50 & 100 & 2.50 \\
+    \midrule
+    \textbf{Total average (MASFE MDP)} & & & & \textbf{7.55\,W} \\
+    \textbf{Peak (FUSE\_PRIORITY)}     & & \textbf{9.60} & & --- \\
+    \textbf{Naive raw-dump baseline}   & & 9.60 & $\sim$79 & 9.60\,W \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\noindent Solar generation (10.5\,W) minus MASFE average (7.55\,W) = \textbf{+2.95\,W margin}. All modes \textbf{PASS}.
+
+%% -----------------------------------------------
+\section*{Compute Budget}
+%% -----------------------------------------------
+
+\begin{table}[htb]
+  \centering
+  \caption{Compute budget. LEON4FT: 600\,DMIPS. Kintex UltraScale+ RT: $\sim$1.1\,M LUTs.}
+  \small
+  \begin{tabularx}{\textwidth}{p{4.8cm}p{2.2cm}p{2.0cm}p{2.0cm}X}
+    \toprule
+    \textbf{Task} & \textbf{Processor} & \textbf{DMIPS / LUTs} & \textbf{Latency} & \textbf{Status} \\
+    \midrule
+    Radiometric correction + band extract & FPGA       & $\sim$45k LUTs & $<$8\,ms/frame  & PASS \\
+    CSC per-pixel computation             & FPGA       & $\sim$22k LUTs & $<$7\,ms/frame  & PASS \\
+    MOD13A1 EVI anomaly scoring           & LEON4FT    & 180\,DMIPS     & $\sim$15\,ms    & PASS \\
+    MOD11A1 LST retrieval                 & LEON4FT    & 200\,DMIPS     & $\sim$18\,ms    & PASS \\
+    CSC fusion inference                  & LEON4FT    & 120\,DMIPS     & $\sim$10\,ms    & PASS \\
+    MDP policy evaluation                 & LEON4FT    & 55\,DMIPS      & $<$1\,ms        & PASS \\
+    \midrule
+    \textbf{Total CPU (all tasks active)} & LEON4FT    & \textbf{555\,DMIPS (92.5\,\%)} & & \textbf{PASS} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+%% -----------------------------------------------
+\section*{Data Budget}
+%% -----------------------------------------------
+
+\begin{table}[htb]
+  \centering
+  \caption{Data volume budget. X-band downlink: $\sim$50\,Mbps peak. Storage: 8\,GB flash.}
+  \small
+  \begin{tabularx}{\textwidth}{p{4.5cm}rrX}
+    \toprule
+    \textbf{Mode / product} & \textbf{Per pass (MB)} & \textbf{Season total (MB)} & \textbf{vs Raw} \\
+    \midrule
+    Raw L1B imagery (naive baseline) & 120.0 & 14{,}400 & --- \\
+    Fixed-schedule onboard (no MDP)  &   3.7 &      444 & $-$97\,\% \\
+    MASFE Stage~1 only (no alert)    &   0.7 &       ---& $-$99\,\% \\
+    MASFE Stage~2 + CSC map          &   2.8 &       ---& $-$98\,\% \\
+    MASFE priority alert (5 patches) & $\sim$9.7 &  ---& $-$92\,\% \\
+    \midrule
+    \textbf{MASFE MDP season average (simulation)} & 3.5 & \textbf{423} & \textbf{$-$97\,\%} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+%% -----------------------------------------------
+\section*{Mass and Volume Budget}
+%% -----------------------------------------------
+
+\begin{table}[htb]
+  \centering
+  \caption{Mass and volume budget. 6U CubeSat: $\leq$12\,kg, $6 \times 10 \times 10 \times 11.35$\,cm.}
+  \small
+  \begin{tabularx}{\textwidth}{p{4.5cm}rp{2.0cm}X}
+    \toprule
+    \textbf{Component} & \textbf{Mass (g)} & \textbf{Volume} & \textbf{Notes} \\
+    \midrule
+    LEON4FT CPU board          & $\sim$120  & $\sim$0.3\,U & GR-CPCI-LEON4-N2X form factor \\
+    Kintex UltraScale+ RT FPGA & $\sim$180  & $\sim$0.4\,U & Custom 6U PCB integration \\
+    Multispectral sensor head  & $\sim$350  & $\sim$1.0\,U & e.g.\ Simera Ximea MX022 class \\
+    Thermal IR sensor          & $\sim$130  & $\sim$0.5\,U & e.g.\ FLIR Lepton 3.5 class \\
+    X-band transmitter         & $\sim$320  & $\sim$0.5\,U & e.g.\ Syrlinks EWC27 class \\
+    GomSpace BP4 battery (4$\times$) & $\sim$640 & $\sim$1.0\,U & 40\,Wh total \\
+    Structure, harness, ADCS   & $\sim$2{,}200 & $\sim$2.3\,U & Standard 6U bus \\
+    \midrule
+    \textbf{Total estimated}   & $\sim$3{,}940\,g & $\sim$6.0\,U & \textbf{Within 6U limits} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}

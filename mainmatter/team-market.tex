@@ -1,0 +1,100 @@
+\chapter{Team Experience and Market Evaluation}
+\label{chapter:team-market}
+
+%% ---------------------------------------------------------------
+\section{Qualifications and Expertise}
+\label{sec:qualifications}
+%% ---------------------------------------------------------------
+
+[Your Name] is completing a Bachelor of Science in Aerospace Engineering at TU Delft, Faculty of Aerospace Engineering. Relevant technical qualifications include:
+
+\begin{itemize}
+  \item \textbf{Spacecraft systems engineering}: SWAP budget analysis, hardware--software co-design, and system-level trade studies --- the methodology applied throughout this submission.
+  \item \textbf{Attitude and orbit control systems (AOCS)}: The Kalman filter and MDP share the same Bayesian state estimation mathematical framework, making the MASFE scheduling policy a direct extension of AOCS-taught estimation theory.
+  \item \textbf{Mission analysis and design}: Orbit mechanics, ground coverage analysis, and revisit scheduling --- directly applied in the orbital state representation of the MDP.
+  \item \textbf{Embedded flight software}: Real-time operating systems, hardware--software partitioning, and resource-constrained computing --- the exact challenge of deploying the MDP policy on a LEON4FT + FPGA stack.
+\end{itemize}
+
+\noindent The agronomy and domain-expertise gap inherent in a solo aerospace submission is bridged through cited primary sources: Dr.\ Gold's Cornell spectral detection methodology~\cite{gold-webinar1}, USDA Economic Research Service crop loss data, and Loft Orbital's operational deployment experience~\cite{mytkowicz-webinar2}. The solo submission itself reflects MASFE's architectural leanness --- a system designed to be operable by a small team, which is a commercial virtue.
+
+%% ---------------------------------------------------------------
+\section{Past Projects and Relevant Research}
+\label{sec:past-projects}
+%% ---------------------------------------------------------------
+
+% ---------------------------------------------------------------
+% FILL IN YOUR OWN CONTENT HERE
+% Suggested approach: mention 1-2 specific TU Delft projects.
+% Examples of what to include:
+%   - DSE (Design Synthesis Exercise): systems-level spacecraft design
+%   - Any project involving optimisation under constraints
+%   - Control theory coursework (Kalman filter, state estimation)
+%   - Embedded systems or real-time programming lab work
+%   - Any satellite-related project or literature study
+% ---------------------------------------------------------------
+
+[Your Name]'s relevant project experience at TU Delft includes:
+
+\begin{itemize}
+  \item \textbf{[Project 1 title]}: [Brief description, 1--2 sentences. Link to MASFE if possible.]
+  \item \textbf{[Project 2 title]}: [Brief description, 1--2 sentences.]
+\end{itemize}
+
+\noindent Participation in the TU Delft Design Synthesis Exercise (DSE) provided direct experience with the spacecraft systems design process: requirements definition, subsystem trade-offs, SWAP budgeting, and technical review --- the same methodology applied in this submission.
+
+%% ---------------------------------------------------------------
+\section{Scaling and Future Market Integration}
+\label{sec:market}
+%% ---------------------------------------------------------------
+
+%% -----------------------------------
+\subsection{Target Users and Design Criteria Validation}
+\label{subsec:users}
+%% -----------------------------------
+
+Target users were identified and design criteria were validated through three channels:
+
+\begin{enumerate}
+  \item \textbf{Dr.\ Gold's Cornell research}~\cite{gold-webinar1} explicitly addresses the regenerative farming community's need for pre-symptomatic pathogen detection, providing both the spectral detection methodology and the user requirement for early-intervention alert timing.
+  \item \textbf{OpenET's published FARMS API case studies}~\cite{openet-api} demonstrate active farmer demand for satellite-derived irrigation advisory products, validating the REST API delivery mechanism.
+  \item \textbf{USDA Economic Research Service data} on precision agriculture adoption rates confirms that farm management platform integration (rather than a standalone app) is the correct delivery channel --- farmers already use platforms such as Climate FieldView and John Deere Operations Centre.
+\end{enumerate}
+
+\noindent Design criteria derived directly from user needs: the $\leq$90\,min latency requirement reflects the 24--48\,hour intervention window for fungicide application; the $\leq$30\,m GSD requirement reflects field-patch-level management practice; the REST API delivery requirement reflects the existing software ecosystem already deployed on commercial farms.
+
+%% -----------------------------------
+\subsection{Market Applications Beyond Agriculture and Forestry}
+\label{subsec:beyond-ag}
+%% -----------------------------------
+
+MASFE's MDP orchestration engine is domain-agnostic. The scheduler, state representation, and reward function require only algorithm-specific parameter updates for new applications. Table~\ref{tab:generalisation} lists the primary generalisation pathways.
+
+\begin{table}[htb]
+  \centering
+  \caption{MASFE generalisation beyond agriculture: the orchestration engine as a platform.}
+  \label{tab:generalisation}
+  \small
+  \begin{tabularx}{\textwidth}{p{3.5cm}p{3.5cm}X}
+    \toprule
+    \textbf{Application} & \textbf{Swap algorithms to} & \textbf{Value proposition} \\
+    \midrule
+    Wildfire fuel moisture monitoring
+      & FIRMS thermal anomaly + NDWI
+      & Detect drying vegetation before ignition; adaptive revisit over high-risk terrain \\
+    \addlinespace
+    Flood inundation mapping
+      & SAR coherence change detection
+      & MDP allocates revisit cadence over flood-front progression; inter-satellite cuing \\
+    \addlinespace
+    Urban heat island analytics
+      & LST + albedo change
+      & Same priority downlink logic for anomalous urban patches; city-scale coverage \\
+    \addlinespace
+    Defence / ISR
+      & Anomalous activity detection
+      & Same adaptive scheduling framework; replace stress index with activity score \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\noindent The orchestration engine is the licensable IP. Agriculture is the first and primary market; the platform architecture serves any multi-algorithm Earth observation mission requiring intelligent onboard resource allocation. This structural generalisation directly satisfies Business Model criterion~2 (\emph{market applications beyond agricultural or forestry purposes}).

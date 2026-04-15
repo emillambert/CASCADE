@@ -1,0 +1,52 @@
+\begin{titlepage}
+\begin{center}
+
+{\makeatletter
+\largetitlestyle\fontsize{38}{42}\selectfont\@title
+\makeatother}
+
+{\makeatletter
+\ifdefvoid{\@subtitle}{}{\bigskip\titlestyle\fontsize{18}{22}\selectfont\@subtitle}
+\makeatother}
+
+\bigskip\bigskip
+by
+\bigskip\bigskip
+
+{\makeatletter
+\largetitlestyle\fontsize{22}{26}\selectfont\@author
+\makeatother}
+
+\bigskip\bigskip
+
+\setlength\extrarowheight{2pt}
+\begin{tabular}{ll}
+  Student Number:    & [Your Student Number] \\
+  Programme:         & BSc Aerospace Engineering \\
+  Faculty:           & Faculty of Aerospace Engineering, TU Delft \\
+\end{tabular}
+
+\vfill
+
+\begin{tabular}{ll}
+  Challenge:         & NASA Space-to-Soil Challenge 2026 \\
+  Submission Date:   & May 4, 2026 \\
+  Eligibility:       & US Citizen \\
+\end{tabular}
+
+\bigskip\bigskip
+
+\begin{tabular}{p{15mm}p{10cm}}
+  Cover: & Adapted from NASA Earth observation imagery (public domain) \\
+  Style: & TU Delft Report Style, with modifications by Daan Zwaneveld \\
+\end{tabular}
+
+\end{center}
+
+\begin{tikzpicture}[remember picture, overlay]
+  \node[above=10mm] at (current page.south) {%
+    \includegraphics{figures/logo-black}
+  };
+\end{tikzpicture}
+
+\end{titlepage}

@@ -1,0 +1,69 @@
+\chapter{Potential Impact}
+\label{chapter:impact}
+
+%% ---------------------------------------------------------------
+\section{How MASFE Builds on Current Research and Market Capabilities}
+\label{sec:builds-on}
+%% ---------------------------------------------------------------
+
+Current state-of-the-art onboard processing SmallSats (e.g.\ Planet Dove, Satellogic Aleph-1) run fixed pipelines and downlink all derived data without adaptive prioritisation. NASA's MODIS products (MOD13A1, MOD11A1) deliver 1--3 day latency at 250--500\,m resolution from fixed polar orbit passes. MASFE builds on two pillars of existing work:
+
+\begin{enumerate}
+  \item \textbf{Dr.\ Gold's Cornell pre-symptomatic detection methodology}~\cite{gold-webinar1}: MASFE operationalises her spectral detection technique at satellite scale with an adaptive revisit mechanism triggered by the same EVI and thermal signatures she identified.
+  \item \textbf{JPL's ASPEN/CASPER onboard scheduling research}~\cite{jpl-scheduling} (listed in challenge resources): MASFE adapts MDP-based mission scheduling, previously applied to deep-space mission planning, to Earth observation algorithm orchestration on a 6U platform within tight SWAP constraints.
+\end{enumerate}
+
+%% ---------------------------------------------------------------
+\section{Technical Variable Effects vs Traditional Methods}
+\label{sec:technical-effects}
+%% ---------------------------------------------------------------
+
+Table~\ref{tab:comparison} quantifies the improvement of MASFE against two baselines: the naive raw-dump baseline (traditional ground processing) and a fixed-schedule onboard processing baseline (intermediate).
+
+\begin{table}[htb]
+  \centering
+  \caption{Three-way performance comparison: raw dump vs fixed onboard vs MASFE MDP. Results from simulation over a 120-pass growing season (50 field patches, 7 disease events).}
+  \label{tab:comparison}
+  \small
+  \begin{tabularx}{\textwidth}{Xrrr}
+    \toprule
+    \textbf{Metric} & \textbf{Raw dump} & \textbf{Fixed onboard} & \textbf{MASFE MDP} \\
+    \midrule
+    Downlink data (MB, season)      & 14{,}400 & 444   & 423 \\
+    Energy consumed (Wh, season)    & 9.60     & 7.90  & 7.57 \\
+    True pathogen detections        & 461      & 461   & 461 \\
+    False positives                 & 0        & 0     & 0   \\
+    Priority alerts dispatched      & ---      & ---   & 13  \\
+    Min battery SOC                 & ---      & ---   & 86\,\% \\
+    \midrule
+    \textbf{Downlink reduction vs raw} & --- & $-$97\,\% & $-$97\,\% \\
+    \textbf{Energy saving vs raw}      & --- & $-$18\,\% & $-$21\,\% \\
+    \textbf{Science retention}         & 100\,\% & 100\,\% & 100\,\% \\
+    \textbf{Alert latency}             & 1--3 days & $<$90\,min & $<$90\,min \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\noindent In addition to the engineering metrics in Table~\ref{tab:comparison}, MASFE delivers a spatial resolution improvement from 250--500\,m (standard MODIS ground products) to \textbf{30\,m GSD}---enabling field-patch-level management. These three dimensions (latency, resolution, bandwidth efficiency) represent simultaneous improvements unavailable from any current operational system.
+
+%% ---------------------------------------------------------------
+\section{Concrete Examples, Scenarios, and Limitations}
+\label{sec:scenarios}
+%% ---------------------------------------------------------------
+
+\subsection*{Scenario 1: Early blight detection on a regenerative cover-crop farm}
+
+A regenerative farm operator running no-till cover-crop tomatoes receives a MASFE alert at 07:42 on day~14 of the season, identifying three field patches with CSC $>$ 0.55 --- fourteen days before visible symptoms would appear. Targeted fungicide application to those three patches only costs approximately 8\,\% of the chemical input of preventative whole-field treatment. Without MASFE, the farmer applies preventative fungicide across the entire field, contributing to the 8\,billion\,lb/year pesticide burden documented by Dr.\ Gold~\cite{gold-webinar1}. Estimated pesticide reduction: $>$85\,\% on this farm.
+
+\subsection*{Scenario 2: Irrigation stress on an arid regenerative farm}
+
+A thermal anomaly triggers MASFE Stage~2 over five patches in early morning before the ground station window. The alert is downlinked at 09:15, with OpenET ET data appended. The farmer receives a combined soil moisture proxy and water-use advisory two days before wilting symptoms would appear, preserving both yield and soil carbon stock integrity.
+
+\subsection*{Limitations}
+
+\begin{itemize}
+  \item CSC accuracy degrades under $>$30\,\% cloud cover; cloud-screening preprocessing is required in the production pipeline.
+  \item Current simulation validated on synthetic MODIS proxy data. Real-sensor calibration (radiometric, atmospheric correction) is required for production deployment.
+  \item MDP policy parameters were optimised for temperate/Mediterranean crop conditions; re-calibration is required for tropical growing seasons with distinct phenology patterns.
+  \item Current TRL~3 --- hardware-in-the-loop demonstration on LEON4FT evaluation board is required before flight qualification.
+\end{itemize}

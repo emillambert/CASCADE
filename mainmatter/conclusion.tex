@@ -1,4 +1,29 @@
 \chapter{Conclusion}
 \label{chapter:conclusion}
 
-\emph{A conclusion...}
+%% ---------------------------------------------------------------
+\section{Key Points}
+\label{sec:key-points}
+%% ---------------------------------------------------------------
+
+MASFE directly answers NASA's stated challenge objective---\emph{``orchestrate existing land observation algorithms into an efficient, responsive onboard intelligence layer''}~\cite{nasa-challenge-brief}---with a two-stage MDP scheduler running on a radiation-tolerant LEON4FT CPU and FPGA preprocessing stack. The adaptive policy selects, schedules, compresses, and fuses NASA MOD13A1 and MOD11A1 algorithms in real time, driven by the information content of each observation rather than a fixed schedule. Key quantitative results from simulation:
+
+\begin{itemize}
+  \item \textbf{97\,\%} downlink reduction vs naive raw-dump baseline
+  \item \textbf{100\,\%} pathogen detection retention
+  \item \textbf{$<$90\,min} alert latency versus 1--3 days for ground processing
+  \item All SWAP constraints satisfied with positive margin (peak 9.6\,W, 92.5\,\% compute utilisation, minimum 86\,\% battery SOC)
+\end{itemize}
+
+\noindent MASFE deploys via the Loft Orbital YAM hosted payload platform~\cite{mytkowicz-webinar2} and integrates with the OpenET API~\cite{openet-api} for full-stack commercial delivery from satellite to farmer.
+
+%% ---------------------------------------------------------------
+\section{Strengths and Impact on Regenerative Agriculture}
+\label{sec:strengths}
+%% ---------------------------------------------------------------
+
+MASFE's primary strength is that the computational contribution---the MDP orchestration engine---is more than an agricultural monitoring product. It is a reusable platform for any multi-algorithm Earth observation mission requiring intelligent onboard resource allocation; agriculture is the demonstration, the scheduler is the contribution.
+
+In the regenerative agriculture context specifically, early crop pathogen detection at field-patch resolution enables the transition from preventative blanket pesticide application to targeted, evidence-based treatment---the defining practice of regenerative agriculture. Against the \$220\,billion annual crop loss burden and 8\,billion\,pounds of annual pesticide application documented by Dr.\ Gold~\cite{gold-webinar1}, MASFE offers both an economic lever (precision intervention at fraction of current cost) and an environmental lever (chemical application proportional to confirmed need).
+
+The technology is ready for TRL~4 hardware demonstration and is positioned for the NASA AIST technology transition pipeline. The business case is grounded in three verified paying markets: precision agriculture SaaS, carbon credit MRV, and crop insurance underwriting. MASFE is the onboard intelligence layer that the next generation of regenerative agriculture SmallSats needs.

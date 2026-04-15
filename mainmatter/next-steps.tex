@@ -1,0 +1,41 @@
+\chapter{Expected Next Steps}
+\label{chapter:next-steps}
+
+%% ---------------------------------------------------------------
+\section{Development Process: Concept to MVP}
+\label{sec:concept-to-mvp}
+%% ---------------------------------------------------------------
+
+\textbf{Current state --- TRL~3.}
+The Python simulation (Appendix~\ref{appendix:code}) validates the two-stage MDP scheduling logic and CSC fusion computation on synthetic MODIS proxy data. All SWAP budgets are confirmed with positive margin. Market gap identified: no sub-day adaptive pathogen alert product at $<$\$5/ha/year currently exists.
+
+\medskip
+\noindent\textbf{TRL~4 (target: 2027) --- Hardware-in-the-loop demonstration.}
+Port the MDP scheduler and CSC fusion to a LEON4FT evaluation board (Cobham Gaisler GR-CPCI-LEON4-N2X). Run against real MODIS MOD13A1 and MOD11A1 data downloaded from NASA EarthData. Measure actual compute latency and power draw against the budget in Table~\ref{tab:swap}. This targets the NASA AIST (Advanced Information Systems Technology) instrument demonstration funding pathway, represented by Webinar~1 speakers Ben Smith (JPL ESTO) and Laura Rogers (NASA AIST)~\cite{gold-webinar1}.
+
+\medskip
+\noindent\textbf{TRL~5 (target: 2028) --- Hosted payload pilot.}
+Deploy the MASFE compute module as a hosted payload on a Loft Orbital YAM rideshare mission~\cite{mytkowicz-webinar2}. Validate onboard CSC computation against ground-truth crop disease survey data from a partner regenerative farm network. Establish a precision agriculture SaaS pilot with a farm management platform partner.
+
+\medskip
+\noindent\textbf{MVP (target: 2029) --- Commercial product.}
+Per-field soil stress alert API at \$3--5/ha/year subscription. Revenue model: SaaS licensing to precision agriculture platforms + carbon credit MRV verification service fees (Verra VCS registry, \$0.50--2.00/ha/verification). Break-even at $\approx$500{,}000\,ha coverage --- achievable with a three-satellite constellation.
+
+\medskip
+\noindent\textbf{Industry gap validation.}
+Planet Labs' Dove constellation delivers daily 3\,m imagery but provides no onboard inference or adaptive scheduling. Satellogic offers sub-metre resolution but fixed tasking. No current commercial product combines adaptive onboard MDP scheduling with multi-algorithm fusion for crop disease detection at field-patch scale. MASFE occupies this gap.
+
+%% ---------------------------------------------------------------
+\section{Next Steps if Selected as Finalist}
+\label{sec:finalist-steps}
+%% ---------------------------------------------------------------
+
+If selected as a finalist for the June 2026 Pitch Event, the following five actions will be completed before the event:
+
+\begin{enumerate}
+  \item \textbf{Live simulation on real data.} Download a real MODIS MOD13A1 and MOD11A1 tile for an agricultural region from NASA EarthData and demonstrate MASFE scheduling decisions running on that data at the pitch event.
+  \item \textbf{Loft Orbital cost estimate.} Develop a specific hosted payload cost estimate using Loft Orbital's published rideshare pricing, enabling a concrete unit economics case for the business model.
+  \item \textbf{Carbon credit MRV market quantification.} Map MASFE's continuous monitoring capability against Verra VCS methodology VM0042 requirements to establish the specific revenue opportunity in carbon credit verification.
+  \item \textbf{User validation.} Conduct three farmer interviews to validate the $\leq$90\,min latency and \$5/ha price point assumptions against actual decision-making workflows.
+  \item \textbf{AIST proposal outline.} Prepare a one-page NASA AIST Phase~1 proposal outline targeting Ben Smith (JPL ESTO) as the programme contact, articulating the TRL~3$\rightarrow$4 hardware demonstration plan.
+\end{enumerate}

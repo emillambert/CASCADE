@@ -1,0 +1,116 @@
+\chapter{Proposed Solution Detail}
+\label{chapter:solution}
+
+%% ---------------------------------------------------------------
+\section{Adaptive Sensing and Onboard Processing Approach}
+\label{sec:adaptive-sensing}
+%% ---------------------------------------------------------------
+
+MASFE advances onboard processing via a two-stage adaptive scheduling architecture. Most Earth observation SmallSats run the same pipeline every pass regardless of scene content, wasting over 95\,\% of compute and bandwidth on uninteresting data. MASFE's onboard MDP scheduler solves this by maintaining a per-patch belief state over crop stress probability and allocating compute proportionally to information need.
+
+\medskip
+\noindent\textbf{Stage~1} (MOD13A1 EVI screening) runs every pass as a cheap canopy health check. When the EVI deviation from a patch's stored healthy baseline exceeds a calibrated threshold---the earliest spectral signal of pathogen stress, as described by Dr.\ Gold~\cite{gold-webinar1}---Stage~2 is triggered.
+
+\medskip
+\noindent\textbf{Stage~2} runs the full MOD11A1 thermal retrieval, fuses both algorithms into a Crop Stress Composite (CSC), and if stress is confirmed, only the anomalous field patches are downlinked at high resolution. This is \emph{adaptive sensing}: the satellite decides what to observe next based on what it has already seen, rather than following a fixed acquisition plan.
+
+%% ---------------------------------------------------------------
+\section{Problem Statement}
+\label{sec:problem}
+%% ---------------------------------------------------------------
+
+Every year, an estimated \textbf{\$220\,billion} in crop losses and \textbf{8\,billion\,pounds of pesticides} result from the inability to detect plant disease before visible symptoms appear~\cite{gold-webinar1}. Current operational satellites provide 1--3 day latency at 250--500\,m resolution on fixed schedules---too slow and coarse for field-level intervention. The decision window for effective targeted fungicide application is 24--48 hours after early spectral stress onset. MASFE closes this gap by moving algorithm execution onboard and reducing response time to one orbital pass ($<$90 minutes).
+
+%% -----------------------------------
+\subsection{Land Use Algorithms and SmallSat Technical Requirements}
+\label{subsec:algorithms}
+%% -----------------------------------
+
+\textbf{NASA Algorithm~1: MODIS MOD13A1}~\cite{mod13a1} (Enhanced Vegetation Index, EVI).
+Stage~1 screening algorithm. Run every observation pass as a per-patch EVI anomaly check. EVI deviation from a stored healthy baseline---computed from the first ten cloud-free passes of the growing season---provides the earliest spectral indication of crop canopy stress before visible symptoms, the core diagnostic technique in Dr.\ Gold's Cornell pre-symptomatic detection research~\cite{gold-webinar1}. Compute cost: $\approx$180\,DMIPS, 30-second window, FPGA-assisted.
+
+\medskip
+\noindent\textbf{NASA Algorithm~2: MODIS MOD11A1}~\cite{mod11a1} (Land Surface Temperature, LST).
+Stage~2 fusion algorithm. Run on demand when Stage~1 flags EVI anomaly $>$ threshold. Combined with EVI, used to compute the onboard Crop Stress Composite:
+
+\begin{equation}
+  \text{CSC} = 0.55 \cdot \text{clip}\!\left(\frac{\Delta\text{EVI}}{\sigma_e},\,0,\,1\right)
+             + 0.45 \cdot \text{clip}\!\left(\frac{\Delta\text{LST}}{\sigma_l},\,0,\,1\right)
+  \label{eq:csc}
+\end{equation}
+
+\noindent where $\Delta\text{EVI} = \max(0,\,\text{EVI}_\text{base} - \text{EVI}_\text{obs})$ and $\Delta\text{LST} = \max(0,\,\text{LST}_\text{obs} - \text{LST}_\text{base})$. CSC is a physically valid soil stress proxy sensitive to stomatal closure and elevated thermal emission caused by pathogen infection, requiring only multispectral and thermal IR sensors with no microwave hardware. Compute cost: $\approx$200\,DMIPS additional.
+
+\medskip
+\noindent\textbf{User requirements.} Alert latency $\leq$90\,min (one orbital pass). Spatial resolution $\leq$30\,m (field-patch level). Crop stress false-positive rate $\leq$15\,\%. Alert delivery via REST API to existing farm management platforms.
+
+%% -----------------------------------
+\subsection{Mission Requirements and SmallSat Onboard Constraints}
+\label{subsec:swap}
+%% -----------------------------------
+
+Table~\ref{tab:swap} presents the quantitative SWAP budget. All values are referenced to real component datasheets. The simulation (see Appendix~\ref{appendix:code}) confirms all resource constraints are satisfied with positive margin.
+
+\begin{table}[htb]
+  \centering
+  \caption{MASFE 6U CubeSat SWAP budget. Sources: Cobham Gaisler UT699E datasheet; Xilinx DS985; GomSpace BP4; CubeSat Design Spec Rev~14.1~\cite{cubesat-spec}.}
+  \label{tab:swap}
+  \small
+  \begin{tabularx}{\textwidth}{p{3.0cm}p{4.0cm}p{2.4cm}X}
+    \toprule
+    \textbf{Resource} & \textbf{Component / mode} & \textbf{MASFE value} & \textbf{Budget / status} \\
+    \midrule
+    Power --- peak        & All active (FUSE\_PRIORITY)  & 9.6\,W          & $\leq$14\,W avg \quad\textbf{PASS} \\
+    Power --- average     & Duty-cycled MDP policy       & $\sim$7.6\,W    & Solar 10.5\,W BOL \quad\textbf{PASS} \\
+    Compute --- CPU       & LEON4FT (all tasks)          & 555\,DMIPS (92.5\,\%) & 600\,DMIPS budget \quad\textbf{PASS} \\
+    Compute --- FPGA      & Preprocessing + CSC          & 1.8\,W          & Kintex UltraScale+ RT \quad\textbf{PASS} \\
+    Downlink --- MASFE    & Smart priority tiles only    & $\sim$3.5\,MB/pass avg & vs 120\,MB raw ($-$97\,\%) \quad\checkmark \\
+    Battery SOC (min)     & GomSpace BP4, 40\,Wh        & 86\,\%          & Floor 15\,\% \quad\textbf{PASS} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\noindent The full four-table SWAP budget (power, compute, data, and mass/volume) is provided in Appendix~\ref{appendix:swap}.
+
+%% -----------------------------------
+\subsection{Full-Stack Commercial Integration}
+\label{subsec:fullstack}
+%% -----------------------------------
+
+Figure~\ref{fig:architecture} illustrates the complete MASFE data flow from sensor to farmer alert.
+
+\begin{figure}[htb]
+  \centering
+  % Replace with actual architecture diagram exported at 200+ dpi
+  % \includegraphics[width=\textwidth]{figures/masfe-architecture}
+  \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}
+    \textit{[Insert MASFE\_Architecture diagram here at $\geq$200\,dpi.\\
+    Open MASFE\_Architecture.html in Chrome, screenshot at 100\,\% zoom.]}
+    \vspace{2cm}}}
+  \caption{MASFE full-stack architecture. Two-stage MDP scheduling: Stage~1 EVI screening every pass; Stage~2 CSC fusion on anomaly; smart priority downlink on confirmed stress. All SWAP budgets within 6U CubeSat constraints.}
+  \label{fig:architecture}
+\end{figure}
+
+\noindent\textbf{FPGA layer --- Xilinx Kintex UltraScale+ RT:}
+Radiometric calibration, band extraction, per-pixel CSC computation. Deterministic $<$15\,ms per frame latency.
+
+\medskip
+\noindent\textbf{CPU layer --- Cobham Gaisler LEON4FT:}
+MDP policy evaluation, per-patch EVI anomaly scoring against stored baseline, scheduling decisions, downlink priority queue management.
+
+\medskip
+\noindent\textbf{Platform --- Loft Orbital YAM:}
+MASFE deploys as a hosted payload on Loft Orbital's YAM (Your Attitude Module) platform, leveraging their operational ground station network, mission operations centre, and commercial X-band downlink infrastructure~\cite{mytkowicz-webinar2}. This eliminates the need for a dedicated ground segment and provides a direct commercial deployment path.
+
+\medskip
+\noindent\textbf{Ground integration --- OpenET API:}
+Downlinked alerts feed the OpenET evapotranspiration API~\cite{openet-api} (listed in challenge resources) to provide co-located water stress context. Combined soil stress and water use data are delivered via REST API to precision agriculture management platforms, completing the full-stack commercial integration from satellite to farmer decision.
+
+\medskip
+\noindent\textbf{Degradation strategy} (challenge Background \S5 requirement):
+\begin{itemize}
+  \item \textbf{NOMINAL} (SOC $>$ 35\,\%): full two-stage MDP scheduling.
+  \item \textbf{CONSERVE} (15--35\,\%): Stage~1 MOD13A1 screening only --- no fusion, minimal data.
+  \item \textbf{CRITICAL} ($<$15\,\%): SKIP --- preserves battery for downlink of buffered alerts.
+\end{itemize}
+The policy degrades gracefully; no data is lost below the buffer floor.
