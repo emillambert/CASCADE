@@ -1,26 +1,22 @@
 # MASFE
 
-MASFE (Multi-Algorithm Scheduling and Fusion Engine) is a NASA Space-to-Soil submission that treats crop-stress monitoring as an onboard scheduling problem instead of a passive downlink problem. This repository contains the 100-seed hosted-payload Monte Carlo benchmark, a real-scene MODIS replay over Westlands/Firebaugh, the five-year rollout economics model, and the final submission paper. The current technical version uses a capped Beta-posterior belief state, a three-channel CSC built from `EVI + LST + NDWI`, and a tiered resolution pyramid that keeps most passes at coarse screening while reserving native evidence tiles for confirmed alerts.
+MASFE (Multi-Algorithm Scheduling and Fusion Engine) is a NASA Space-to-Soil submission that treats crop-stress monitoring as an onboard scheduling problem instead of a passive downlink problem. The scheduler is a Bayesian Beta($\alpha,\beta$) posterior driving a finite-horizon MDP over four actions (SKIP, MOD13, FUSE, FUSE\_PRIORITY), fusing MOD13A1 EVI, MOD11A1 LST, and MOD09A1-derived NDWI into a three-channel Crop Stress Composite. The repository contains the 100-seed hosted-payload Monte Carlo benchmark, a real-scene MODIS replay over Westlands/Firebaugh (CA, 2024), the five-year rollout economics model, and the final submission paper.
 
-## Verified Headline Metrics
+## Verified Headline Metrics (100-seed Monte Carlo)
 
-| Downlink reduction vs raw | Disease-event recall | False-positive rate | CPU utilization (peak / seasonal) |
-| ---: | ---: | ---: | ---: |
-| **99.3%** | **100.0%** | **1.6%** | **92.5% / 49.2%** |
+| vs raw downlink | vs fixed onboard | Recall | FP rate | CPU (peak / seasonal) |
+|:---:|:---:|:---:|:---:|:---:|
+| **99.3%** downlink reduction<br>**38.6%** energy saving | **80.7%** downlink reduction<br>**24.6%** energy saving | **100.0%** | **1.6%** | **92.5% / 49.2%** |
 
-Compared with always-on onboard fusion, MASFE now also reduces total transmitted volume because the Bayesian belief gate leaves most passes at `30 m` screening; the adaptive gain is both volumetric and operational: lower energy draw, fewer unnecessary confirmation passes, and explicit priority evidence only when the posterior and fused CSC agree.
+The Bayesian belief gate keeps **81.3%** of passes at cheap 30 m screening and escalates only **18.7%** to full fusion — that is what drops seasonal compute from 87.5% (always-on fusion baseline) to 49.2% while preserving full disease-event recall. Removing the posterior raises FP from 1.6% to 1.7% and seasonal compute from 49.2% to 76.2%; the posterior is load-bearing as a scheduler.
 
-Tiered resolution pyramid used by the code and paper:
-
-- `MOD13` screen: `30 m`, about `0.2 MB/km²`
-- `FUSE` confirmation: `10 m`, about `1.8 MB/km²`
-- `FUSE_PRIORITY` evidence: `4.6 m` native, about `8.4 MB/km²` raw or `3.36 MB/km²` delivered at the planning `2.5:1` CCSDS compression assumption
+Priority evidence tiles are compressed onboard via CCSDS 122.0 wavelet coding at ~2.5:1, reducing an 8.4 MB/km² native alert stream to ~3.36 MB/km² delivered.
 
 ![Westlands replay summary](outputs/real_modis/westlands_ca_2024-06-01_2024-10-31/replay_summary.png)
 
 ## Quick Start
 
-Create a fresh environment, install the verified pinned dependencies, and run the synthetic benchmark:
+Create a fresh environment, install dependencies, and run the synthetic benchmark:
 
 ```bash
 python3 -m venv .venv
@@ -43,7 +39,7 @@ Optional economics refresh:
 python unit_economics.py
 ```
 
-This repository has been verified in a fresh virtual environment with the exact versions pinned in `requirements.txt`.
+This repository has been verified in a fresh virtual environment using the dependencies in `requirements.txt`.
 
 ## Real MODIS Replay
 
