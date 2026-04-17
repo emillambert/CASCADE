@@ -3,6 +3,7 @@
 This script uses AppEEARS area requests to fetch subset GeoTIFFs for:
   - MOD13A1.061: _500m_16_days_EVI, _500m_16_days_pixel_reliability
   - MOD11A1.061: LST_Day_1km, QC_Day
+  - MOD09A1.061: sur_refl_b02, sur_refl_b06, sur_refl_qc_500m
 
 The replay keeps the MASFE policy thresholds unchanged and treats the replay
 as a content-driven policy validation workflow rather than a labeled disease
@@ -26,7 +27,17 @@ from typing import Any
 import numpy as np
 import requests
 
-from masfe_core import Config, MASFEPolicy, State, compute_csc
+from masfe_core import (
+    Config,
+    MASFEPolicy,
+    State,
+    action_gsd_m,
+    action_tile_density_mb_per_km2,
+    compute_csc,
+    posterior_mean,
+    posterior_tail_probability,
+    update_stress_belief,
+)
 
 
 APP_EEARS_API = "https://appeears.earthdatacloud.nasa.gov/api"
@@ -50,6 +61,28 @@ MOD11_LAYERS = (
     "LST_Day_1km",
     "QC_Day",
 )
+MOD09_LAYERS = (
+    "sur_refl_b02",
+    "sur_refl_b06",
+    "sur_refl_qc_500m",
+)
+REQUESTED_LAYER_KEYS = tuple(
+    [f"MOD13A1.061:{layer}" for layer in MOD13_LAYERS]
+    + [f"MOD11A1.061:{layer}" for layer in MOD11_LAYERS]
+    + [f"MOD09A1.061:{layer}" for layer in MOD09_LAYERS]
+)
+LAYER_ALIASES = {
+    "_500m_16_days_EVI": "_500m_16_days_EVI",
+    "_500m_16_days_pixel_reliability": "_500m_16_days_pixel_reliability",
+    "LST_Day_1km": "LST_Day_1km",
+    "QC_Day": "QC_Day",
+    "sur_refl_b02_1": "sur_refl_b02",
+    "sur_refl_b02": "sur_refl_b02",
+    "sur_refl_b06_1": "sur_refl_b06",
+    "sur_refl_b06": "sur_refl_b06",
+    "QC_500m_1": "sur_refl_qc_500m",
+    "sur_refl_qc_500m": "sur_refl_qc_500m",
+}
 
 
 @dataclass
@@ -59,6 +92,10 @@ class ReplayStep:
     valid_fraction: float
     csc_max: float
     alert_pixels: int
+    gsd_m: float
+    tile_density_mb_per_km2: float
+    posterior_mean_max: float
+    posterior_tail_max: float
     note: str
 
 
@@ -358,6 +395,7 @@ def task_payload(aoi: str, start: date, end: date) -> dict[str, Any]:
             "layers": (
                 [{"product": "MOD13A1.061", "layer": layer} for layer in MOD13_LAYERS]
                 + [{"product": "MOD11A1.061", "layer": layer} for layer in MOD11_LAYERS]
+                + [{"product": "MOD09A1.061", "layer": layer} for layer in MOD09_LAYERS]
             ),
             "geo": aoi_geojson(aoi),
             "output": {
@@ -397,14 +435,22 @@ def download_or_reuse_bundle(
     manifest_path = bundle_dir / "bundle_manifest.json"
     manifest = load_manifest(manifest_path)
     existing_tifs = find_tifs(bundle_dir)
+    requested_layers = list(REQUESTED_LAYER_KEYS)
+    manifest_matches_request = bool(manifest and manifest.get("requested_layers") == requested_layers)
     if existing_tifs and manifest and manifest.get("files") and not force_download:
         expected = sum(1 for item in manifest["files"] if item.get("file_type", "").lower() == "tif")
-        if len(existing_tifs) >= expected:
+        if len(existing_tifs) >= expected and manifest_matches_request:
             log(f"Reusing cached bundle in {bundle_dir} ({len(existing_tifs)} GeoTIFFs found)")
+            return bundle_dir
+        if len(existing_tifs) >= expected and not manifest_matches_request and not client.has_credentials():
+            log(
+                "Reusing cached bundle without MOD09A1 NDWI layers because no Earthdata "
+                "credentials are available; replay will fall back to EVI/LST fusion where needed."
+            )
             return bundle_dir
 
     task_id = manifest.get("task_id") if manifest else None
-    if task_id and not force_download:
+    if task_id and not force_download and manifest_matches_request:
         log(f"Resuming existing AppEEARS task {task_id}")
     else:
         log(f"Submitting AppEEARS area request for {aoi} {start.isoformat()} to {end.isoformat()}")
@@ -415,6 +461,7 @@ def download_or_reuse_bundle(
             "aoi": aoi,
             "start": start.isoformat(),
             "end": end.isoformat(),
+            "requested_layers": requested_layers,
             "files": [],
         }
         save_manifest(manifest_path, manifest)
@@ -430,6 +477,7 @@ def download_or_reuse_bundle(
         "aoi": aoi,
         "start": start.isoformat(),
         "end": end.isoformat(),
+        "requested_layers": requested_layers,
         "files": tif_files,
     }
     save_manifest(manifest_path, manifest)
@@ -464,9 +512,9 @@ def download_or_reuse_bundle(
 
 
 def parse_layer_name(filename: str) -> str | None:
-    for layer in MOD13_LAYERS + MOD11_LAYERS:
-        if layer in filename:
-            return layer
+    for alias, canonical in sorted(LAYER_ALIASES.items(), key=lambda item: -len(item[0])):
+        if alias in filename:
+            return canonical
     return None
 
 
@@ -497,7 +545,7 @@ def mod11_valid_mask(qc: np.ndarray) -> np.ndarray:
     return (mandatory <= 1) & (lst_error <= 1)
 
 
-def read_raster(path: Path):
+def read_raster(path: Path, scale_override: float | None = None):
     import rasterio
 
     with rasterio.open(path) as src:
@@ -516,6 +564,8 @@ def read_raster(path: Path):
         array[array == nodata] = np.nan
     scale_factor = float(tags.get("scale_factor", "1") or "1")
     add_offset = float(tags.get("add_offset", "0") or "0")
+    if scale_override is not None and scale_factor == 1.0:
+        scale_factor = scale_override
     if scale_factor != 1.0 or add_offset != 0.0:
         finite = np.isfinite(array)
         array[finite] = array[finite] * scale_factor + add_offset
@@ -564,6 +614,45 @@ def median_lst_window(grouped_files: dict[date, dict[str, Path]], step_date: dat
     return np.nanmedian(np.stack(candidates, axis=0), axis=0), profile
 
 
+def mod09_valid_mask(qc: np.ndarray, nir: np.ndarray, swir: np.ndarray) -> np.ndarray:
+    qc_int = np.nan_to_num(qc, nan=3).astype("uint32")
+    modland = qc_int & 0b11
+    reflectance_ok = (
+        np.isfinite(nir)
+        & np.isfinite(swir)
+        & (nir >= -0.01)
+        & (nir <= 1.6)
+        & (swir >= -0.01)
+        & (swir <= 1.6)
+        & (np.abs(nir + swir) > 1e-6)
+    )
+    return (modland <= 1) & reflectance_ok
+
+
+def median_ndwi_window(
+    grouped_files: dict[date, dict[str, Path]],
+    step_date: date,
+    dst_profile: dict[str, Any],
+):
+    candidates = []
+    for obs_date, files in sorted(grouped_files.items()):
+        if not (step_date - timedelta(days=LST_WINDOW_DAYS - 1) <= obs_date <= step_date):
+            continue
+        if not all(layer in files for layer in MOD09_LAYERS):
+            continue
+        nir, mod09_profile = read_raster(files["sur_refl_b02"], scale_override=0.0001)
+        swir, _ = read_raster(files["sur_refl_b06"], scale_override=0.0001)
+        qc, _ = read_raster(files["sur_refl_qc_500m"])
+        valid = mod09_valid_mask(qc, nir, swir)
+        ndwi = np.where(valid, (nir - swir) / (nir + swir), np.nan)
+        ndwi_1km = reproject_average(ndwi, mod09_profile, dst_profile)
+        if np.isfinite(ndwi_1km).any():
+            candidates.append(ndwi_1km)
+    if not candidates:
+        return None
+    return np.nanmedian(np.stack(candidates, axis=0), axis=0)
+
+
 def build_replay_series(
     grouped_files: dict[date, dict[str, Path]], start_date: date, end_date: date
 ) -> list[dict[str, Any]]:
@@ -588,6 +677,7 @@ def build_replay_series(
         evi_masked = np.where(evi_valid, evi, np.nan)
         evi_1km = reproject_average(evi_masked, evi_profile, lst_profile)
         evi_valid_fraction = reproject_average(evi_valid.astype("float32"), evi_profile, lst_profile)
+        ndwi_window = median_ndwi_window(grouped_files, step_date, lst_profile)
 
         overlap_valid = np.isfinite(evi_1km) & np.isfinite(lst_window)
         valid_fraction = float(np.nanmean(np.where(np.isfinite(evi_valid_fraction), evi_valid_fraction, 0.0)))
@@ -600,6 +690,7 @@ def build_replay_series(
                 "valid_fraction": valid_fraction,
                 "evi": evi_1km,
                 "lst": lst_window,
+                "ndwi": ndwi_window,
             }
         )
     return series
@@ -611,8 +702,10 @@ def replay_series(
     cfg = Config()
     history_evi: list[np.ndarray] = []
     history_lst: list[np.ndarray] = []
+    history_ndwi: list[np.ndarray] = []
     csc = None
-    conf = None
+    alpha = None
+    beta = None
     steps_since_fuse = 0
     steps: list[ReplayStep] = []
     csc_snapshots: list[np.ndarray] = []
@@ -627,92 +720,193 @@ def replay_series(
         step_date = entry["date"]
         if entry.get("clouded"):
             if csc is None:
-                steps.append(ReplayStep(step_date, "BASELINE", 0.0, 0.0, 0, "cloud-obscured warmup"))
+                steps.append(
+                    ReplayStep(
+                        step_date,
+                        "BASELINE",
+                        0.0,
+                        0.0,
+                        0,
+                        0.0,
+                        0.0,
+                        0.5,
+                        0.5,
+                        "cloud-obscured warmup",
+                    )
+                )
                 csc_snapshots.append(np.zeros(default_shape, dtype="float32"))
                 continue
+            alpha_state = alpha.copy()
+            beta_state = beta.copy()
             state = State(
                 t=len(steps),
                 soc=TARGET_SOC,
                 downlink=True,
                 op=0.30,
+                alpha=alpha_state,
+                beta=beta_state,
                 evi_anom=np.zeros_like(csc),
+                ndwi_anom=np.zeros_like(csc),
                 csc=csc.copy(),
-                conf=conf.copy(),
                 steps_since_fuse=steps_since_fuse,
             )
             action = policy.act(state)
             new_csc = csc * 0.92
-            new_conf = np.maximum(0.0, conf - 0.04)
             steps_since_fuse += 1
-            csc, conf = new_csc, new_conf
-            steps.append(ReplayStep(step_date, action, 0.0, float(np.nanmax(csc)), 0, "cloud-obscured"))
+            csc = new_csc
+            steps.append(
+                ReplayStep(
+                    step_date,
+                    action,
+                    0.0,
+                    float(np.nanmax(csc)),
+                    0,
+                    action_gsd_m(action),
+                    action_tile_density_mb_per_km2(action),
+                    float(np.nanmax(posterior_mean(alpha_state, beta_state))),
+                    float(np.nanmax(posterior_tail_probability(alpha_state, beta_state))),
+                    "cloud-obscured",
+                )
+            )
             csc_snapshots.append(csc.copy())
             continue
 
         evi = entry["evi"]
         lst = entry["lst"]
+        ndwi = entry.get("ndwi")
 
         if len(history_evi) < WARMUP_VALID_STEPS:
             history_evi.append(evi)
             history_lst.append(lst)
+            history_ndwi.append(ndwi if ndwi is not None else np.full(evi.shape, np.nan, dtype="float32"))
             if csc is None:
                 csc = np.full(evi.shape, 0.18, dtype="float32")
-                conf = np.full(evi.shape, 0.12, dtype="float32")
-            steps.append(ReplayStep(step_date, "BASELINE", entry["valid_fraction"], float(np.nanmax(csc)), 0, "baseline warmup"))
+                alpha = np.ones(evi.shape, dtype="float32")
+                beta = np.ones(evi.shape, dtype="float32")
+            steps.append(
+                ReplayStep(
+                    step_date,
+                    "BASELINE",
+                    entry["valid_fraction"],
+                    float(np.nanmax(csc)),
+                    0,
+                    0.0,
+                    0.0,
+                    float(np.nanmax(posterior_mean(alpha, beta))),
+                    float(np.nanmax(posterior_tail_probability(alpha, beta))),
+                    "baseline warmup",
+                )
+            )
             csc_snapshots.append(csc.copy())
             continue
 
         evi_base = np.nanmedian(np.stack(history_evi[-WARMUP_VALID_STEPS :], axis=0), axis=0)
         lst_base = np.nanmedian(np.stack(history_lst[-WARMUP_VALID_STEPS :], axis=0), axis=0)
+        ndwi_history_window = np.stack(history_ndwi[-WARMUP_VALID_STEPS :], axis=0)
+        if np.isfinite(ndwi_history_window).any():
+            ndwi_base = np.nanmedian(ndwi_history_window, axis=0)
+        else:
+            ndwi_base = None
         evi_anom = np.maximum(0.0, (evi_base - evi) / 0.042)
         evi_anom = np.nan_to_num(evi_anom, nan=0.0)
+        if ndwi is not None and ndwi_base is not None:
+            ndwi_anom = np.maximum(0.0, (ndwi_base - ndwi) / 0.05)
+            ndwi_anom = np.nan_to_num(ndwi_anom, nan=0.0)
+        else:
+            ndwi_anom = np.zeros_like(evi_anom)
 
         if csc is None:
             csc = np.full(evi.shape, 0.18, dtype="float32")
-            conf = np.full(evi.shape, 0.12, dtype="float32")
+        if alpha is None or beta is None:
+            alpha = np.ones(evi.shape, dtype="float32")
+            beta = np.ones(evi.shape, dtype="float32")
+
+        alpha_state, beta_state = update_stress_belief(alpha, beta, evi_anom, ndwi_anom)
 
         state = State(
             t=len(steps),
             soc=TARGET_SOC,
             downlink=True,
             op=0.30,
+            alpha=alpha_state.copy(),
+            beta=beta_state.copy(),
             evi_anom=evi_anom,
+            ndwi_anom=ndwi_anom,
             csc=csc.copy(),
-            conf=conf.copy(),
             steps_since_fuse=steps_since_fuse,
         )
         action = policy.act(state)
         action_for_log = action
 
         if action in ("FUSE", "FUSE_PRIORITY"):
-            new_csc = compute_csc(evi, lst, evi_base, lst_base)
-            new_conf = np.minimum(1.0, conf + 0.15)
+            if ndwi is not None and ndwi_base is not None and np.isfinite(ndwi).any():
+                new_csc = compute_csc(
+                    evi,
+                    lst,
+                    evi_base,
+                    lst_base,
+                    ndwi_t=ndwi,
+                    ndwi_base=ndwi_base,
+                )
+                note = "real-scene replay with NDWI"
+            else:
+                new_csc = compute_csc(evi, lst, evi_base, lst_base)
+                note = "real-scene replay (EVI/LST fallback)"
             steps_since_fuse = 0
         elif action == "MOD13":
-            new_csc = csc * 0.70 + compute_csc(evi, lst_base, evi_base, lst_base) * 0.30
-            new_conf = np.minimum(1.0, conf + 0.04)
+            if ndwi is not None and ndwi_base is not None and np.isfinite(ndwi).any():
+                stage1_csc = compute_csc(
+                    evi,
+                    lst_base,
+                    evi_base,
+                    lst_base,
+                    ndwi_t=ndwi,
+                    ndwi_base=ndwi_base,
+                )
+                note = "real-scene replay with NDWI"
+            else:
+                stage1_csc = compute_csc(evi, lst_base, evi_base, lst_base)
+                note = "real-scene replay (EVI/LST fallback)"
+            new_csc = csc * 0.70 + stage1_csc * 0.30
             steps_since_fuse += 1
         else:
             new_csc = csc * 0.97
-            new_conf = np.maximum(0.0, conf - 0.012)
             steps_since_fuse += 1
+            note = "real-scene replay"
 
         priority_confirmed = False
-        if action in ("FUSE", "FUSE_PRIORITY") and state.downlink:
-            priority_confirmed = bool(np.nanmax(new_csc) >= policy.csc_alert_thr)
+        if action == "FUSE" and policy.should_priority_downlink(state, new_csc):
+            priority_confirmed = True
             action_for_log = "FUSE_PRIORITY" if priority_confirmed else "FUSE"
 
-        csc, conf = new_csc, new_conf
+        csc = new_csc
+        alpha, beta = alpha_state, beta_state
         history_evi.append(evi)
         history_lst.append(lst)
+        history_ndwi.append(ndwi if ndwi is not None else np.full(evi.shape, np.nan, dtype="float32"))
         if len(history_evi) > WARMUP_VALID_STEPS:
             history_evi = history_evi[-WARMUP_VALID_STEPS :]
             history_lst = history_lst[-WARMUP_VALID_STEPS :]
+            history_ndwi = history_ndwi[-WARMUP_VALID_STEPS :]
 
         csc_max = float(np.nanmax(csc))
         alert_pixels = int(np.nansum(csc >= policy.csc_alert_thr)) if priority_confirmed else 0
-        note = "real-scene replay"
-        steps.append(ReplayStep(step_date, action_for_log, entry["valid_fraction"], csc_max, alert_pixels, note))
+        posterior_mean_max = float(np.nanmax(posterior_mean(alpha_state, beta_state)))
+        posterior_tail_max = float(np.nanmax(posterior_tail_probability(alpha_state, beta_state)))
+        steps.append(
+            ReplayStep(
+                step_date,
+                action_for_log,
+                entry["valid_fraction"],
+                csc_max,
+                alert_pixels,
+                action_gsd_m(action_for_log),
+                action_tile_density_mb_per_km2(action_for_log),
+                posterior_mean_max,
+                posterior_tail_max,
+                note,
+            )
+        )
         csc_snapshots.append(csc.copy())
 
         if csc_max > peak_csc:
@@ -746,11 +940,15 @@ def replay_series(
 
 
 def save_timeline_csv(output_dir: Path, steps: list[ReplayStep]) -> None:
-    lines = ["date,action,valid_fraction,csc_max,alert_pixels,note"]
+    lines = [
+        "date,action,valid_fraction,csc_max,alert_pixels,gsd_m,tile_density_mb_per_km2,posterior_mean_max,posterior_tail_max,note"
+    ]
     for step in steps:
         lines.append(
             f"{step.step_date.isoformat()},{step.action},{step.valid_fraction:.3f},"
-            f"{step.csc_max:.3f},{step.alert_pixels},{step.note}"
+            f"{step.csc_max:.3f},{step.alert_pixels},{step.gsd_m:.1f},"
+            f"{step.tile_density_mb_per_km2:.2f},{step.posterior_mean_max:.3f},"
+            f"{step.posterior_tail_max:.3f},{step.note}"
         )
     (output_dir / "action_timeline.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -782,6 +980,7 @@ def save_plots(output_dir: Path, steps: list[ReplayStep], peak_alert_map: np.nda
             "valid_fraction": [step.valid_fraction for step in steps],
             "csc_max": [step.csc_max for step in steps],
             "alert_pixels": [step.alert_pixels for step in steps],
+            "posterior_mean_max": [step.posterior_mean_max for step in steps],
         }
     )
     action_colors = {
@@ -795,6 +994,7 @@ def save_plots(output_dir: Path, steps: list[ReplayStep], peak_alert_map: np.nda
     fig, axes = plt.subplots(2, 1, figsize=(9, 6), constrained_layout=True)
     axes[0].plot(df["date"], df["csc_max"], color="#d62728", linewidth=2, label="CSC max")
     axes[0].plot(df["date"], df["valid_fraction"], color="#1f77b4", linewidth=2, label="Valid fraction")
+    axes[0].plot(df["date"], df["posterior_mean_max"], color="#2ca02c", linewidth=1.8, label="Posterior mean max")
     axes[0].set_ylabel("Value")
     axes[0].set_title("MASFE replay on real MODIS scenes")
     axes[0].legend(loc="upper left")

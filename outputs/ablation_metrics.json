@@ -1,10 +1,10 @@
 {
   "target_recall_pct": 100.0,
-  "baseline_masfe_false_positive_rate_pct": 1.4,
+  "baseline_masfe_false_positive_rate_pct": 1.6,
   "selected_alert_threshold": 0.55,
   "ablation_recall_pct": 100.0,
-  "ablation_false_positive_rate_pct": 1.432,
-  "false_positive_rate_delta_pct_points": 0.032,
+  "ablation_false_positive_rate_pct": 1.655,
+  "false_positive_rate_delta_pct_points": 0.055,
   "ablation_stats": {
     "science_retention_pct": {
       "mean": 100.0,
@@ -13,22 +13,22 @@
       "ci95_high": 100.0
     },
     "alert_precision_pct": {
-      "mean": 98.568,
-      "std": 0.313,
-      "ci95_low": 98.507,
-      "ci95_high": 98.629
+      "mean": 98.345,
+      "std": 0.38,
+      "ci95_low": 98.27,
+      "ci95_high": 98.419
     },
     "false_positive_rate_pct": {
-      "mean": 1.432,
-      "std": 0.313,
-      "ci95_low": 1.371,
-      "ci95_high": 1.493
+      "mean": 1.655,
+      "std": 0.38,
+      "ci95_low": 1.581,
+      "ci95_high": 1.73
     },
     "n_priority_alerts": {
-      "mean": 9.2,
-      "std": 1.752,
-      "ci95_low": 8.857,
-      "ci95_high": 9.543
+      "mean": 9.15,
+      "std": 1.828,
+      "ci95_low": 8.792,
+      "ci95_high": 9.508
     },
     "min_battery_soc": {
       "mean": 0.86,
@@ -37,28 +37,28 @@
       "ci95_high": 0.86
     },
     "cloud_obscured_passes": {
-      "mean": 36.06,
-      "std": 5.097,
-      "ci95_low": 35.061,
-      "ci95_high": 37.059
+      "mean": 36.73,
+      "std": 4.737,
+      "ci95_low": 35.801,
+      "ci95_high": 37.659
     },
     "seasonal_average_compute_utilisation_pct": {
-      "mean": 76.082,
-      "std": 2.225,
-      "ci95_low": 75.646,
-      "ci95_high": 76.518
+      "mean": 76.176,
+      "std": 2.105,
+      "ci95_low": 75.763,
+      "ci95_high": 76.588
     },
     "data_mb": {
-      "mean": 493.46,
-      "std": 57.608,
-      "ci95_low": 482.169,
-      "ci95_high": 504.752
+      "mean": 481.063,
+      "std": 55.651,
+      "ci95_low": 470.155,
+      "ci95_high": 491.97
     },
     "energy_wh": {
-      "mean": 7.107,
-      "std": 0.099,
-      "ci95_low": 7.088,
-      "ci95_high": 7.126
+      "mean": 7.11,
+      "std": 0.098,
+      "ci95_low": 7.09,
+      "ci95_high": 7.129
     }
   },
   "threshold_sweep_checked": {
@@ -70,22 +70,22 @@
         "ci95_high": 100.0
       },
       "alert_precision_pct": {
-        "mean": 98.568,
-        "std": 0.313,
-        "ci95_low": 98.507,
-        "ci95_high": 98.629
+        "mean": 98.345,
+        "std": 0.38,
+        "ci95_low": 98.27,
+        "ci95_high": 98.419
       },
       "false_positive_rate_pct": {
-        "mean": 1.432,
-        "std": 0.313,
-        "ci95_low": 1.371,
-        "ci95_high": 1.493
+        "mean": 1.655,
+        "std": 0.38,
+        "ci95_low": 1.581,
+        "ci95_high": 1.73
       },
       "n_priority_alerts": {
-        "mean": 9.2,
-        "std": 1.752,
-        "ci95_low": 8.857,
-        "ci95_high": 9.543
+        "mean": 9.15,
+        "std": 1.828,
+        "ci95_low": 8.792,
+        "ci95_high": 9.508
       },
       "min_battery_soc": {
         "mean": 0.86,
@@ -94,28 +94,28 @@
         "ci95_high": 0.86
       },
       "cloud_obscured_passes": {
-        "mean": 36.06,
-        "std": 5.097,
-        "ci95_low": 35.061,
-        "ci95_high": 37.059
+        "mean": 36.73,
+        "std": 4.737,
+        "ci95_low": 35.801,
+        "ci95_high": 37.659
       },
       "seasonal_average_compute_utilisation_pct": {
-        "mean": 76.082,
-        "std": 2.225,
-        "ci95_low": 75.646,
-        "ci95_high": 76.518
+        "mean": 76.176,
+        "std": 2.105,
+        "ci95_low": 75.763,
+        "ci95_high": 76.588
       },
       "data_mb": {
-        "mean": 493.46,
-        "std": 57.608,
-        "ci95_low": 482.169,
-        "ci95_high": 504.752
+        "mean": 481.063,
+        "std": 55.651,
+        "ci95_low": 470.155,
+        "ci95_high": 491.97
       },
       "energy_wh": {
-        "mean": 7.107,
-        "std": 0.099,
-        "ci95_low": 7.088,
-        "ci95_high": 7.126
+        "mean": 7.11,
+        "std": 0.098,
+        "ci95_low": 7.09,
+        "ci95_high": 7.129
       }
     }
   }

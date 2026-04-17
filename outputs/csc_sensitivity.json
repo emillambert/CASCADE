@@ -11,85 +11,103 @@
   ],
   "cases": [
     {
-      "evi_weight_raw": 0.385,
-      "lst_weight_raw": 0.45,
+      "evi_weight_raw": 0.28,
+      "lst_weight_raw": 0.35,
+      "ndwi_weight_raw": 0.175,
       "evi_saturation_sigma": 3.5,
       "lst_saturation_sigma": 2.8,
+      "ndwi_saturation_sigma": 2.8,
       "science_retention_pct": 100.0,
-      "false_positive_rate_pct": 2.449,
-      "alert_precision_pct": 97.551
+      "false_positive_rate_pct": 2.227,
+      "alert_precision_pct": 97.773
     },
     {
-      "evi_weight_raw": 0.385,
-      "lst_weight_raw": 0.45,
+      "evi_weight_raw": 0.28,
+      "lst_weight_raw": 0.35,
+      "ndwi_weight_raw": 0.175,
       "evi_saturation_sigma": 5.0,
       "lst_saturation_sigma": 4.0,
+      "ndwi_saturation_sigma": 4.0,
       "science_retention_pct": 100.0,
-      "false_positive_rate_pct": 1.413,
-      "alert_precision_pct": 98.587
+      "false_positive_rate_pct": 1.516,
+      "alert_precision_pct": 98.484
     },
     {
-      "evi_weight_raw": 0.385,
-      "lst_weight_raw": 0.45,
+      "evi_weight_raw": 0.28,
+      "lst_weight_raw": 0.35,
+      "ndwi_weight_raw": 0.175,
       "evi_saturation_sigma": 6.5,
       "lst_saturation_sigma": 5.2,
+      "ndwi_saturation_sigma": 5.2,
       "science_retention_pct": 100.0,
-      "false_positive_rate_pct": 0.7,
-      "alert_precision_pct": 99.3
+      "false_positive_rate_pct": 1.043,
+      "alert_precision_pct": 98.957
     },
     {
-      "evi_weight_raw": 0.55,
-      "lst_weight_raw": 0.45,
+      "evi_weight_raw": 0.4,
+      "lst_weight_raw": 0.35,
+      "ndwi_weight_raw": 0.25,
       "evi_saturation_sigma": 3.5,
       "lst_saturation_sigma": 2.8,
+      "ndwi_saturation_sigma": 2.8,
       "science_retention_pct": 100.0,
-      "false_positive_rate_pct": 2.473,
-      "alert_precision_pct": 97.527
+      "false_positive_rate_pct": 2.253,
+      "alert_precision_pct": 97.747
     },
     {
-      "evi_weight_raw": 0.55,
-      "lst_weight_raw": 0.45,
+      "evi_weight_raw": 0.4,
+      "lst_weight_raw": 0.35,
+      "ndwi_weight_raw": 0.25,
       "evi_saturation_sigma": 5.0,
       "lst_saturation_sigma": 4.0,
+      "ndwi_saturation_sigma": 4.0,
       "science_retention_pct": 100.0,
-      "false_positive_rate_pct": 1.438,
-      "alert_precision_pct": 98.562
+      "false_positive_rate_pct": 1.56,
+      "alert_precision_pct": 98.44
     },
     {
-      "evi_weight_raw": 0.55,
-      "lst_weight_raw": 0.45,
+      "evi_weight_raw": 0.4,
+      "lst_weight_raw": 0.35,
+      "ndwi_weight_raw": 0.25,
       "evi_saturation_sigma": 6.5,
       "lst_saturation_sigma": 5.2,
+      "ndwi_saturation_sigma": 5.2,
       "science_retention_pct": 100.0,
-      "false_positive_rate_pct": 0.738,
-      "alert_precision_pct": 99.262
+      "false_positive_rate_pct": 1.081,
+      "alert_precision_pct": 98.919
     },
     {
-      "evi_weight_raw": 0.715,
-      "lst_weight_raw": 0.45,
+      "evi_weight_raw": 0.52,
+      "lst_weight_raw": 0.35,
+      "ndwi_weight_raw": 0.325,
       "evi_saturation_sigma": 3.5,
       "lst_saturation_sigma": 2.8,
+      "ndwi_saturation_sigma": 2.8,
       "science_retention_pct": 100.0,
-      "false_positive_rate_pct": 2.641,
-      "alert_precision_pct": 97.359
+      "false_positive_rate_pct": 2.264,
+      "alert_precision_pct": 97.736
     },
     {
-      "evi_weight_raw": 0.715,
-      "lst_weight_raw": 0.45,
+      "evi_weight_raw": 0.52,
+      "lst_weight_raw": 0.35,
+      "ndwi_weight_raw": 0.325,
       "evi_saturation_sigma": 5.0,
       "lst_saturation_sigma": 4.0,
+      "ndwi_saturation_sigma": 4.0,
       "science_retention_pct": 100.0,
-      "false_positive_rate_pct": 1.451,
-      "alert_precision_pct": 98.549
+      "false_positive_rate_pct": 1.606,
+      "alert_precision_pct": 98.394
     },
     {
-      "evi_weight_raw": 0.715,
-      "lst_weight_raw": 0.45,
+      "evi_weight_raw": 0.52,
+      "lst_weight_raw": 0.35,
+      "ndwi_weight_raw": 0.325,
       "evi_saturation_sigma": 6.5,
       "lst_saturation_sigma": 5.2,
+      "ndwi_saturation_sigma": 5.2,
       "science_retention_pct": 100.0,
-      "false_positive_rate_pct": 0.764,
-      "alert_precision_pct": 99.236
+      "false_positive_rate_pct": 1.149,
+      "alert_precision_pct": 98.851
     }
   ],
   "summary": {
@@ -98,12 +116,12 @@
       "max": 100.0
     },
     "false_positive_rate_pct": {
-      "min": 0.7,
-      "max": 2.641
+      "min": 1.043,
+      "max": 2.264
     },
     "alert_precision_pct": {
-      "min": 97.359,
-      "max": 99.3
+      "min": 97.736,
+      "max": 98.957
     }
   }
 }

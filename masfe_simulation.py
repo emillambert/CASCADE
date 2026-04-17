@@ -6,11 +6,11 @@ NASA Space-to-Soil Challenge 2026 - Phase 1 Code Submission
 NASA Datasets:
   MODIS MOD13A1  DOI: 10.5067/MODIS/MOD13A1.061  (vegetation index / EVI)
   MODIS MOD11A1  DOI: 10.5067/MODIS/MOD11A1.061  (land surface temperature)
+  MODIS MOD09A1  DOI: 10.5067/MODIS/MOD09A1.061  (surface reflectance / NDWI)
 
 Onboard fusion product:
-  Crop Stress Composite (CSC) - per-patch index derived from EVI deviation
-  and LST anomaly. Physically valid proxy for pathogen stress without
-  requiring microwave sensors.
+  Crop Stress Composite (CSC) - per-patch index derived from EVI deviation,
+  thermal rise, and NDWI water-stress behavior.
 
 Three policies compared:
   1. RAW_DUMP         - naive: collect all raw imagery, downlink everything
@@ -33,7 +33,20 @@ from typing import Callable, Dict
 import matplotlib
 import numpy as np
 
-from masfe_core import AblateNoBeliefPolicy, ACTION_W, Config, MASFEPolicy, State, compute_csc
+from masfe_core import (
+    AblateNoBeliefPolicy,
+    ACTION_W,
+    Config,
+    MASFEPolicy,
+    State,
+    action_gsd_m,
+    action_tile_density_mb_per_km2,
+    compute_csc,
+    posterior_evidence,
+    posterior_mean,
+    posterior_tail_probability,
+    update_stress_belief,
+)
 
 
 matplotlib.use("Agg")
@@ -73,12 +86,14 @@ def make_data(
     seed: int = 42,
 ) -> Dict:
     """
-    Simulates MODIS MOD13 (EVI) + MOD11 (LST) time series.
-    Disease model: progressive EVI depression + LST elevation.
+    Simulates MODIS MOD13 (EVI), MOD11 (LST), and MOD09 (NDWI-like) signals.
+    Disease model: progressive EVI depression + LST elevation with only mild
+    NDWI decline. Irrigation-like confounders drive stronger NDWI decline.
     """
     rng = np.random.default_rng(seed)
     evi_base = rng.uniform(0.42, 0.70, n_patches)
     lst_base = rng.uniform(294.5, 305.5, n_patches)
+    ndwi_base = rng.uniform(0.08, 0.32, n_patches)
 
     dis_idx = rng.choice(n_patches, n_dis, replace=False)
     dis_onset = {int(i): int(rng.integers(18, 72)) for i in dis_idx}
@@ -92,6 +107,7 @@ def make_data(
 
     evi = np.zeros((n_t, n_patches))
     lst = np.zeros((n_t, n_patches))
+    ndwi = np.zeros((n_t, n_patches))
     truth = np.zeros((n_t, n_patches), dtype=bool)
 
     for t in range(n_t):
@@ -99,10 +115,12 @@ def make_data(
         for p in range(n_patches):
             e = evi_base[p] + sea + rng.normal(0, 0.016)
             l = lst_base[p] + rng.normal(0, 0.55)
+            n = ndwi_base[p] + 0.015 * np.cos(2 * np.pi * t / n_t) + rng.normal(0, 0.010)
             if p in dis_onset and t >= dis_onset[p]:
                 sev = min(1.0, (t - dis_onset[p]) / 22.0)
                 e -= sev * 0.22
                 l += sev * 4.0
+                n -= sev * 0.03
                 truth[t, p] = sev > 0.10
             if p in benign_onset:
                 dt = t - benign_onset[p]
@@ -110,12 +128,15 @@ def make_data(
                     sev = min(1.0, dt / max(benign_duration[p] - 1, 1))
                     e -= sev * 0.18
                     l += sev * 3.4
+                    n -= sev * 0.18
             evi[t, p] = float(np.clip(e, 0.02, 0.99))
             lst[t, p] = float(l)
+            ndwi[t, p] = float(np.clip(n, -0.15, 0.65))
 
     return {
         "evi": evi,
         "lst": lst,
+        "ndwi": ndwi,
         "truth": truth,
         "n_patches": n_patches,
         "n_t": n_t,
@@ -123,6 +144,7 @@ def make_data(
         "n_benign": n_benign,
         "evi_base": evi_base,
         "lst_base": lst_base,
+        "ndwi_base": ndwi_base,
         "dis_onset": dis_onset,
         "dis_idx": dis_idx,
         "benign_onset": benign_onset,
@@ -167,11 +189,13 @@ def simulate(
     n_p, n_t = data["n_patches"], data["n_t"]
     evi_base = data["evi_base"]
     lst_base = data["lst_base"]
+    ndwi_base = data["ndwi_base"]
     detection_threshold = getattr(policy, "csc_alert_thr", 0.55) if policy else 0.55
 
     batt = 0.84
     csc = np.full(n_p, 0.18)
-    conf = np.full(n_p, 0.12)
+    alpha = np.ones(n_p, dtype="float32")
+    beta = np.ones(n_p, dtype="float32")
     steps_sf = 0
 
     energy = data_vol = 0.0
@@ -191,77 +215,89 @@ def simulate(
 
         evi_t = data["evi"][t].copy()
         lst_t = data["lst"][t].copy()
+        ndwi_t = data["ndwi"][t].copy()
         clouded = bool(data["cloud_pass"][t])
         if clouded:
             evi_t[:] = np.nan
             lst_t[:] = np.nan
+            ndwi_t[:] = np.nan
         else:
             evi_t += rng.normal(0.0, 0.010, n_p)
             lst_t += rng.normal(0.0, 0.35, n_p)
+            ndwi_t += rng.normal(0.0, 0.012, n_p)
 
         evi_anom = np.maximum(0.0, (evi_base - evi_t) / 0.042)
         evi_anom = np.nan_to_num(evi_anom, nan=0.0)
+        ndwi_anom = np.maximum(0.0, (ndwi_base - ndwi_t) / 0.05)
+        ndwi_anom = np.nan_to_num(ndwi_anom, nan=0.0)
+
+        if clouded:
+            alpha_state = alpha.copy()
+            beta_state = beta.copy()
+        else:
+            alpha_state, beta_state = update_stress_belief(alpha, beta, evi_anom, ndwi_anom)
+
+        if policy_name == "ABLATE_NO_BELIEF":
+            alpha_for_state = np.ones_like(alpha_state)
+            beta_for_state = np.ones_like(beta_state)
+        else:
+            alpha_for_state = alpha_state.copy()
+            beta_for_state = beta_state.copy()
 
         state = State(
             t=t,
             soc=batt,
             downlink=dl_window,
             op=op,
+            alpha=alpha_for_state,
+            beta=beta_for_state,
             evi_anom=evi_anom,
+            ndwi_anom=ndwi_anom,
             csc=csc.copy(),
-            conf=conf.copy(),
             steps_since_fuse=steps_sf,
         )
 
         if policy_name == "RAW_DUMP":
             action = "RAW"
         elif policy_name == "FIXED_ONBOARD":
-            action = "FUSE" if not dl_window else "FUSE_PRIORITY"
+            action = "FUSE"
         else:
             action = policy.act(state)
 
-        if policy_name == "ABLATE_NO_BELIEF":
-            if clouded and action in ("MOD13", "FUSE", "FUSE_PRIORITY", "RAW"):
-                new_csc = np.zeros_like(csc)
-                new_conf = np.maximum(0.0, conf - 0.08)
-                steps_sf += 1
-            elif action in ("FUSE", "FUSE_PRIORITY", "RAW"):
-                new_csc = compute_csc(evi_t, lst_t, evi_base, lst_base, **csc_kwargs)
-                new_conf = np.minimum(1.0, conf + 0.15)
-                steps_sf = 0
-            elif action == "MOD13":
-                new_csc = compute_csc(evi_t, lst_base, evi_base, lst_base, **csc_kwargs)
-                new_conf = np.minimum(1.0, conf + 0.04)
-                steps_sf += 1
-            else:
-                new_csc = np.zeros_like(csc)
-                new_conf = np.maximum(0.0, conf - 0.02)
-                steps_sf += 1
-        elif clouded and action in ("MOD13", "FUSE", "FUSE_PRIORITY", "RAW"):
+        if clouded and action in ("MOD13", "FUSE", "FUSE_PRIORITY", "RAW"):
             new_csc = csc * 0.92
-            new_conf = np.maximum(0.0, conf - 0.04)
             steps_sf += 1
         elif action in ("FUSE", "FUSE_PRIORITY", "RAW"):
-            new_csc = compute_csc(evi_t, lst_t, evi_base, lst_base, **csc_kwargs)
-            new_conf = np.minimum(1.0, conf + 0.15)
+            new_csc = compute_csc(
+                evi_t,
+                lst_t,
+                evi_base,
+                lst_base,
+                ndwi_t=ndwi_t,
+                ndwi_base=ndwi_base,
+                **csc_kwargs,
+            )
             steps_sf = 0
         elif action == "MOD13":
             new_csc = csc * 0.70 + compute_csc(
-                evi_t, lst_base, evi_base, lst_base, **csc_kwargs
+                evi_t,
+                lst_base,
+                evi_base,
+                lst_base,
+                ndwi_t=ndwi_t,
+                ndwi_base=ndwi_base,
+                **csc_kwargs,
             ) * 0.30
-            new_conf = np.minimum(1.0, conf + 0.04)
             steps_sf += 1
         else:
             new_csc = csc * 0.97
-            new_conf = np.maximum(0.0, conf - 0.012)
             steps_sf += 1
 
-        if (
-            policy_name == "ABLATE_NO_BELIEF"
-            and action == "FUSE"
-            and dl_window
-            and new_csc.max() >= detection_threshold
-        ):
+        if policy_name == "MASFE_MDP" and action == "FUSE" and policy.should_priority_downlink(state, new_csc):
+            action = "FUSE_PRIORITY"
+        elif policy_name == "ABLATE_NO_BELIEF" and action == "FUSE" and dl_window and new_csc.max() >= detection_threshold:
+            action = "FUSE_PRIORITY"
+        elif policy_name == "FIXED_ONBOARD" and action == "FUSE" and dl_window and new_csc.max() >= detection_threshold:
             action = "FUSE_PRIORITY"
 
         if not clouded and action in ("FUSE", "FUSE_PRIORITY", "RAW"):
@@ -293,7 +329,9 @@ def simulate(
             watt_seconds = ACTION_W.get(action, 0.30) * obs_s
 
         batt = max(0.0, batt - (watt_seconds / 3600.0) / cfg.batt_wh)
-        csc, conf = new_csc, new_conf
+        csc = new_csc
+        if not clouded:
+            alpha, beta = alpha_state, beta_state
         energy += watt_seconds / 3600.0
         data_vol += data_mb
         actions.append(action)
@@ -523,6 +561,33 @@ def run_monte_carlo(
             stats["seasonal_average_compute_utilisation_pct"]["mean"], 1
         ),
         "cloud_obscured_passes": clean_round(stats["cloud_obscured_passes"]["mean"], 1),
+        "resolution_pyramid": {
+            "screen_gsd_m": action_gsd_m("MOD13"),
+            "confirmation_gsd_m": action_gsd_m("FUSE"),
+            "priority_gsd_m": action_gsd_m("FUSE_PRIORITY"),
+            "screen_tile_density_mb_per_km2": action_tile_density_mb_per_km2("MOD13"),
+            "confirmation_tile_density_mb_per_km2": action_tile_density_mb_per_km2("FUSE"),
+            "priority_tile_density_mb_per_km2": action_tile_density_mb_per_km2("FUSE_PRIORITY"),
+        },
+        "peak_gsd_m": action_gsd_m("FUSE_PRIORITY"),
+        "seasonal_average_screen_gsd_m": clean_round(
+            sum(
+                action_gsd_m(action_name) * metrics_block["count_mean"]
+                for action_name, metrics_block in summarize_action_mix([run["action_dist"] for run in masfe_runs], n_t).items()
+            ) / max(n_t, 1),
+            1,
+        ),
+        "seasonal_priority_share_pct": clean_round(
+            summarize_action_mix([run["action_dist"] for run in masfe_runs], n_t)
+            .get("FUSE_PRIORITY", {})
+            .get("pct_mean", 0.0),
+            1,
+        ),
+        "compression": {
+            "priority_tile_raw_mb_per_km2": 8.4,
+            "priority_tile_compression_ratio": 2.5,
+            "priority_tile_delivered_mb_per_km2": 3.36,
+        },
         "monte_carlo": {
             "n_seeds": n_seeds,
             "n_patches": n_patches,
@@ -658,13 +723,16 @@ def run_csc_sensitivity(cfg: Config, datasets: list[Dict]) -> dict:
     cases = []
     for weight_scale in WEIGHT_SWEEP:
         for saturation_scale in SATURATION_SWEEP:
-            evi_weight = 0.55 * weight_scale
-            lst_weight = 0.45
+            evi_weight = 0.40 * weight_scale
+            lst_weight = 0.35
+            ndwi_weight = 0.25 * weight_scale
             csc_kwargs = {
                 "evi_weight": evi_weight,
                 "lst_weight": lst_weight,
+                "ndwi_weight": ndwi_weight,
                 "evi_saturation": 5.0 * saturation_scale,
                 "lst_saturation": 4.0 * saturation_scale,
+                "ndwi_saturation": 4.0 * saturation_scale,
             }
             eval_result = evaluate_policy(
                 "MASFE_MDP",
@@ -677,8 +745,10 @@ def run_csc_sensitivity(cfg: Config, datasets: list[Dict]) -> dict:
                 {
                     "evi_weight_raw": round(evi_weight, 4),
                     "lst_weight_raw": round(lst_weight, 4),
+                    "ndwi_weight_raw": round(ndwi_weight, 4),
                     "evi_saturation_sigma": round(5.0 * saturation_scale, 3),
                     "lst_saturation_sigma": round(4.0 * saturation_scale, 3),
+                    "ndwi_saturation_sigma": round(4.0 * saturation_scale, 3),
                     "science_retention_pct": round(eval_result["stats"]["science_retention_pct"]["mean"], 3),
                     "false_positive_rate_pct": round(eval_result["stats"]["false_positive_rate_pct"]["mean"], 3),
                     "alert_precision_pct": round(eval_result["stats"]["alert_precision_pct"]["mean"], 3),
@@ -725,7 +795,8 @@ def report(metrics: dict, ablation_metrics: dict, roc_metrics: dict, csc_sensiti
     print("\n  NASA ALGORITHM CITATIONS")
     print("  |- MOD13A1  DOI: 10.5067/MODIS/MOD13A1.061  (EVI vegetation index)")
     print("  `- MOD11A1  DOI: 10.5067/MODIS/MOD11A1.061  (land surface temp)")
-    print("  Fusion: Crop Stress Composite (CSC) - EVI anomaly + LST anomaly")
+    print("     MOD09A1  DOI: 10.5067/MODIS/MOD09A1.061  (surface reflectance / NDWI)")
+    print("  Fusion: Crop Stress Composite (CSC) - EVI anomaly + LST anomaly + NDWI anomaly")
 
     print("\n  SYNTHETIC VALIDATION CONFIGURATION")
     print(f"  |- Monte Carlo seeds:   {mc['n_seeds']}")
@@ -748,6 +819,16 @@ def report(metrics: dict, ablation_metrics: dict, roc_metrics: dict, csc_sensiti
     print(
         f"  Cloud-obscured passes:  {metrics['cloud_obscured_passes']:.1f}/{mc['n_t']} mean"
         f"  (95% CI {ci['cloud_obscured_passes']['ci95_low']:.1f}-{ci['cloud_obscured_passes']['ci95_high']:.1f})"
+    )
+    print(
+        f"  Resolution pyramid:     {metrics['resolution_pyramid']['screen_gsd_m']:.0f}m screen,"
+        f" {metrics['resolution_pyramid']['confirmation_gsd_m']:.0f}m confirm,"
+        f" {metrics['resolution_pyramid']['priority_gsd_m']:.1f}m priority"
+    )
+    print(
+        f"  Priority tile payload:  {metrics['compression']['priority_tile_raw_mb_per_km2']:.2f} MB/km^2 raw"
+        f" -> {metrics['compression']['priority_tile_delivered_mb_per_km2']:.2f} MB/km^2 delivered"
+        f" at {metrics['compression']['priority_tile_compression_ratio']:.1f}:1"
     )
 
     print("\n  THREE-WAY PERFORMANCE COMPARISON (Monte Carlo means)")

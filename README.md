@@ -1,14 +1,20 @@
 # MASFE
 
-MASFE (Multi-Algorithm Scheduling and Fusion Engine) is a NASA Space-to-Soil submission that treats crop-stress monitoring as an onboard scheduling problem instead of a passive downlink problem. This repository contains the 100-seed hosted-payload Monte Carlo benchmark, a real-scene MODIS replay over Westlands/Firebaugh, the five-year rollout economics model, and the final submission paper. In the current synthetic benchmark, MASFE reduces downlink by `96.4%` versus a raw-dump baseline, saves `20.6%` payload energy, retains `100.0%` disease-event recall, and holds false-positive rate to `1.4%`.
+MASFE (Multi-Algorithm Scheduling and Fusion Engine) is a NASA Space-to-Soil submission that treats crop-stress monitoring as an onboard scheduling problem instead of a passive downlink problem. This repository contains the 100-seed hosted-payload Monte Carlo benchmark, a real-scene MODIS replay over Westlands/Firebaugh, the five-year rollout economics model, and the final submission paper. The current technical version uses a capped Beta-posterior belief state, a three-channel CSC built from `EVI + LST + NDWI`, and a tiered resolution pyramid that keeps most passes at coarse screening while reserving native evidence tiles for confirmed alerts.
 
 ## Verified Headline Metrics
 
 | Downlink reduction vs raw | Disease-event recall | False-positive rate | CPU utilization (peak / seasonal) |
 | ---: | ---: | ---: | ---: |
-| **96.4%** | **100.0%** | **1.4%** | **92.5% / 87.5%** |
+| **99.3%** | **100.0%** | **1.6%** | **92.5% / 49.2%** |
 
-MASFE matches the fixed-onboard baseline on total downlink volume because both policies already compress the sensing pipeline onboard; the adaptive gain is payload-energy savings, priority ordering, and compute-margin management.
+Compared with always-on onboard fusion, MASFE now also reduces total transmitted volume because the Bayesian belief gate leaves most passes at `30 m` screening; the adaptive gain is both volumetric and operational: lower energy draw, fewer unnecessary confirmation passes, and explicit priority evidence only when the posterior and fused CSC agree.
+
+Tiered resolution pyramid used by the code and paper:
+
+- `MOD13` screen: `30 m`, about `0.2 MB/km²`
+- `FUSE` confirmation: `10 m`, about `1.8 MB/km²`
+- `FUSE_PRIORITY` evidence: `4.6 m` native, about `8.4 MB/km²` raw or `3.36 MB/km²` delivered at the planning `2.5:1` CCSDS compression assumption
 
 ![Westlands replay summary](outputs/real_modis/westlands_ca_2024-06-01_2024-10-31/replay_summary.png)
 
@@ -41,7 +47,7 @@ This repository has been verified in a fresh virtual environment with the exact 
 
 ## Real MODIS Replay
 
-The real-scene replay uses official AppEEARS subsets of `MOD13A1.061` EVI plus QA and `MOD11A1.061` daytime LST plus QC over the Westlands / Firebaugh AOI in California. It is framed as scheduler validation on official MODIS scenes, not as a labeled disease benchmark.
+The real-scene replay uses official AppEEARS subsets of `MOD13A1.061` EVI plus QA, `MOD11A1.061` daytime LST plus QC, and `MOD09A1.061` surface reflectance for NDWI over the Westlands / Firebaugh AOI in California. It is framed as scheduler validation on official MODIS scenes, not as a labeled disease benchmark.
 
 Activate the environment:
 
@@ -74,6 +80,8 @@ python real_modis_replay.py \
   --cache-dir data/modis_cache \
   --disable-fallback
 ```
+
+If the cache or AppEEARS bundle includes `MOD09A1.061`, the replay will derive median clear-sky NDWI over the same composite window and use the full `EVI + LST + NDWI` CSC. If you point the script at an older cached bundle that contains only `MOD13A1` and `MOD11A1`, it will still run and will explicitly fall back to the legacy `EVI + LST` fusion for those steps instead of failing.
 
 Optional second-season extension:
 
@@ -110,6 +118,7 @@ Tracked replay anchor used in the paper:
 - `1` confirmed `FUSE_PRIORITY` window
 - first and peak alert date: `2024-07-27`
 - mean valid coverage: `0.995`
+- tracked cached artifact note: the checked-in 2024 replay rows currently show `EVI/LST fallback` because the local tracked bundle predates the MOD09 extension
 
 ## For Judges — 5-Minute Evaluation Path
 
@@ -120,9 +129,9 @@ Tracked replay anchor used in the paper:
 
 ## Repository Layout
 
-- `masfe_core.py`: shared CSC computation, SWAP model, and deterministic policy logic.
-- `masfe_simulation.py`: 100-seed Monte Carlo benchmark with ROC, ablation, CSC sweep, and utilization reporting.
-- `real_modis_replay.py`: AppEEARS-backed MODIS replay workflow for the Westlands AOI.
+- `masfe_core.py`: shared CSC computation, Beta-posterior belief model, resolution metadata, and deterministic policy logic.
+- `masfe_simulation.py`: 100-seed Monte Carlo benchmark with ROC, ablation, CSC sweep, utilization reporting, and the `EVI + LST + NDWI` synthetic benchmark.
+- `real_modis_replay.py`: AppEEARS-backed MODIS replay workflow for the Westlands AOI with MOD09 NDWI support and EVI/LST fallback.
 - `unit_economics.py`: five-year SJV-to-global rollout model.
 - `outputs/simulation_metrics.json`: paper-facing synthetic benchmark metrics written by `masfe_simulation.py`.
 - `outputs/roc.png` and `outputs/roc_metrics.json`: alert-threshold sweep behind the published operating point.
