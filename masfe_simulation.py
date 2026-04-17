@@ -834,7 +834,7 @@ def report(metrics: dict, ablation_metrics: dict, roc_metrics: dict, csc_sensiti
 
     print("=" * 72)
     print(f"\n  JSON (paste into paper):\n{json.dumps(metrics, indent=2)}")
-    metrics_path = Path("simulation_metrics.json")
+    metrics_path = OUTPUTS_DIR / "simulation_metrics.json"
     metrics_path.write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
     print(f"\n  Metrics written to {metrics_path}")
 

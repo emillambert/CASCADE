@@ -1,8 +1,12 @@
+.DS_Store
+.claude/
 .venv/
 .ipynb_checkpoints/
 data/modis_cache/
-outputs/real_modis/
-outputs/unit_economics/
+outputs/real_modis/.DS_Store
+outputs/real_modis/*/csc_stack.npz
+outputs/real_modis/westlands_ca_2024-06-01_2024-09-30/
+outputs/real_modis/westlands_ca_2023-05-01_2023-10-31/
 __pycache__/
 *.pyc
 *.aux

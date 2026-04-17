@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+title: "MASFE: Multi-Algorithm Scheduling and Fusion Engine"
+message: "If you use this repository, please cite the submission paper or repository record."
+authors:
+  - family-names: Lambert
+    given-names: Emil Wes
+    affiliation: TU Delft
+date-released: 2026-05-04
+license: MIT
+url: https://github.com/emillambert/Emil_MASFE
