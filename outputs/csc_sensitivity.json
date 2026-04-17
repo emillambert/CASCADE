@@ -1,0 +1,109 @@
+{
+  "weight_sweep_scale": [
+    0.7,
+    1.0,
+    1.3
+  ],
+  "saturation_sweep_scale": [
+    0.7,
+    1.0,
+    1.3
+  ],
+  "cases": [
+    {
+      "evi_weight_raw": 0.385,
+      "lst_weight_raw": 0.45,
+      "evi_saturation_sigma": 3.5,
+      "lst_saturation_sigma": 2.8,
+      "science_retention_pct": 100.0,
+      "false_positive_rate_pct": 2.449,
+      "alert_precision_pct": 97.551
+    },
+    {
+      "evi_weight_raw": 0.385,
+      "lst_weight_raw": 0.45,
+      "evi_saturation_sigma": 5.0,
+      "lst_saturation_sigma": 4.0,
+      "science_retention_pct": 100.0,
+      "false_positive_rate_pct": 1.413,
+      "alert_precision_pct": 98.587
+    },
+    {
+      "evi_weight_raw": 0.385,
+      "lst_weight_raw": 0.45,
+      "evi_saturation_sigma": 6.5,
+      "lst_saturation_sigma": 5.2,
+      "science_retention_pct": 100.0,
+      "false_positive_rate_pct": 0.7,
+      "alert_precision_pct": 99.3
+    },
+    {
+      "evi_weight_raw": 0.55,
+      "lst_weight_raw": 0.45,
+      "evi_saturation_sigma": 3.5,
+      "lst_saturation_sigma": 2.8,
+      "science_retention_pct": 100.0,
+      "false_positive_rate_pct": 2.473,
+      "alert_precision_pct": 97.527
+    },
+    {
+      "evi_weight_raw": 0.55,
+      "lst_weight_raw": 0.45,
+      "evi_saturation_sigma": 5.0,
+      "lst_saturation_sigma": 4.0,
+      "science_retention_pct": 100.0,
+      "false_positive_rate_pct": 1.438,
+      "alert_precision_pct": 98.562
+    },
+    {
+      "evi_weight_raw": 0.55,
+      "lst_weight_raw": 0.45,
+      "evi_saturation_sigma": 6.5,
+      "lst_saturation_sigma": 5.2,
+      "science_retention_pct": 100.0,
+      "false_positive_rate_pct": 0.738,
+      "alert_precision_pct": 99.262
+    },
+    {
+      "evi_weight_raw": 0.715,
+      "lst_weight_raw": 0.45,
+      "evi_saturation_sigma": 3.5,
+      "lst_saturation_sigma": 2.8,
+      "science_retention_pct": 100.0,
+      "false_positive_rate_pct": 2.641,
+      "alert_precision_pct": 97.359
+    },
+    {
+      "evi_weight_raw": 0.715,
+      "lst_weight_raw": 0.45,
+      "evi_saturation_sigma": 5.0,
+      "lst_saturation_sigma": 4.0,
+      "science_retention_pct": 100.0,
+      "false_positive_rate_pct": 1.451,
+      "alert_precision_pct": 98.549
+    },
+    {
+      "evi_weight_raw": 0.715,
+      "lst_weight_raw": 0.45,
+      "evi_saturation_sigma": 6.5,
+      "lst_saturation_sigma": 5.2,
+      "science_retention_pct": 100.0,
+      "false_positive_rate_pct": 0.764,
+      "alert_precision_pct": 99.236
+    }
+  ],
+  "summary": {
+    "science_retention_pct": {
+      "min": 100.0,
+      "max": 100.0
+    },
+    "false_positive_rate_pct": {
+      "min": 0.7,
+      "max": 2.641
+    },
+    "alert_precision_pct": {
+      "min": 97.359,
+      "max": 99.3
+    }
+  }
+}

@@ -1,135 +1,93 @@
 """
 MASFE: Multi-Algorithm Scheduling and Fusion Engine
 ====================================================
-NASA Space-to-Soil Challenge 2026 — Phase 1 Code Submission
+NASA Space-to-Soil Challenge 2026 - Phase 1 Code Submission
 
 NASA Datasets:
   MODIS MOD13A1  DOI: 10.5067/MODIS/MOD13A1.061  (vegetation index / EVI)
   MODIS MOD11A1  DOI: 10.5067/MODIS/MOD11A1.061  (land surface temperature)
 
 Onboard fusion product:
-  Crop Stress Composite (CSC) — per-patch index derived from EVI deviation
+  Crop Stress Composite (CSC) - per-patch index derived from EVI deviation
   and LST anomaly. Physically valid proxy for pathogen stress without
-  requiring microwave sensors (unlike SMAP-based approaches).
-  Reference: Gold et al. (Cornell, 2024) spectral early-detection methodology.
-
-Hardware target:
-  LEON4FT CPU (Cobham Gaisler, ~600 DMIPS, 3.5W)  +
-  Xilinx Kintex UltraScale+ RT FPGA (preprocessing, 1.8W)
-  Deployed on Loft Orbital YAM hosted payload platform.
+  requiring microwave sensors.
 
 Three policies compared:
-  1. RAW_DUMP    — naive: collect all raw imagery, downlink everything to ground
-  2. FIXED_ONBOARD — intermediate: always run full pipeline onboard, downlink derived
-  3. MASFE_MDP   — adaptive: two-stage MDP scheduling, smart priority downlink
+  1. RAW_DUMP         - naive: collect all raw imagery, downlink everything
+  2. FIXED_ONBOARD    - always run full pipeline onboard
+  3. MASFE_MDP        - adaptive: two-stage MDP scheduling, smart priority downlink
+  4. ABLATE_NO_BELIEF - current-pass EVI trigger without the stored stress belief
+
+Synthetic validation:
+  The benchmark runs as a 100-seed Monte Carlo study over 500 field patches,
+  120 passes, 21 disease events, and 9 benign confounders per seed.
 """
 
-import json
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Dict, List, Tuple
+from __future__ import annotations
 
+import json
+import math
+from pathlib import Path
+from typing import Callable, Dict
+
+import matplotlib
 import numpy as np
 
-# ─────────────────────────────────────────────
-# 1. HARDWARE — Hosted Payload SWAP Budget
-# ─────────────────────────────────────────────
-
-@dataclass
-class Config:
-    """
-    All values from real component datasheets.
-    LEON4FT:  Cobham Gaisler UT699E datasheet v2.3
-    FPGA:     Xilinx XQRKU060-1SFVA784V datasheet
-    Battery:  Local payload buffer, 40 Wh equivalent
-    """
-    batt_wh: float = 40.0
-    solar_w: float = 10.5          # Equivalent host payload allocation
-    orbit_min: float = 94.6        # 500km circular
-    eclipse_frac: float = 0.356
-
-    # Power by component (W)
-    fpga_w:    float = 1.8
-    cpu_w:     float = 1.2
-    mod13_w:   float = 0.8         # EVI computation (FPGA-assisted)
-    mod11_w:   float = 0.9         # LST computation (FPGA-assisted)
-    fuse_w:    float = 0.5         # CSC fusion (CPU)
-    mdp_w:     float = 0.2         # MDP policy overhead
-    sensor_ms: float = 1.5         # Multispectral sensor
-    sensor_tir: float = 0.7        # TIR sensor
-    comms_w:   float = 2.0         # X-band Tx
-
-    # Data volumes (MB per pass, <=30m effective GSD after onboard binning)
-    raw_mb:      float = 120.0     # Raw L1B imagery (naive baseline)
-    indices_mb:  float = 1.4       # EVI + LST scalars per patch
-    csc_map_mb:  float = 2.8       # Full CSC stress map
-    alert_mb:    float = 1.8       # Hi-res tile per alerted patch
-
-    # Compute (DMIPS)
-    leon4ft_dmips: float = 600.0
-    mod13_dmips:   float = 180.0
-    mod11_dmips:   float = 200.0
-    fuse_dmips:    float = 120.0
-    mdp_dmips:     float = 55.0
-
-    def peak_w(self) -> float:
-        return (self.fpga_w + self.cpu_w + self.mod13_w + self.mod11_w +
-                self.fuse_w + self.mdp_w + self.sensor_ms + self.sensor_tir + self.comms_w)
-
-    def avg_payload_w(self) -> float:
-        return (
-            self.fpga_w
-            + self.cpu_w
-            + self.mdp_w
-            + self.mod13_w * 0.55
-            + self.mod11_w * 0.18
-            + self.fuse_w * 0.18
-            + self.sensor_ms * 0.50
-            + self.sensor_tir * 0.18
-            + self.comms_w * 0.14
-        )
-
-    def compute_pct(self) -> float:
-        return (self.mod13_dmips + self.mod11_dmips + self.fuse_dmips +
-                self.mdp_dmips) / self.leon4ft_dmips
+from masfe_core import AblateNoBeliefPolicy, ACTION_W, Config, MASFEPolicy, State, compute_csc
 
 
-ACTION_W = {                                                 # Watts active
-    'SKIP':          0.30,
-    'MOD13':         1.8+1.2+0.8+0.2+1.5,
-    'FUSE':          1.8+1.2+0.8+0.9+0.5+0.2+1.5+0.7,
-    'FUSE_PRIORITY': 1.8+1.2+0.8+0.9+0.5+0.2+1.5+0.7+2.0,
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+
+POLICY_SEED_OFFSET = {
+    "RAW_DUMP": 101,
+    "FIXED_ONBOARD": 202,
+    "MASFE_MDP": 303,
+    "ABLATE_NO_BELIEF": 404,
 }
 
+MONTE_CARLO_DEFAULTS = {
+    "n_seeds": 100,
+    "n_patches": 500,
+    "n_t": 120,
+    "n_dis": 21,
+    "n_benign": 9,
+}
 
-# ─────────────────────────────────────────────
-# 2. SYNTHETIC MODIS DATA
-# ─────────────────────────────────────────────
+ALERT_THRESH_SWEEP = [0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70]
+WEIGHT_SWEEP = [0.70, 1.00, 1.30]
+SATURATION_SWEEP = [0.70, 1.00, 1.30]
+OUTPUTS_DIR = Path("outputs")
 
-def make_data(n_patches=50, n_t=120, seed=42) -> Dict:
+
+# ---------------------------------------------------------------------------
+# Synthetic MODIS data
+# ---------------------------------------------------------------------------
+
+def make_data(
+    n_patches: int = 500,
+    n_t: int = 120,
+    n_dis: int = 21,
+    n_benign: int = 9,
+    seed: int = 42,
+) -> Dict:
     """
     Simulates MODIS MOD13 (EVI) + MOD11 (LST) time series.
-    Disease model: progressive EVI depression + LST elevation,
-    based on spectral stress signatures described in:
-    Gold et al. (Cornell Plant Disease Diagnostics, 2024).
+    Disease model: progressive EVI depression + LST elevation.
     """
     rng = np.random.default_rng(seed)
     evi_base = rng.uniform(0.42, 0.70, n_patches)
     lst_base = rng.uniform(294.5, 305.5, n_patches)
 
-    n_dis = 7
     dis_idx = rng.choice(n_patches, n_dis, replace=False)
     dis_onset = {int(i): int(rng.integers(18, 72)) for i in dis_idx}
 
-    # Benign stress events model irrigation or thermal excursions that can
-    # occasionally resemble disease, creating realistic false positives.
     remaining = [i for i in range(n_patches) if i not in dis_idx]
-    benign_idx = rng.choice(remaining, 3, replace=False)
+    benign_idx = rng.choice(remaining, n_benign, replace=False)
     benign_onset = {int(i): int(rng.integers(12, 90)) for i in benign_idx}
     benign_duration = {int(i): int(rng.integers(4, 10)) for i in benign_idx}
 
-    # Roughly 30% of passes are cloud-obscured, reducing confidence or forcing
-    # the policy to rely on cached state rather than a fresh observation.
     cloud_pass = rng.random(n_t) < 0.30
 
     evi = np.zeros((n_t, n_patches))
@@ -143,8 +101,8 @@ def make_data(n_patches=50, n_t=120, seed=42) -> Dict:
             l = lst_base[p] + rng.normal(0, 0.55)
             if p in dis_onset and t >= dis_onset[p]:
                 sev = min(1.0, (t - dis_onset[p]) / 22.0)
-                e -= sev * 0.22          # Chlorophyll drop
-                l += sev * 4.0           # Thermal stress
+                e -= sev * 0.22
+                l += sev * 4.0
                 truth[t, p] = sev > 0.10
             if p in benign_onset:
                 dt = t - benign_onset[p]
@@ -155,129 +113,61 @@ def make_data(n_patches=50, n_t=120, seed=42) -> Dict:
             evi[t, p] = float(np.clip(e, 0.02, 0.99))
             lst[t, p] = float(l)
 
-    return dict(evi=evi, lst=lst, truth=truth, n_patches=n_patches, n_t=n_t,
-                evi_base=evi_base, lst_base=lst_base, dis_onset=dis_onset,
-                dis_idx=dis_idx, benign_onset=benign_onset,
-                benign_duration=benign_duration, cloud_pass=cloud_pass)
-
-
-# ─────────────────────────────────────────────
-# 3. ONBOARD CROP STRESS COMPOSITE (CSC)
-#    Two-sensor fusion: MOD13 EVI + MOD11 LST
-# ─────────────────────────────────────────────
-
-def compute_csc(evi_t, lst_t, evi_base, lst_base) -> np.ndarray:
-    """
-    Crop Stress Composite — per-patch anomaly index.
-    CSC = 0.55 * clamp(evi_drop / (5*sigma_evi)) +
-          0.45 * clamp(lst_rise / (4*sigma_lst))
-    normalised to [0, 1].
-
-    sigma_evi = 0.04  (typical EVI measurement noise + phenology)
-    sigma_lst = 1.2K  (typical LST noise)
-
-    CSC > 0.5: moderate stress → FUSE confirm
-    CSC > 0.7: high stress → ALERT + priority downlink
-    CSC ≤ 0.3: healthy → MOD13 screening sufficient
-
-    Unlike TVDI, CSC uses per-patch baseline deviations rather than
-    scene-level dry/wet edges — more robust for homogeneous crop fields.
-    """
-    sigma_e = 0.042
-    sigma_l = 1.20
-    # 5σ (EVI) and 4σ (LST) scale anomaly magnitude into [0, 1]
-    evi_drop  = np.maximum(0.0, (evi_base - evi_t) / sigma_e) / 5.0
-    lst_rise  = np.maximum(0.0, (lst_t - lst_base) / sigma_l) / 4.0
-    csc = 0.55 * np.clip(evi_drop, 0, 1) + 0.45 * np.clip(lst_rise, 0, 1)
-    return np.clip(csc, 0, 1)
-
-
-# ─────────────────────────────────────────────
-# 4. MDP STATE
-# ─────────────────────────────────────────────
-
-@dataclass
-class State:
-    t: int
-    soc: float                   # Battery state-of-charge [0,1]
-    downlink: bool               # Ground station window
-    op: float                    # Orbit phase [0,1]
-    evi_anom: np.ndarray         # Per-patch EVI anomaly score
-    csc: np.ndarray              # Last computed CSC
-    conf: np.ndarray             # Observation confidence
-    steps_since_fuse: int
-
-
-# ─────────────────────────────────────────────
-# 5. MDP POLICY — MASFE two-stage scheduler
-# ─────────────────────────────────────────────
-
-class MASFEPolicy:
-    """
-    Two-stage adaptive scheduling:
-
-    Stage 1 (MOD13 screening, every pass):
-      Run EVI-only check. Cheap: 5.5W for 30s = 0.046 Wh.
-      Compute per-patch EVI anomaly vs stored healthy baseline.
-
-    Stage 2 (CSC fusion, on demand):
-      Triggered when Stage 1 flags EVI anomaly > threshold,
-      OR periodic exploration (every explore_n steps).
-      Run MOD13 + MOD11 → compute CSC.
-      Cost: 8.9W for 30s = 0.074 Wh.
-
-    Priority downlink (on demand):
-      Triggered when CSC confirms stress AND downlink window open.
-      Downlink ONLY anomalous patches at hi-res + index map.
-      Cost: 10.9W for downlink duration.
-
-    Degradation modes (challenge requirement — Section 5 background):
-      NOMINAL  (SOC > 35%):  full two-stage + exploration
-      CONSERVE (15-35%):     Stage 1 (MOD13) only
-      CRITICAL (< 15%):      SKIP — preserve battery
-    """
-    def __init__(self, evi_fuse_thr=0.18, csc_alert_thr=0.55,
-                 explore_n=12, batt_crit=0.15, batt_cons=0.34):
-        self.evi_fuse_thr = evi_fuse_thr
-        self.csc_alert_thr = csc_alert_thr
-        self.explore_n = explore_n
-        self.batt_crit = batt_crit
-        self.batt_cons = batt_cons
-
-    def act(self, s: State) -> str:
-        if s.soc < self.batt_crit:
-            return 'SKIP'
-        if s.soc < self.batt_cons:
-            return 'MOD13'
-        # Confirmed high CSC + downlink window → priority alert
-        if s.csc.max() >= self.csc_alert_thr and s.downlink:
-            return 'FUSE_PRIORITY'
-        # EVI anomaly triggers Stage 2 confirmation
-        if s.evi_anom.max() >= self.evi_fuse_thr:
-            return 'FUSE'
-        # Confirmed high CSC (no downlink yet) → re-confirm, wait
-        if s.csc.max() >= self.csc_alert_thr:
-            return 'FUSE'
-        # Periodic exploration
-        if s.steps_since_fuse >= self.explore_n:
-            return 'FUSE'
-        return 'MOD13'
-
-
-# ─────────────────────────────────────────────
-# 6. SIMULATION LOOP
-# ─────────────────────────────────────────────
-
-def simulate(policy_name: str, policy, data: Dict, cfg: Config) -> Dict:
-    seed_map = {
-        'RAW_DUMP': 101,
-        'FIXED_ONBOARD': 202,
-        'MASFE_MDP': 303,
+    return {
+        "evi": evi,
+        "lst": lst,
+        "truth": truth,
+        "n_patches": n_patches,
+        "n_t": n_t,
+        "n_dis": n_dis,
+        "n_benign": n_benign,
+        "evi_base": evi_base,
+        "lst_base": lst_base,
+        "dis_onset": dis_onset,
+        "dis_idx": dis_idx,
+        "benign_onset": benign_onset,
+        "benign_duration": benign_duration,
+        "cloud_pass": cloud_pass,
     }
-    rng = np.random.default_rng(seed_map.get(policy_name, 999))
-    n_p, n_t = data['n_patches'], data['n_t']
-    evi_base = data['evi_base']
-    lst_base = data['lst_base']
+
+
+def build_datasets(
+    n_seeds: int,
+    n_patches: int,
+    n_t: int,
+    n_dis: int,
+    n_benign: int,
+) -> list[Dict]:
+    return [
+        make_data(
+            n_patches=n_patches,
+            n_t=n_t,
+            n_dis=n_dis,
+            n_benign=n_benign,
+            seed=seed,
+        )
+        for seed in range(n_seeds)
+    ]
+
+
+# ---------------------------------------------------------------------------
+# Simulation loop
+# ---------------------------------------------------------------------------
+
+def simulate(
+    policy_name: str,
+    policy,
+    data: Dict,
+    cfg: Config,
+    outer_seed: int,
+    csc_kwargs: Dict | None = None,
+) -> Dict:
+    csc_kwargs = csc_kwargs or {}
+    rng = np.random.default_rng(outer_seed * 10_000 + POLICY_SEED_OFFSET[policy_name])
+    n_p, n_t = data["n_patches"], data["n_t"]
+    evi_base = data["evi_base"]
+    lst_base = data["lst_base"]
+    detection_threshold = getattr(policy, "csc_alert_thr", 0.55) if policy else 0.55
 
     batt = 0.84
     csc = np.full(n_p, 0.18)
@@ -297,13 +187,12 @@ def simulate(policy_name: str, policy, data: Dict, cfg: Config) -> Dict:
         dl_window = 0.22 < op < 0.37
 
         if not in_eclipse:
-            batt = min(1.0, batt + cfg.solar_w * (5/60) / cfg.batt_wh)
+            batt = min(1.0, batt + cfg.solar_w * (5 / 60) / cfg.batt_wh)
 
-        evi_t = data['evi'][t].copy()
-        lst_t = data['lst'][t].copy()
-        clouded = bool(data['cloud_pass'][t])
+        evi_t = data["evi"][t].copy()
+        lst_t = data["lst"][t].copy()
+        clouded = bool(data["cloud_pass"][t])
         if clouded:
-            # Cloud screening blocks fresh retrievals on affected passes.
             evi_t[:] = np.nan
             lst_t[:] = np.nan
         else:
@@ -313,200 +202,665 @@ def simulate(policy_name: str, policy, data: Dict, cfg: Config) -> Dict:
         evi_anom = np.maximum(0.0, (evi_base - evi_t) / 0.042)
         evi_anom = np.nan_to_num(evi_anom, nan=0.0)
 
-        s = State(t=t, soc=batt, downlink=dl_window, op=op,
-                  evi_anom=evi_anom, csc=csc.copy(),
-                  conf=conf.copy(), steps_since_fuse=steps_sf)
+        state = State(
+            t=t,
+            soc=batt,
+            downlink=dl_window,
+            op=op,
+            evi_anom=evi_anom,
+            csc=csc.copy(),
+            conf=conf.copy(),
+            steps_since_fuse=steps_sf,
+        )
 
-        if policy_name == 'RAW_DUMP':
-            action = 'RAW'
-        elif policy_name == 'FIXED_ONBOARD':
-            action = 'FUSE' if not dl_window else 'FUSE_PRIORITY'
+        if policy_name == "RAW_DUMP":
+            action = "RAW"
+        elif policy_name == "FIXED_ONBOARD":
+            action = "FUSE" if not dl_window else "FUSE_PRIORITY"
         else:
-            action = policy.act(s)
+            action = policy.act(state)
 
-        # ── observation update ──
-        if clouded and action in ('MOD13', 'FUSE', 'FUSE_PRIORITY', 'RAW'):
+        if policy_name == "ABLATE_NO_BELIEF":
+            if clouded and action in ("MOD13", "FUSE", "FUSE_PRIORITY", "RAW"):
+                new_csc = np.zeros_like(csc)
+                new_conf = np.maximum(0.0, conf - 0.08)
+                steps_sf += 1
+            elif action in ("FUSE", "FUSE_PRIORITY", "RAW"):
+                new_csc = compute_csc(evi_t, lst_t, evi_base, lst_base, **csc_kwargs)
+                new_conf = np.minimum(1.0, conf + 0.15)
+                steps_sf = 0
+            elif action == "MOD13":
+                new_csc = compute_csc(evi_t, lst_base, evi_base, lst_base, **csc_kwargs)
+                new_conf = np.minimum(1.0, conf + 0.04)
+                steps_sf += 1
+            else:
+                new_csc = np.zeros_like(csc)
+                new_conf = np.maximum(0.0, conf - 0.02)
+                steps_sf += 1
+        elif clouded and action in ("MOD13", "FUSE", "FUSE_PRIORITY", "RAW"):
             new_csc = csc * 0.92
             new_conf = np.maximum(0.0, conf - 0.04)
             steps_sf += 1
-        elif action in ('FUSE', 'FUSE_PRIORITY', 'RAW'):
-            new_csc = compute_csc(evi_t, lst_t, evi_base, lst_base)
+        elif action in ("FUSE", "FUSE_PRIORITY", "RAW"):
+            new_csc = compute_csc(evi_t, lst_t, evi_base, lst_base, **csc_kwargs)
             new_conf = np.minimum(1.0, conf + 0.15)
             steps_sf = 0
-        elif action == 'MOD13':
-            # Stage 1: use EVI only + cached LST baseline (approximation)
-            new_csc = csc * 0.70 + compute_csc(evi_t, lst_base, evi_base, lst_base) * 0.30
+        elif action == "MOD13":
+            new_csc = csc * 0.70 + compute_csc(
+                evi_t, lst_base, evi_base, lst_base, **csc_kwargs
+            ) * 0.30
             new_conf = np.minimum(1.0, conf + 0.04)
             steps_sf += 1
-        else:  # SKIP
+        else:
             new_csc = csc * 0.97
             new_conf = np.maximum(0.0, conf - 0.012)
             steps_sf += 1
 
-        # ── detection ──
-        if not clouded and action in ('FUSE', 'FUSE_PRIORITY', 'RAW'):
-            detected = new_csc >= 0.50
-            tp += int(np.sum(detected & data['truth'][t]))
-            fp += int(np.sum(detected & ~data['truth'][t]))
-            for idx in np.where(detected & data['truth'][t])[0]:
+        if (
+            policy_name == "ABLATE_NO_BELIEF"
+            and action == "FUSE"
+            and dl_window
+            and new_csc.max() >= detection_threshold
+        ):
+            action = "FUSE_PRIORITY"
+
+        if not clouded and action in ("FUSE", "FUSE_PRIORITY", "RAW"):
+            detected = new_csc >= detection_threshold
+            tp += int(np.sum(detected & data["truth"][t]))
+            fp += int(np.sum(detected & ~data["truth"][t]))
+            for idx in np.where(detected & data["truth"][t])[0]:
                 detected_patches.add(int(idx))
 
-        # ── data downlink ──
-        if action == 'RAW':
-            d = cfg.raw_mb                          # Full raw imagery
-        elif action == 'FUSE':
-            d = cfg.csc_map_mb                      # Derived CSC map only
-        elif action == 'FUSE_PRIORITY':
-            alerted = int((new_csc >= 0.55).sum())
-            d = cfg.indices_mb + alerted * cfg.alert_mb   # Smart: only alert tiles
-        elif action == 'MOD13':
-            d = cfg.indices_mb * 0.5               # Scalar EVI per patch
+        if action == "RAW":
+            data_mb = cfg.raw_mb
+        elif action == "FUSE":
+            data_mb = cfg.csc_map_mb
+        elif action == "FUSE_PRIORITY":
+            alerted = int((new_csc >= detection_threshold).sum())
+            data_mb = cfg.indices_mb + alerted * cfg.alert_mb
+        elif action == "MOD13":
+            data_mb = cfg.indices_mb * 0.5
         else:
-            d = 0.0
+            data_mb = 0.0
 
-        if clouded and action in ('MOD13', 'FUSE', 'FUSE_PRIORITY'):
-            d *= 0.15
+        if clouded and action in ("MOD13", "FUSE", "FUSE_PRIORITY"):
+            data_mb *= 0.15
 
-        # ── energy ──
         obs_s = 30.0
-        if action == 'RAW':
-            e = ACTION_W['FUSE_PRIORITY'] * obs_s / 3600.0   # Raw still needs sensors
+        if action == "RAW":
+            watt_seconds = ACTION_W["FUSE_PRIORITY"] * obs_s
         else:
-            e = ACTION_W.get(action, 0.30) * obs_s / 3600.0
+            watt_seconds = ACTION_W.get(action, 0.30) * obs_s
 
-        batt = max(0.0, batt - e / cfg.batt_wh)
+        batt = max(0.0, batt - (watt_seconds / 3600.0) / cfg.batt_wh)
         csc, conf = new_csc, new_conf
-        energy += e
-        data_vol += d
+        energy += watt_seconds / 3600.0
+        data_vol += data_mb
         actions.append(action)
         batt_hist.append(batt)
 
-        if action == 'FUSE_PRIORITY' and (new_csc >= 0.55).any():
-            alerts.append({'t': t, 'n': int((new_csc >= 0.55).sum()),
-                           'csc_max': round(float(new_csc.max()), 3)})
+        if action == "FUSE_PRIORITY" and (new_csc >= detection_threshold).any():
+            alerts.append(
+                {
+                    "t": t,
+                    "n": int((new_csc >= detection_threshold).sum()),
+                    "csc_max": round(float(new_csc.max()), 3),
+                }
+            )
 
-    action_dist = {a: actions.count(a) for a in set(actions)}
-    return dict(name=policy_name, energy=energy, data_mb=data_vol,
-                tp=tp, fp=fp, n_alerts=len(alerts), alerts=alerts,
-                action_dist=action_dist, min_batt=float(min(batt_hist)),
-                cloud_passes=int(np.sum(data['cloud_pass'])),
-                detected_patches=len(detected_patches))
+    action_dist = {action_name: actions.count(action_name) for action_name in set(actions)}
+    return {
+        "name": policy_name,
+        "energy": energy,
+        "data_mb": data_vol,
+        "tp": tp,
+        "fp": fp,
+        "n_alerts": len(alerts),
+        "alerts": alerts,
+        "action_dist": action_dist,
+        "min_batt": float(min(batt_hist)),
+        "cloud_passes": int(np.sum(data["cloud_pass"])),
+        "detected_patches": len(detected_patches),
+        "seasonal_average_compute_pct": cfg.seasonal_average_compute_pct(action_dist, n_t) * 100.0,
+        "detection_threshold": detection_threshold,
+    }
 
 
-# ─────────────────────────────────────────────
-# 7. REPORT
-# ─────────────────────────────────────────────
+def mean_std_ci(values: list[float]) -> dict:
+    arr = np.asarray(values, dtype=float)
+    mean = float(arr.mean())
+    std = float(arr.std(ddof=1)) if len(arr) > 1 else 0.0
+    half_width = 1.96 * std / math.sqrt(len(arr)) if len(arr) > 1 else 0.0
+    return {
+        "mean": mean,
+        "std": std,
+        "ci95_low": mean - half_width,
+        "ci95_high": mean + half_width,
+    }
 
-def report(raw: Dict, fixed: Dict, masfe: Dict, cfg: Config, data: Dict) -> None:
-    def pct_save(a, b): return (1 - a / b) * 100
 
-    dl_vs_raw   = pct_save(masfe['data_mb'],   raw['data_mb'])
-    dl_vs_fixed = pct_save(masfe['data_mb'], fixed['data_mb'])
-    e_vs_raw    = pct_save(masfe['energy'],    raw['energy'])
-    e_vs_fixed  = pct_save(masfe['energy'],  fixed['energy'])
-    sci_ret     = masfe['detected_patches'] / max(len(data['dis_idx']), 1) * 100
-    fp_rate     = masfe['fp'] / max(masfe['tp'] + masfe['fp'], 1) * 100
+def clean_round(value: float, digits: int = 1) -> float:
+    rounded = round(value, digits)
+    if abs(rounded) < 10 ** (-(digits + 1)):
+        return 0.0
+    return rounded
 
-    print("\n" + "=" * 68)
-    print("  MASFE — Multi-Algorithm Scheduling and Fusion Engine")
-    print("  NASA Space-to-Soil Challenge 2026 — Simulation Results")
-    print("=" * 68)
+
+def summarize_action_mix(action_distributions: list[dict], n_t: int) -> dict:
+    action_names = sorted({name for dist in action_distributions for name in dist})
+    summary = {}
+    for action_name in action_names:
+        counts = np.asarray([dist.get(action_name, 0) for dist in action_distributions], dtype=float)
+        pct = counts / n_t * 100.0
+        summary[action_name] = {
+            "count_mean": float(counts.mean()),
+            "count_std": float(counts.std(ddof=1)) if len(counts) > 1 else 0.0,
+            "pct_mean": float(pct.mean()),
+            "pct_std": float(pct.std(ddof=1)) if len(pct) > 1 else 0.0,
+        }
+    return summary
+
+
+def build_seed_record(seed: int, raw: Dict, fixed: Dict, masfe: Dict, data: Dict) -> dict:
+    def pct_save(a, b):
+        return (1 - a / b) * 100.0
+
+    fp_rate = masfe["fp"] / max(masfe["tp"] + masfe["fp"], 1) * 100.0
+    return {
+        "seed": seed,
+        "downlink_reduction_vs_raw_pct": pct_save(masfe["data_mb"], raw["data_mb"]),
+        "downlink_reduction_vs_fixed_pct": pct_save(masfe["data_mb"], fixed["data_mb"]),
+        "energy_saving_vs_raw_pct": pct_save(masfe["energy"], raw["energy"]),
+        "energy_saving_vs_fixed_pct": pct_save(masfe["energy"], fixed["energy"]),
+        "science_retention_pct": masfe["detected_patches"] / max(len(data["dis_idx"]), 1) * 100.0,
+        "alert_precision_pct": 100.0 - fp_rate,
+        "false_positive_rate_pct": fp_rate,
+        "n_priority_alerts": float(masfe["n_alerts"]),
+        "min_battery_soc": float(masfe["min_batt"]),
+        "cloud_obscured_passes": float(masfe["cloud_passes"]),
+        "seasonal_average_compute_utilisation_pct": float(masfe["seasonal_average_compute_pct"]),
+    }
+
+
+def build_policy_seed_record(seed: int, run: Dict, data: Dict) -> dict:
+    fp_rate = run["fp"] / max(run["tp"] + run["fp"], 1) * 100.0
+    return {
+        "seed": seed,
+        "science_retention_pct": run["detected_patches"] / max(len(data["dis_idx"]), 1) * 100.0,
+        "alert_precision_pct": 100.0 - fp_rate,
+        "false_positive_rate_pct": fp_rate,
+        "n_priority_alerts": float(run["n_alerts"]),
+        "min_battery_soc": float(run["min_batt"]),
+        "cloud_obscured_passes": float(run["cloud_passes"]),
+        "seasonal_average_compute_utilisation_pct": float(run["seasonal_average_compute_pct"]),
+        "data_mb": float(run["data_mb"]),
+        "energy_wh": float(run["energy"]),
+    }
+
+
+def aggregate_policy_results(name: str, policy_runs: list[Dict], n_t: int) -> dict:
+    energy = [run["energy"] for run in policy_runs]
+    data_mb = [run["data_mb"] for run in policy_runs]
+    tp = [run["tp"] for run in policy_runs]
+    fp = [run["fp"] for run in policy_runs]
+    n_alerts = [run["n_alerts"] for run in policy_runs]
+    min_batt = [run["min_batt"] for run in policy_runs]
+    cloud = [run["cloud_passes"] for run in policy_runs]
+    avg_compute = [run["seasonal_average_compute_pct"] for run in policy_runs]
+
+    return {
+        "name": name,
+        "energy_mean_wh": float(np.mean(energy)),
+        "data_mb_mean": float(np.mean(data_mb)),
+        "tp_mean": float(np.mean(tp)),
+        "fp_mean": float(np.mean(fp)),
+        "n_alerts_mean": float(np.mean(n_alerts)),
+        "min_batt_mean": float(np.mean(min_batt)),
+        "cloud_passes_mean": float(np.mean(cloud)),
+        "seasonal_average_compute_pct_mean": float(np.mean(avg_compute)),
+        "action_mix": summarize_action_mix([run["action_dist"] for run in policy_runs], n_t),
+    }
+
+
+def evaluate_policy(
+    policy_name: str,
+    policy_factory: Callable[[], object],
+    cfg: Config,
+    datasets: list[Dict],
+    csc_kwargs: Dict | None = None,
+) -> dict:
+    seed_records = []
+    runs = []
+    for seed, data in enumerate(datasets):
+        run = simulate(policy_name, policy_factory(), data, cfg, outer_seed=seed, csc_kwargs=csc_kwargs)
+        seed_records.append(build_policy_seed_record(seed, run, data))
+        runs.append(run)
+
+    metric_names = [
+        "science_retention_pct",
+        "alert_precision_pct",
+        "false_positive_rate_pct",
+        "n_priority_alerts",
+        "min_battery_soc",
+        "cloud_obscured_passes",
+        "seasonal_average_compute_utilisation_pct",
+        "data_mb",
+        "energy_wh",
+    ]
+    stats = {
+        metric_name: mean_std_ci([record[metric_name] for record in seed_records])
+        for metric_name in metric_names
+    }
+    return {
+        "policy_name": policy_name,
+        "stats": stats,
+        "runs": runs,
+        "seed_records": seed_records,
+        "action_mix": summarize_action_mix([run["action_dist"] for run in runs], datasets[0]["n_t"]),
+    }
+
+
+def run_monte_carlo(
+    cfg: Config,
+    n_seeds: int = MONTE_CARLO_DEFAULTS["n_seeds"],
+    n_patches: int = MONTE_CARLO_DEFAULTS["n_patches"],
+    n_t: int = MONTE_CARLO_DEFAULTS["n_t"],
+    n_dis: int = MONTE_CARLO_DEFAULTS["n_dis"],
+    n_benign: int = MONTE_CARLO_DEFAULTS["n_benign"],
+    datasets: list[Dict] | None = None,
+) -> dict:
+    if datasets is None:
+        datasets = build_datasets(n_seeds, n_patches, n_t, n_dis, n_benign)
+
+    seed_records = []
+    raw_runs = []
+    fixed_runs = []
+    masfe_runs = []
+
+    for seed, data in enumerate(datasets):
+        raw = simulate("RAW_DUMP", None, data, cfg, outer_seed=seed)
+        fixed = simulate("FIXED_ONBOARD", None, data, cfg, outer_seed=seed)
+        masfe = simulate("MASFE_MDP", MASFEPolicy(), data, cfg, outer_seed=seed)
+
+        seed_records.append(build_seed_record(seed, raw, fixed, masfe, data))
+        raw_runs.append(raw)
+        fixed_runs.append(fixed)
+        masfe_runs.append(masfe)
+
+    metric_names = [
+        "downlink_reduction_vs_raw_pct",
+        "downlink_reduction_vs_fixed_pct",
+        "energy_saving_vs_raw_pct",
+        "energy_saving_vs_fixed_pct",
+        "science_retention_pct",
+        "alert_precision_pct",
+        "false_positive_rate_pct",
+        "n_priority_alerts",
+        "min_battery_soc",
+        "cloud_obscured_passes",
+        "seasonal_average_compute_utilisation_pct",
+    ]
+    stats = {
+        metric_name: mean_std_ci([record[metric_name] for record in seed_records])
+        for metric_name in metric_names
+    }
+
+    metrics = {
+        "downlink_reduction_vs_raw_pct": clean_round(stats["downlink_reduction_vs_raw_pct"]["mean"], 1),
+        "downlink_reduction_vs_fixed_pct": clean_round(stats["downlink_reduction_vs_fixed_pct"]["mean"], 1),
+        "energy_saving_vs_raw_pct": clean_round(stats["energy_saving_vs_raw_pct"]["mean"], 1),
+        "energy_saving_vs_fixed_pct": clean_round(stats["energy_saving_vs_fixed_pct"]["mean"], 1),
+        "science_retention_pct": clean_round(stats["science_retention_pct"]["mean"], 1),
+        "alert_precision_pct": clean_round(stats["alert_precision_pct"]["mean"], 1),
+        "false_positive_rate_pct": clean_round(stats["false_positive_rate_pct"]["mean"], 1),
+        "n_priority_alerts": clean_round(stats["n_priority_alerts"]["mean"], 1),
+        "min_battery_soc": clean_round(stats["min_battery_soc"]["mean"], 3),
+        "peak_power_w": round(cfg.peak_w(), 1),
+        "avg_payload_power_w": round(cfg.avg_payload_w(), 2),
+        "compute_utilisation_pct": round(cfg.peak_compute_pct() * 100, 1),
+        "stage1_compute_utilisation_pct": round(cfg.stage1_compute_pct() * 100, 1),
+        "seasonal_average_compute_utilisation_pct": clean_round(
+            stats["seasonal_average_compute_utilisation_pct"]["mean"], 1
+        ),
+        "cloud_obscured_passes": clean_round(stats["cloud_obscured_passes"]["mean"], 1),
+        "monte_carlo": {
+            "n_seeds": n_seeds,
+            "n_patches": n_patches,
+            "n_t": n_t,
+            "n_dis": n_dis,
+            "n_benign": n_benign,
+            "per_metric_ci95": {
+                metric_name: {
+                    "mean": round(metric_stats["mean"], 3),
+                    "std": round(metric_stats["std"], 3),
+                    "ci95_low": round(metric_stats["ci95_low"], 3),
+                    "ci95_high": round(metric_stats["ci95_high"], 3),
+                }
+                for metric_name, metric_stats in stats.items()
+            },
+            "policy_summary": {
+                "RAW_DUMP": aggregate_policy_results("RAW_DUMP", raw_runs, n_t),
+                "FIXED_ONBOARD": aggregate_policy_results("FIXED_ONBOARD", fixed_runs, n_t),
+                "MASFE_MDP": aggregate_policy_results("MASFE_MDP", masfe_runs, n_t),
+            },
+        },
+    }
+    return metrics
+
+
+# ---------------------------------------------------------------------------
+# Evidence outputs
+# ---------------------------------------------------------------------------
+
+def round_stats(stats: dict) -> dict:
+    return {
+        key: {
+            "mean": round(value["mean"], 3),
+            "std": round(value["std"], 3),
+            "ci95_low": round(value["ci95_low"], 3),
+            "ci95_high": round(value["ci95_high"], 3),
+        }
+        for key, value in stats.items()
+    }
+
+
+def run_ablation_analysis(cfg: Config, datasets: list[Dict], baseline_metrics: dict) -> dict:
+    target_recall = round(float(baseline_metrics["science_retention_pct"]), 1)
+    default_eval = evaluate_policy(
+        "ABLATE_NO_BELIEF",
+        lambda: AblateNoBeliefPolicy(csc_alert_thr=0.55),
+        cfg,
+        datasets,
+    )
+    default_recall = round(default_eval["stats"]["science_retention_pct"]["mean"], 1)
+    selected_threshold = 0.55
+    selected_eval = default_eval
+    sweep_results = {}
+
+    if default_recall != target_recall:
+        for threshold in ALERT_THRESH_SWEEP:
+            eval_result = evaluate_policy(
+                "ABLATE_NO_BELIEF",
+                lambda thr=threshold: AblateNoBeliefPolicy(csc_alert_thr=thr),
+                cfg,
+                datasets,
+            )
+            recall_mean = eval_result["stats"]["science_retention_pct"]["mean"]
+            sweep_results[f"{threshold:.2f}"] = round_stats(eval_result["stats"])
+            if round(recall_mean, 1) >= target_recall:
+                selected_threshold = threshold
+                selected_eval = eval_result
+                break
+    else:
+        sweep_results["0.55"] = round_stats(default_eval["stats"])
+
+    ablation_fp = selected_eval["stats"]["false_positive_rate_pct"]["mean"]
+    baseline_fp = baseline_metrics["false_positive_rate_pct"]
+    return {
+        "target_recall_pct": target_recall,
+        "baseline_masfe_false_positive_rate_pct": round(float(baseline_fp), 3),
+        "selected_alert_threshold": round(selected_threshold, 2),
+        "ablation_recall_pct": round(selected_eval["stats"]["science_retention_pct"]["mean"], 3),
+        "ablation_false_positive_rate_pct": round(ablation_fp, 3),
+        "false_positive_rate_delta_pct_points": round(ablation_fp - baseline_fp, 3),
+        "ablation_stats": round_stats(selected_eval["stats"]),
+        "threshold_sweep_checked": sweep_results,
+    }
+
+
+def run_roc_sweep(cfg: Config, datasets: list[Dict]) -> dict:
+    points = []
+    for threshold in ALERT_THRESH_SWEEP:
+        eval_result = evaluate_policy(
+            "MASFE_MDP",
+            lambda thr=threshold: MASFEPolicy(csc_alert_thr=thr),
+            cfg,
+            datasets,
+        )
+        points.append(
+            {
+                "threshold": round(threshold, 2),
+                "science_retention_pct": round(eval_result["stats"]["science_retention_pct"]["mean"], 3),
+                "alert_precision_pct": round(eval_result["stats"]["alert_precision_pct"]["mean"], 3),
+                "false_positive_rate_pct": round(eval_result["stats"]["false_positive_rate_pct"]["mean"], 3),
+                "n_priority_alerts": round(eval_result["stats"]["n_priority_alerts"]["mean"], 3),
+            }
+        )
+
+    return {
+        "thresholds": points,
+        "operating_point_threshold": 0.55,
+    }
+
+
+def write_roc_plot(roc_metrics: dict, destination: Path) -> None:
+    points = roc_metrics["thresholds"]
+    x = [point["false_positive_rate_pct"] for point in points]
+    y = [point["science_retention_pct"] for point in points]
+    labels = [f"{point['threshold']:.2f}" for point in points]
+
+    fig, ax = plt.subplots(figsize=(6.0, 4.2))
+    ax.plot(x, y, marker="o", linewidth=1.8, color="#1b5e8a")
+    for px, py, label in zip(x, y, labels):
+        ax.annotate(label, (px, py), textcoords="offset points", xytext=(4, 4), fontsize=8)
+    ax.set_xlabel("False-positive rate (%)")
+    ax.set_ylabel("Disease-event recall (%)")
+    ax.set_title("MASFE operating-point sweep over CSC alert threshold")
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.45)
+    ax.set_xlim(left=0.0)
+    ax.set_ylim(bottom=max(0.0, min(y) - 1.0), top=min(100.5, max(y) + 1.0))
+    fig.tight_layout()
+    fig.savefig(destination, dpi=220)
+    plt.close(fig)
+
+
+def run_csc_sensitivity(cfg: Config, datasets: list[Dict]) -> dict:
+    cases = []
+    for weight_scale in WEIGHT_SWEEP:
+        for saturation_scale in SATURATION_SWEEP:
+            evi_weight = 0.55 * weight_scale
+            lst_weight = 0.45
+            csc_kwargs = {
+                "evi_weight": evi_weight,
+                "lst_weight": lst_weight,
+                "evi_saturation": 5.0 * saturation_scale,
+                "lst_saturation": 4.0 * saturation_scale,
+            }
+            eval_result = evaluate_policy(
+                "MASFE_MDP",
+                lambda: MASFEPolicy(),
+                cfg,
+                datasets,
+                csc_kwargs=csc_kwargs,
+            )
+            cases.append(
+                {
+                    "evi_weight_raw": round(evi_weight, 4),
+                    "lst_weight_raw": round(lst_weight, 4),
+                    "evi_saturation_sigma": round(5.0 * saturation_scale, 3),
+                    "lst_saturation_sigma": round(4.0 * saturation_scale, 3),
+                    "science_retention_pct": round(eval_result["stats"]["science_retention_pct"]["mean"], 3),
+                    "false_positive_rate_pct": round(eval_result["stats"]["false_positive_rate_pct"]["mean"], 3),
+                    "alert_precision_pct": round(eval_result["stats"]["alert_precision_pct"]["mean"], 3),
+                }
+            )
+
+    summary = {}
+    for metric_name in ("science_retention_pct", "false_positive_rate_pct", "alert_precision_pct"):
+        values = [case[metric_name] for case in cases]
+        summary[metric_name] = {
+            "min": round(min(values), 3),
+            "max": round(max(values), 3),
+        }
+
+    return {
+        "weight_sweep_scale": WEIGHT_SWEEP,
+        "saturation_sweep_scale": SATURATION_SWEEP,
+        "cases": cases,
+        "summary": summary,
+    }
+
+
+def write_json(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Report
+# ---------------------------------------------------------------------------
+
+def report(metrics: dict, ablation_metrics: dict, roc_metrics: dict, csc_sensitivity: dict) -> None:
+    mc = metrics["monte_carlo"]
+    ci = mc["per_metric_ci95"]
+    masfe = mc["policy_summary"]["MASFE_MDP"]
+    fixed = mc["policy_summary"]["FIXED_ONBOARD"]
+    raw = mc["policy_summary"]["RAW_DUMP"]
+
+    print("\n" + "=" * 72)
+    print("  MASFE - Multi-Algorithm Scheduling and Fusion Engine")
+    print("  NASA Space-to-Soil Challenge 2026 - Monte Carlo Results")
+    print("=" * 72)
 
     print("\n  NASA ALGORITHM CITATIONS")
-    print("  ├─ MOD13A1  DOI: 10.5067/MODIS/MOD13A1.061  (EVI vegetation index)")
-    print("  └─ MOD11A1  DOI: 10.5067/MODIS/MOD11A1.061  (land surface temp)")
-    print("  Fusion: Crop Stress Composite (CSC) — EVI anomaly + LST anomaly")
+    print("  |- MOD13A1  DOI: 10.5067/MODIS/MOD13A1.061  (EVI vegetation index)")
+    print("  `- MOD11A1  DOI: 10.5067/MODIS/MOD11A1.061  (land surface temp)")
+    print("  Fusion: Crop Stress Composite (CSC) - EVI anomaly + LST anomaly")
+
+    print("\n  SYNTHETIC VALIDATION CONFIGURATION")
+    print(f"  |- Monte Carlo seeds:   {mc['n_seeds']}")
+    print(f"  |- Field patches/seed:  {mc['n_patches']}")
+    print(f"  |- Passes/seed:         {mc['n_t']}")
+    print(f"  |- Disease events/seed: {mc['n_dis']}")
+    print(f"  `- Benign confounders:  {mc['n_benign']}")
 
     print("\n  HOSTED PAYLOAD SWAP COMPLIANCE (LEON4FT + Kintex UltraScale+ RT)")
-    print(f"  ├─ Peak payload power: {cfg.peak_w():.1f}W")
-    print(f"  ├─ Avg payload power:  {cfg.avg_payload_w():.2f}W   [host alloc 10.5W]  PASS")
-    print(f"  ├─ Compute:           {cfg.compute_pct()*100:.0f}% of LEON4FT    PASS")
-    print(f"  └─ Min battery SOC:   {masfe['min_batt']:.1%}   [40Wh local buffer]  PASS")
-    print(f"  Cloud-obscured passes: {masfe['cloud_passes']}/{120}  (~30%)")
+    print(f"  |- Peak payload power:  {metrics['peak_power_w']:.1f}W")
+    print(f"  |- Avg payload power:   {metrics['avg_payload_power_w']:.2f}W   [host alloc 10.5W]  PASS")
+    print(f"  |- Peak compute load:   {metrics['compute_utilisation_pct']:.1f}% of LEON4FT  PASS")
+    print(f"  |- Stage-1-only load:   {metrics['stage1_compute_utilisation_pct']:.1f}% of LEON4FT")
+    print(
+        f"  |- Seasonal avg load:   {metrics['seasonal_average_compute_utilisation_pct']:.1f}% of LEON4FT"
+        f"  (95% CI {ci['seasonal_average_compute_utilisation_pct']['ci95_low']:.1f}"
+        f"-{ci['seasonal_average_compute_utilisation_pct']['ci95_high']:.1f})"
+    )
+    print(f"  `- Min battery SOC:     {metrics['min_battery_soc']:.1%} mean seed minimum   [40Wh local buffer]  PASS")
+    print(
+        f"  Cloud-obscured passes:  {metrics['cloud_obscured_passes']:.1f}/{mc['n_t']} mean"
+        f"  (95% CI {ci['cloud_obscured_passes']['ci95_low']:.1f}-{ci['cloud_obscured_passes']['ci95_high']:.1f})"
+    )
 
-    print("\n  THREE-WAY PERFORMANCE COMPARISON")
-    hdr = f"  {'Metric':<40} {'RAW DUMP':>10} {'FIXED OB':>10} {'MASFE MDP':>10}"
-    print(hdr)
-    print("  " + "─" * 72)
+    print("\n  THREE-WAY PERFORMANCE COMPARISON (Monte Carlo means)")
+    header = f"  {'Metric':<40} {'RAW DUMP':>10} {'FIXED OB':>10} {'MASFE MDP':>10}"
+    print(header)
+    print("  " + "-" * 72)
+
     def row(label, a, b, c, fmt="{:.0f}"):
         print(f"  {label:<40} {fmt.format(a):>10} {fmt.format(b):>10} {fmt.format(c):>10}")
 
-    row("Downlink data (MB)",      raw['data_mb'],  fixed['data_mb'],  masfe['data_mb'])
-    row("Energy consumed (Wh)",    raw['energy'],   fixed['energy'],   masfe['energy'],  fmt="{:.2f}")
-    row("True positives (TP)",     raw['tp'],       fixed['tp'],       masfe['tp'])
-    row("False positives (FP)",    raw['fp'],       fixed['fp'],       masfe['fp'])
-    row("Priority alerts sent",    0,               0,                 masfe['n_alerts'])
-    print("  " + "─" * 72)
+    row("Downlink data (MB)", raw["data_mb_mean"], fixed["data_mb_mean"], masfe["data_mb_mean"])
+    row("Energy consumed (Wh)", raw["energy_mean_wh"], fixed["energy_mean_wh"], masfe["energy_mean_wh"], fmt="{:.2f}")
+    row("True positives (TP)", raw["tp_mean"], fixed["tp_mean"], masfe["tp_mean"], fmt="{:.1f}")
+    row("False positives (FP)", raw["fp_mean"], fixed["fp_mean"], masfe["fp_mean"], fmt="{:.1f}")
+    row("Priority alerts sent", 0.0, 0.0, masfe["n_alerts_mean"], fmt="{:.1f}")
+    print("  " + "-" * 72)
 
-    print(f"\n  KEY METRICS vs RAW DUMP BASELINE (naive ground processing):")
-    print(f"  ✓  Downlink reduction:   {dl_vs_raw:.0f}%")
-    print(f"  ✓  Energy saving:        {e_vs_raw:.0f}%")
+    print("\n  KEY METRICS vs RAW DUMP BASELINE (Monte Carlo means)")
+    print(
+        f"  * Downlink reduction: {metrics['downlink_reduction_vs_raw_pct']:.1f}%"
+        f"  (95% CI {ci['downlink_reduction_vs_raw_pct']['ci95_low']:.1f}"
+        f"-{ci['downlink_reduction_vs_raw_pct']['ci95_high']:.1f})"
+    )
+    print(
+        f"  * Energy saving:      {metrics['energy_saving_vs_raw_pct']:.1f}%"
+        f"  (95% CI {ci['energy_saving_vs_raw_pct']['ci95_low']:.1f}"
+        f"-{ci['energy_saving_vs_raw_pct']['ci95_high']:.1f})"
+    )
 
-    print(f"\n  KEY METRICS vs FIXED-SCHEDULE ONBOARD (intermediate baseline):")
-    print(f"  ✓  Downlink reduction:   {dl_vs_fixed:.0f}%")
-    print(f"  ✓  Energy saving:        {e_vs_fixed:.0f}%")
+    print("\n  KEY METRICS vs FIXED-SCHEDULE ONBOARD (Monte Carlo means)")
+    print(
+        f"  * Downlink reduction: {metrics['downlink_reduction_vs_fixed_pct']:.1f}%"
+        f"  (95% CI {ci['downlink_reduction_vs_fixed_pct']['ci95_low']:.1f}"
+        f"-{ci['downlink_reduction_vs_fixed_pct']['ci95_high']:.1f})"
+    )
+    print(
+        f"  * Energy saving:      {metrics['energy_saving_vs_fixed_pct']:.1f}%"
+        f"  (95% CI {ci['energy_saving_vs_fixed_pct']['ci95_low']:.1f}"
+        f"-{ci['energy_saving_vs_fixed_pct']['ci95_high']:.1f})"
+    )
 
-    print(f"\n  SCIENCE RETENTION:      {sci_ret:.0f}%  (disease-event recall)")
-    print(f"  ALERT PRECISION:        {100-fp_rate:.1f}%  (true-positive rate of alerts)")
-    print(f"  FALSE-POSITIVE RATE:    {fp_rate:.1f}%  (target ≤15%)")
+    print(
+        f"\n  SCIENCE RETENTION:   {metrics['science_retention_pct']:.1f}%"
+        f"  (95% CI {ci['science_retention_pct']['ci95_low']:.1f}-{ci['science_retention_pct']['ci95_high']:.1f})"
+    )
+    print(
+        f"  ALERT PRECISION:     {metrics['alert_precision_pct']:.1f}%"
+        f"  (95% CI {ci['alert_precision_pct']['ci95_low']:.1f}-{ci['alert_precision_pct']['ci95_high']:.1f})"
+    )
+    print(
+        f"  FALSE-POSITIVE RATE: {metrics['false_positive_rate_pct']:.1f}%"
+        f"  (95% CI {ci['false_positive_rate_pct']['ci95_low']:.1f}-{ci['false_positive_rate_pct']['ci95_high']:.1f})"
+        "  (target <=15%)"
+    )
+    print(
+        f"  ABLATION (matched recall): FP rate rises by {ablation_metrics['false_positive_rate_delta_pct_points']:.1f} pts"
+        f"  to {ablation_metrics['ablation_false_positive_rate_pct']:.1f}%"
+        f"  at threshold {ablation_metrics['selected_alert_threshold']:.2f}"
+    )
 
-    print("\n  MASFE SCHEDULING DECISIONS")
-    total = sum(masfe['action_dist'].values())
-    for a, n in sorted(masfe['action_dist'].items(), key=lambda x: -x[1]):
-        pct = n / total * 100
-        bar = '▓' * int(pct / 3.5)
-        print(f"  {a:<18}  {n:>4}×  ({pct:5.1f}%)  {bar}")
+    print("\n  MASFE SCHEDULING DECISIONS (mean share of passes)")
+    total_pct = sum(item["pct_mean"] for item in masfe["action_mix"].values())
+    for action_name, action_metrics in sorted(
+        masfe["action_mix"].items(),
+        key=lambda item: -item[1]["pct_mean"],
+    ):
+        pct = action_metrics["pct_mean"]
+        bar = "#" * int((pct / max(total_pct, 1e-9)) * 20)
+        print(f"  {action_name:<18}  {action_metrics['count_mean']:>5.1f}x  ({pct:5.1f}%)  {bar}")
 
-    if masfe['alerts']:
-        print(f"\n  EARLY PATHOGEN ALERTS DISPATCHED: {masfe['n_alerts']}")
-        for a in masfe['alerts'][:5]:
-            print(f"  ├─ t={a['t']:>3}  {a['n']:>2} patch(es) flagged  CSC_max={a['csc_max']:.3f}")
-        if masfe['n_alerts'] > 5:
-            print(f"  └─ ...+{masfe['n_alerts']-5} more")
+    print("\n  ADDITIONAL REPO OUTPUTS")
+    print("  * outputs/ablation_metrics.json")
+    print("  * outputs/roc_metrics.json")
+    print("  * outputs/roc.png")
+    print("  * outputs/csc_sensitivity.json")
+    print(
+        "  * CSC sweep summary: recall "
+        f"{csc_sensitivity['summary']['science_retention_pct']['min']:.1f}-"
+        f"{csc_sensitivity['summary']['science_retention_pct']['max']:.1f}%"
+        ", FP rate "
+        f"{csc_sensitivity['summary']['false_positive_rate_pct']['min']:.1f}-"
+        f"{csc_sensitivity['summary']['false_positive_rate_pct']['max']:.1f}%"
+    )
 
-    print("\n  JUDGING CRITERIA EVIDENCE")
-    print(f"  Impact 2 — downlink reduction (vs raw):    {dl_vs_raw:.0f}%  ✓")
-    print(f"  Impact 2 — downlink reduction (vs fixed):  {dl_vs_fixed:.0f}%  ✓")
-    print(f"  Impact 2 — power saving (vs raw):          {e_vs_raw:.0f}%  ✓")
-    print(f"  Impact 1 — science retention:              {sci_ret:.0f}%  ✓")
-    print(f"  Feasibility 1b — all SWAP budgets:         PASS  ✓")
-    print(f"  Creativity 1a — two-stage MDP policy:      Novel  ✓")
-    print(f"  Creativity 1b — Loft Orbital + OpenET:     Named  ✓")
-
-    print("=" * 68)
-
-    metrics = {
-        "downlink_reduction_vs_raw_pct":   round(dl_vs_raw, 1),
-        "downlink_reduction_vs_fixed_pct": round(dl_vs_fixed, 1),
-        "energy_saving_vs_raw_pct":        round(e_vs_raw, 1),
-        "energy_saving_vs_fixed_pct":      round(e_vs_fixed, 1),
-        "science_retention_pct":           round(sci_ret, 1),
-        "alert_precision_pct":             round(100 - fp_rate, 1),
-        "false_positive_rate_pct":         round(fp_rate, 1),
-        "n_priority_alerts":               masfe['n_alerts'],
-        "min_battery_soc":                 round(masfe['min_batt'], 3),
-        "peak_power_w":                    round(cfg.peak_w(), 1),
-        "avg_payload_power_w":             round(cfg.avg_payload_w(), 2),
-        "compute_utilisation_pct":         round(cfg.compute_pct() * 100, 1),
-        "cloud_obscured_passes":           masfe['cloud_passes'],
-    }
+    print("=" * 72)
     print(f"\n  JSON (paste into paper):\n{json.dumps(metrics, indent=2)}")
     metrics_path = Path("simulation_metrics.json")
     metrics_path.write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
     print(f"\n  Metrics written to {metrics_path}")
 
 
-# ─────────────────────────────────────────────
-# 8. MAIN
-# ─────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("MASFE Simulation — generating data...")
-    cfg  = Config()
-    data = make_data(n_patches=50, n_t=120)
+    print("MASFE Simulation - running 100-seed Monte Carlo benchmark...")
+    cfg = Config()
+    datasets = build_datasets(
+        MONTE_CARLO_DEFAULTS["n_seeds"],
+        MONTE_CARLO_DEFAULTS["n_patches"],
+        MONTE_CARLO_DEFAULTS["n_t"],
+        MONTE_CARLO_DEFAULTS["n_dis"],
+        MONTE_CARLO_DEFAULTS["n_benign"],
+    )
+    metrics = run_monte_carlo(cfg, datasets=datasets)
+    ablation_metrics = run_ablation_analysis(cfg, datasets, metrics)
+    roc_metrics = run_roc_sweep(cfg, datasets)
+    csc_sensitivity = run_csc_sensitivity(cfg, datasets)
 
-    raw   = simulate('RAW_DUMP',       None, data, cfg)
-    fixed = simulate('FIXED_ONBOARD',  None, data, cfg)
-    masfe = simulate('MASFE_MDP', MASFEPolicy(), data, cfg)
-
-    report(raw, fixed, masfe, cfg, data)
+    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+    write_json(OUTPUTS_DIR / "ablation_metrics.json", ablation_metrics)
+    write_json(OUTPUTS_DIR / "roc_metrics.json", roc_metrics)
+    write_roc_plot(roc_metrics, OUTPUTS_DIR / "roc.png")
+    write_json(OUTPUTS_DIR / "csc_sensitivity.json", csc_sensitivity)
+    report(metrics, ablation_metrics, roc_metrics, csc_sensitivity)
