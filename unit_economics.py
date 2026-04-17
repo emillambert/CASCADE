@@ -238,9 +238,22 @@ def first_break_even_milestone(scenario: str) -> dict | None:
 def latex_rows() -> str:
     rows = []
     for metrics in (row_metrics(m, "low") for m in MILESTONES):
+        # Paper-facing table treats Y1 as grant-funded / bridge-to-MVP rather than quoting a negative margin percent.
+        if metrics["year"] == "Y1":
+            op_margin_cell = "grant-funded"
+        else:
+            op_margin_cell = f'{metrics["operating_margin_pct"]:.1f}\\%'
+
+        milestone_label = metrics["milestone"]
+        if milestone_label == "US national":
+            milestone_label = "U.S. national"
+
+        row = dict(metrics)
+        row["milestone"] = milestone_label
+        row["op_margin_cell"] = op_margin_cell
         rows.append(
             "    {year} & {milestone} & {geography} & {coverage_label} & "
-            "${total_revenue_musd:.2f}\\,M$ & {operating_margin_pct:.1f}\\% \\\\".format(**metrics)
+            "${total_revenue_musd:.2f}\\,M$ & {op_margin_cell} \\\\".format(**row)
         )
     return "\n".join(rows)
 

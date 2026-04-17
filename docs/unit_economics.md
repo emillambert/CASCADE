@@ -25,9 +25,9 @@ The paper uses the **low/design-to-cost** hosted-payload case as the headline sc
 
 | Year | Milestone | Geography | Coverage | Revenue | Op. margin |
 | --- | --- | --- | ---: | ---: | ---: |
-| `Y1` | SJV pilot | California SJV | `3.5% SJV` | `$0.20M` | `-403.7%` |
+| `Y1` | SJV pilot | California SJV | `3.5% SJV` | `$0.20M` | `grant-funded` |
 | `Y2` | California scale | California | `28.3% SJV` | `$1.70M` | `+17.1%` |
-| `Y3` | US national | U.S. irrigated | `11.0% US` | `$10.62M` | `+60.4%` |
+| `Y3` | U.S. national | U.S. irrigated | `11.0% US` | `$10.62M` | `+60.4%` |
 | `Y4` | EU + Brazil entry | EU + Brazil | `35.1% EU+Brazil` | `$27.62M` | `+68.1%` |
 | `Y5` | Global platform | Global | `6.0% global` | `$76.50M` | `+70.7%` |
 

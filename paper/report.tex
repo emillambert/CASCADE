@@ -95,9 +95,9 @@ Solo submission
 
 \section{Introduction}
 
-MASFE (Multi-Algorithm Scheduling and Fusion Engine) answers NASA's Space-to-Soil challenge by moving land-observation orchestration onboard instead of treating the spacecraft as a passive camera \cite{nasa-challenge-brief}. The target use case is regenerative agriculture, where disease and irrigation stress must be detected early enough for patch-level intervention instead of blanket chemical application. Current land products are typically too slow or too coarse for that workflow.
+MASFE (Multi-Algorithm Scheduling and Fusion Engine) answers NASA's Space-to-Soil challenge by moving land-observation orchestration onboard \cite{nasa-challenge-brief}. The target use case is regenerative agriculture, where disease and irrigation stress must be detected early enough for patch-level intervention instead of blanket chemical application. Current land products are typically too slow or too coarse for that workflow \cite{gold-webinar1,mod13a1,mod11a1}.
 
-The proposed contribution is a two-stage, MDP-formulated scheduling policy executed as a deterministic, flight-verifiable rule set on a LEON4FT processor. A low-cost spectral screen runs every pass, and confirmation fuses thermal and moisture cues only when the belief state indicates likely stress. The payload is hosted on Loft Orbital's YAM platform with alerts to agricultural software via OpenET-linked ground services \cite{mytkowicz-webinar2,openet-api}; end-to-end architecture and the code submission URL are given in \S\ref{sec:solution}.
+The proposed contribution is a two-stage, MDP-formulated scheduling policy executed as a deterministic, flight-verifiable rule set on a LEON4FT processor. A low-cost spectral screen runs every pass, and confirmation fuses thermal and moisture cues only when the belief state indicates likely stress. End-to-end architecture is shown in Fig.~\ref{fig:architecture}, and implementation details are in \S\ref{sec:solution}.
 
 \begin{table}[H]
 \centering
@@ -125,6 +125,7 @@ Presentation & Eq.~\eqref{eq:csc}, Fig.~\ref{fig:architecture}, \S\ref{sec:solut
 \label{sec:solution}
 
 MASFE uses a two-stage adaptive sensing loop. Stage 1 executes an EVI anomaly screen derived from MOD13A1 logic on every observed field patch and updates a per-patch stress posterior using EVI and NDWI cues from the same MSI acquisition. When the posterior indicates likely stress, Stage 2 runs a thermal retrieval derived from MOD11A1 and fuses EVI, LST, and MOD09A1-derived NDWI into a Crop Stress Composite (CSC), a normalized anomaly index conceptually related to temperature--vegetation dryness indices (e.g., TVDI) \cite{mod13a1,mod11a1,mod09a1,mod09-guide}. Only confirmed anomalous tiles are buffered for priority downlink. This makes sensing content-driven rather than timeline-driven and distinguishes MASFE from ASPEN/CASPER-style planners, which optimize scheduled activities rather than per-patch stress belief \cite{jpl-scheduling,eo1-autonomy}.
+In other words, a timeline-optimized planner can still expend downlink and energy on benign scenes because it lacks a per-patch content gate; MASFE's belief gate is what enables the downlink and energy reductions at matched recall (Table~\ref{tab:req-results}).
 
 \begin{equation}
 \text{CSC} = 0.40 \cdot \text{clip}\!\left(\frac{\Delta\text{EVI}}{5\sigma_e}, 0, 1\right)
@@ -134,6 +135,7 @@ MASFE uses a two-stage adaptive sensing loop. Stage 1 executes an EVI anomaly sc
 \end{equation}
 
 Here $\Delta\text{EVI} = \max(0, \text{EVI}_{base} - \text{EVI}_{obs})$, $\Delta\text{LST} = \max(0, \text{LST}_{obs} - \text{LST}_{base})$, and $\Delta\text{NDWI} = \max(0, \text{NDWI}_{base} - \text{NDWI}_{obs})$. The factors of $5$, $4$, and $4$ are simulation-calibrated saturation constants with an agronomic interpretation as the expected upper bounds of healthy seasonal EVI variability, thermal variability, and short-wave moisture variability for the tested crop regime; they map anomaly magnitude into $[0,1]$ before CSC composition. They are therefore tunable hyperparameters rather than fixed physical constants and would be re-calibrated on flight and field data. The implementation is intentionally deterministic even though the policy is MDP-formulated: that choice favors flight qualification and traceable verification on LEON4FT hardware over a learned black-box controller.
+Learned policies could in principle improve thresholds, but they increase qualification burden and opaque failure modes; MASFE therefore prioritizes determinism even at the cost of potential marginal optimality.
 
 The scheduling logic is modeled as a finite-horizon MDP with per-patch Beta posteriors $\text{Beta}(\alpha_i,\beta_i)$ over stress probability. Stage~1 increments $\alpha_i$ when EVI or NDWI exceedance is observed and $\beta_i$ otherwise, with the evidence window capped to preserve responsiveness. Action selection compresses that patchwise belief into a mission state vector $s = (\mu_{\max}, \tau_{\max}, \text{SOC}, d, k)$, where $\mu_{\max}$ is the maximum posterior mean, $\tau_{\max}$ is the maximum $P(p > 0.5)$ tail probability, SOC is battery state of charge, $d \in \{0,1\}$ indicates downlink availability, and $k$ counts passes since last fusion. The action set remains \{SKIP, MOD13, FUSE, FUSE\_PRIORITY\}; NDWI is derived from the same MSI acquisition rather than requiring a separate action. The reward trades information gain against energy cost and missed-alert risk. The deployed solver is a hand-tuned deterministic policy that approximates the Bellman-optimal solution, chosen over learned policies because radiation-tolerant CPUs cannot justify neural inference at acceptable V\&V cost.
 
@@ -202,9 +204,9 @@ Average delivered resolution is therefore bandwidth-adaptive rather than fixed: 
 \label{fig:architecture}
 \end{figure}
 
-The FPGA performs radiometric preprocessing and per-pixel CSC computation, then transfers frames to the LEON4FT over AXI4-Stream in under 1 ms. Onboard preprocessing includes radiometric calibration and cloud screening, while CSC itself is evaluated as a pass-to-pass relative anomaly detector rather than a fully atmosphere-corrected retrieval; full atmospheric correction is deferred to later validation because CSC is used for change detection rather than absolute retrieval. The selected Kintex UltraScale+ RT part comes from AMD's radiation-tolerant XQR family, specified to 100 krad total ionizing dose and QML-oriented qualification flows rather than commercial-grade testing \cite{amd-xqr}. MASFE is framed as a hosted payload module within a Loft Orbital YAM bus rather than as a full standalone 6U satellite; the SWAP budget therefore describes the payload module itself, not the host spacecraft. Spacecraft bus functions such as ADCS, OBC, and platform communications are provided by YAM, while MASFE carries a local 40 Wh battery and power-conditioning stage to preserve autonomy through eclipse periods and peak compute windows (40 Wh / 5.05 W $\approx$ 7.9 h, comfortably above the $\sim$35 min eclipse at 500 km SSO).
+The FPGA performs radiometric preprocessing and per-pixel CSC computation, then transfers frames to the LEON4FT over AXI4-Stream (budgeted under 1 ms). Onboard preprocessing includes radiometric calibration and cloud screening, while CSC itself is evaluated as a pass-to-pass relative anomaly detector rather than a fully atmosphere-corrected retrieval; full atmospheric correction is deferred to later validation because CSC is used for change detection rather than absolute retrieval. The selected Kintex UltraScale+ RT part comes from AMD's radiation-tolerant XQR family \cite{amd-xqr}. MASFE is framed as a hosted payload module within a Loft Orbital YAM bus rather than as a full standalone 6U satellite; the SWAP budget therefore describes the payload module itself, not the host spacecraft.
 
-Operational degradation is explicit. Above 35\% battery state of charge, MASFE runs the full two-stage policy. Between 15\% and 35\%, it falls back to Stage 1 screening only. Below 15\%, it preserves energy for stored alert downlink. This satisfies the challenge requirement to degrade gracefully under onboard resource stress.
+Operational degradation is explicit. Above 35\% battery state of charge, MASFE runs the full two-stage policy. Between 15\% and 35\%, it falls back to Stage 1 screening only. Below 15\%, it preserves energy for stored alert downlink. This satisfies the challenge requirement to degrade gracefully under onboard resource stress \cite{nasa-challenge-brief}.
 
 The quoted 92.5\% LEON4FT figure is a worst-case simultaneous-execution ceiling rather than a continuous load. Stage~1 alone occupies 39.2\% of LEON4FT capacity, while the upgraded action mix from the benchmark in \S\ref{sec:impact} yields a 49.2\% seasonal-average utilization because 81.3\% of synthetic passes remain at 30\,m screening and only 18.7\% escalate to full fusion. That leaves meaningful headroom for RTOS, watchdog, and fault-handling overhead while making hardware-in-the-loop timing validation the right next step.
 
@@ -217,7 +219,7 @@ Full simulation source code (\texttt{masfe\_simulation.py}) is submitted as Code
 
 MASFE does not introduce a new crop model; it orchestrates standard land-product evidence as laid out in \S\ref{sec:solution}. That prioritization matters for time-sensitive decisions. Dr.\ Katie Gold's disease-detection work emphasizes that spectral stress often appears before visible symptoms and before whole-field treatment would be agronomically or economically rational \cite{gold-webinar1}.
 
-In a 100-seed Monte Carlo benchmark, MASFE was tested over 120 passes, 500 field patches, 21 disease events, and 9 benign confounders per seed, with roughly 36.7 cloud-obscured passes per seed. Relative to raw downlink, it reduced transmitted data by 99.3\% and active payload energy by 38.6\%. Relative to a fixed onboard pipeline, the Bayesian belief gate adds volumetric and operational value together: versus always-on fusion, MASFE cuts downlinked data by 80.7\% and payload energy by 24.6\% while keeping the pass mix skewed toward Stage~1 screening (\S\ref{sec:solution}). Mission usefulness remained strong: disease-event recall stayed at 100.0\%, alert precision reached 98.4\%, and the false-positive rate remained at 1.6\%.
+In a 100-seed Monte Carlo benchmark, MASFE was tested over 120 passes, 500 field patches, 21 disease events, and 9 benign confounders per seed, with roughly 36.7 cloud-obscured passes per seed. Headline downlink, energy, recall, and false-positive performance are summarized in Table~\ref{tab:req-results}. Versus always-on fusion, the belief gate adds volumetric and operational value together by cutting downlinked data and energy while keeping the pass mix skewed toward Stage~1 screening (\S\ref{sec:solution}).
 
 Across that benchmark, 95\% confidence intervals were 99.32--99.33\% for downlink reduction versus raw, 38.52--38.70\% for energy saving versus raw, 100.0--100.0\% for disease-event recall, and 1.34--1.78\% for false-positive rate. The operating point is tunable: sweeping $csc\_alert\_thr$ from 0.40 to 0.70 preserved 100.0\% recall until the most conservative endpoint while moving false-positive rate from 2.23\% to 1.26\%, and a $\pm30\%$ CSC-parameter sweep kept recall at 100.0\% with false-positive rate in the 1.0--2.3\% band; detailed curves and cases are included in the code submission.
 
@@ -253,7 +255,7 @@ Y5 & Global platform & Global & 6.0\% global & \$76.50\,M & 70.7\% \\
 \end{tabular}
 \end{table}
 
-In this rollout, Y1 is a paid pilot (replay context in \S\ref{sec:impact}), Y2 scales through Climate FieldView plus direct enterprise sales, Y3 reaches U.S.-scale profitability through Climate FieldView and John Deere Operations Center, Y4 enters EU and Brazilian markets through xarvio and John Deere Brazil, and Y5 becomes a global multi-platform product that can also flow through CropX. Y1 is intentionally modeled as an AIST- or NASA SBIR/STTR-style co-funded bridge-to-MVP year rather than a self-financing steady state \cite{nasa-aist,nasa-sbir}. Base and high fixed-cost sensitivities still break even at Y3 and 2.5\,Mha. At constellation scale, three YAM-hosted payloads would reduce revisit from roughly 90 minutes to roughly 30 minutes, and a Stage~1 anomaly on one pass could cue a Stage~2 priority acquisition on the next satellite.
+In this rollout, Y1 is a paid pilot, Y2 scales through Climate FieldView plus direct enterprise sales, Y3 reaches U.S.-scale profitability through Climate FieldView and John Deere Operations Center, Y4 enters EU and Brazilian markets through xarvio and John Deere Brazil, and Y5 becomes a global multi-platform product that can also flow through CropX. Y1 is intentionally modeled as an AIST- or NASA SBIR/STTR-style co-funded bridge-to-MVP year rather than a self-financing steady state \cite{nasa-aist,nasa-sbir}. In the retained fixed-cost sensitivity, the low/design-to-cost case breaks even at Y2 and 400\,kha, while the base and high cases still break even at Y3 and 2.5\,Mha. At constellation scale, three YAM-hosted payloads would reduce revisit from roughly 90 minutes to roughly 30 minutes, and a Stage~1 anomaly on one pass could cue a Stage~2 priority acquisition on the next satellite.
 
 That generalization story matters for the judges' business-model criterion. Agriculture is the entry market, but the same scheduling core can be retuned for wildfire fuel-moisture monitoring, a forest-wildfire detection market projected to reach about \$950\,M by 2032 \cite{wildfire-market}; flood-front tracking would swap CSC for water-extent products, and urban heat-island response would replace farm polygons with city blocks while reusing the same anomaly-driven scheduler.
 
@@ -265,146 +267,11 @@ MASFE is currently a TRL 3 concept: the scheduling logic, fusion equation, SWAP 
 
 \label{chapter:conclusion}
 
-MASFE demonstrates that adaptive sensing and onboard processing can transform SmallSat missions from passive collectors into responsive decision systems. The two-stage Markov Decision Process (MDP) scheduling policy reuses standard land-product evidence and escalates fusion only when the belief state warrants it (\S\ref{sec:solution}), achieving the headline downlink, energy, recall, and false-positive performance summarized in Table~\ref{tab:req-results} and \S\ref{sec:impact}, within hosted-payload SWAP constraints. For regenerative agriculture, that means shifting from blanket preventative treatment to targeted, evidence-based intervention at field-patch scale. More broadly, MASFE contributes a reusable onboard orchestration primitive that can extend beyond agriculture into other anomaly-driven Earth-observation missions.
+MASFE demonstrates that adaptive sensing and onboard processing can transform SmallSat missions into responsive decision systems. Performance is summarized in Table~\ref{tab:req-results} and \S\ref{sec:impact}, within hosted-payload SWAP constraints. For regenerative agriculture, this enables targeted, evidence-based intervention at field-patch scale and can reduce avoidable yield loss and wasted produce through earlier mitigation---a humanitarian lever in regions where losses from pests, disease, and degradation remain high \cite{fao-plant-production,ifc-food-loss-2017}. Using the treatment-deferral scaling in \S\ref{sec:impact}, Year~5 (18\,Mha; Table~\ref{tab:unit-econ}) implies on the order of \$1.4\,B/season of avoidable blanket fungicide spend before yield protection is counted. MASFE is released under an MIT license so publicly funded food-security programmes, humanitarian monitoring efforts, and university research groups can reuse the scheduling primitive beyond any commercial rollout.
 
 \clearpage
-\footnotesize
-\begin{thebibliography}{99}
-\setlength{\itemsep}{0.1em}
-\setlength{\parskip}{0pt}
-
-\bibitem{nasa-challenge-brief}
-NASA Earth Science Technology Office,
-\emph{Space-to-Soil Challenge: Challenge Brief and Guidelines},
-2026.
-\url{https://nasa-space-to-soil.org}.
-
-\bibitem{mod13a1}
-NASA EOSDIS Land Processes DAAC,
-\emph{MOD13A1 MODIS/Terra Vegetation Indices 16-Day L3 Global 500 m SIN Grid V061},
-2021.
-DOI: \url{https://doi.org/10.5067/MODIS/MOD13A1.061}.
-
-\bibitem{mod11a1}
-NASA EOSDIS Land Processes DAAC,
-\emph{MOD11A1 MODIS/Terra Land Surface Temperature/Emissivity Daily L3 Global 1 km SIN Grid V061},
-2021.
-DOI: \url{https://doi.org/10.5067/MODIS/MOD11A1.061}.
-
-\bibitem{mod09a1}
-E. Vermote,
-\emph{MODIS/Terra Surface Reflectance 8-Day L3 Global 500m SIN Grid V061},
-NASA Land Processes Distributed Active Archive Center, 2021.
-DOI: \url{https://doi.org/10.5067/MODIS/MOD09A1.061}.
-
-\bibitem{mod09-guide}
-MODIS Land Surface Reflectance Science Computing Facility,
-\emph{MODIS Surface Reflectance User's Guide, Collection 6},
-2020.
-\url{https://www.earthdata.nasa.gov/s3fs-public/2025-04/MOD09_User_Guide_V61.pdf}.
-
-\bibitem{gold-webinar1}
-K. Gold,
-\emph{Spectral Early Detection of Crop Pathogens for Regenerative Agriculture Applications},
-NASA Space-to-Soil Challenge Informational Webinar 1,
-Cornell University Plant Disease Diagnostics Laboratory, February 12, 2026.
-
-\bibitem{mytkowicz-webinar2}
-J. Mytkowicz,
-\emph{AI-Enabled Satellites and On-Orbit Decision-Making: Lessons from Loft Orbital},
-NASA Space-to-Soil Challenge Informational Webinar 2,
-Loft Orbital, March 25, 2026.
-
-\bibitem{openet-api}
-OpenET Consortium,
-\emph{FARMS API Documentation},
-2025.
-\url{https://openet.gitbook.io/docs/additional-resources/farms}.
-
-\bibitem{jpl-scheduling}
-JPL Artificial Intelligence Group,
-\emph{Scheduling and Planning Technology},
-2024.
-\url{https://ai.jpl.nasa.gov/public/projects/}.
-
-\bibitem{eo1-autonomy}
-R. Sherwood, S. Chien, D. Tran, R. Castano, and others,
-\emph{Intelligent Systems in Space: The EO-1 Autonomous Sciencecraft},
-NASA Technical Reports Server, 2005.
-\url{https://ntrs.nasa.gov/citations/20060044325}.
-
-\bibitem{usda-2022}
-USDA National Agricultural Statistics Service,
-\emph{2022 Census of Agriculture: United States Summary and State Data},
-2024.
-\url{https://www.nass.usda.gov/Publications/AgCensus/2022/Full_Report/Volume_1\%2C_Chapter_1_US/usv1.pdf}.
-
-\bibitem{eurostat-farms}
-Eurostat,
-\emph{Farms and Farmland in the European Union},
-Statistics Explained, 2025.
-\url{https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Farms_and_farmland_in_the_European_Union}.
-
-\bibitem{ana-atlas}
-Agencia Nacional de Aguas e Saneamento Basico,
-\emph{Atlas Irrigacao},
-2021.
-\url{https://www.ana.gov.br/atlasirrigacao/}.
-
-\bibitem{fao-aquastat}
-FAO AQUASTAT,
-\emph{Irrigated Areas and Water Use: Conclusions},
-2025.
-\url{https://www.fao.org/aquastat/en/data-analysis/irrig-water-use/conclusions/}.
-
-\bibitem{climate-pricing}
-Climate FieldView,
-\emph{FieldView Pricing},
-2026.
-\url{https://climate.com/pricing}.
-
-\bibitem{amd-xqr}
-AMD,
-\emph{Kintex UltraScale XQR Radiation-Tolerant FPGA Family},
-2026.
-\url{https://www.amd.com/en/products/adaptive-socs-and-fpgas/fpga/kintex-ultrascale-xqr.html}.
-
-\bibitem{esa-cwicom}
-European Space Agency,
-\emph{CCSDS Image Data Compression ASIC},
-2026.
-\url{https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Onboard_Data_Processing/CCSDS_Image_Data_Compression_ASIC}.
-
-\bibitem{nasa-aist}
-NASA Earth Science Technology Office,
-\emph{Advanced Information Systems Technology and ESTO Funding Process},
-2026.
-\url{https://esto.nasa.gov/funding-process/}.
-
-\bibitem{nasa-sbir}
-NASA,
-\emph{Small Business Innovation Research / Small Business Technology Transfer},
-2026.
-\url{https://www.nasa.gov/sbir_sttr/}.
-
-\bibitem{wisconsin-lateblight}
-University of Wisconsin Horticulture,
-\emph{Late Blight},
-2024.
-\url{https://hort.extension.wisc.edu/articles/late-blight/}.
-
-\bibitem{wildfire-market}
-Future Market Report,
-\emph{Forest Wildfire Detection System Market Size, Share, Growth and Forecast to 2032},
-2026.
-\url{https://www.futuremarketreport.com/industry-report/forest-wildfire-detection-system-market}.
-
-\bibitem{verra-vm0042}
-Verra,
-\emph{VM0042 Methodology for Improved Agricultural Land Management},
-2025.
-\url{https://verra.org/methodologies/vm0042-methodology-for-improved-agricultural-land-management-v2-0/}.
-
-\end{thebibliography}
+\normalsize
+\bibliographystyle{unsrt}
+\bibliography{references}
 
 \end{document}

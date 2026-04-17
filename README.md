@@ -1,6 +1,6 @@
 # MASFE
 
-MASFE (Multi-Algorithm Scheduling and Fusion Engine) is a NASA Space-to-Soil submission that treats crop-stress monitoring as an onboard scheduling problem instead of a passive downlink problem. The scheduler is a Bayesian Beta($\alpha,\beta$) posterior driving a finite-horizon MDP over four actions (SKIP, MOD13, FUSE, FUSE\_PRIORITY), fusing MOD13A1 EVI, MOD11A1 LST, and MOD09A1-derived NDWI into a three-channel Crop Stress Composite. The repository contains the 100-seed hosted-payload Monte Carlo benchmark, a real-scene MODIS replay over Westlands/Firebaugh (CA, 2024), the five-year rollout economics model, and the final submission paper.
+MASFE (Multi-Algorithm Scheduling and Fusion Engine) is a NASA Space-to-Soil submission that treats crop-stress monitoring as an onboard scheduling problem instead of a passive downlink problem. The scheduler is a Bayesian Beta(α, β) posterior driving a finite-horizon MDP over four actions (SKIP, MOD13, FUSE, FUSE_PRIORITY), fusing MOD13A1 EVI, MOD11A1 LST, and MOD09A1-derived NDWI into a three-channel Crop Stress Composite. The repository contains the 100-seed hosted-payload Monte Carlo benchmark, a real-scene MODIS replay over Westlands/Firebaugh (CA, 2024), the five-year rollout economics model, and the final submission paper.
 
 ## Verified Headline Metrics (100-seed Monte Carlo)
 
@@ -8,7 +8,7 @@ MASFE (Multi-Algorithm Scheduling and Fusion Engine) is a NASA Space-to-Soil sub
 |:---:|:---:|:---:|:---:|:---:|
 | **99.3%** downlink reduction<br>**38.6%** energy saving | **80.7%** downlink reduction<br>**24.6%** energy saving | **100.0%** | **1.6%** | **92.5% / 49.2%** |
 
-The Bayesian belief gate keeps **81.3%** of passes at cheap 30 m screening and escalates only **18.7%** to full fusion — that is what drops seasonal compute from 87.5% (always-on fusion baseline) to 49.2% while preserving full disease-event recall. Removing the posterior raises FP from 1.6% to 1.7% and seasonal compute from 49.2% to 76.2%; the posterior is load-bearing as a scheduler.
+The Bayesian belief gate keeps **81.3%** of passes at cheap 30 m screening and escalates only **18.7%** to full fusion — that is what drops seasonal compute from 92.5% (always-on fusion baseline) to 49.2% while preserving full disease-event recall. Removing the posterior raises FP from 1.6% to 1.7% and seasonal compute from 49.2% to 76.2%; the posterior is load-bearing as a scheduler.
 
 Priority evidence tiles are compressed onboard via CCSDS 122.0 wavelet coding at ~2.5:1, reducing an 8.4 MB/km² native alert stream to ~3.36 MB/km² delivered.
 
