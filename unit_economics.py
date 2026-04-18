@@ -258,8 +258,8 @@ def latex_rows() -> str:
     return "\n".join(rows)
 
 
-def write_outputs() -> None:
-    output_dir = Path("outputs/unit_economics")
+def write_outputs(output_dir: Path | None = None) -> None:
+    output_dir = output_dir or Path("outputs/unit_economics")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     metrics = {

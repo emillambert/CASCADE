@@ -41,6 +41,37 @@ python unit_economics.py
 
 This repository has been verified in a fresh virtual environment using the dependencies in `requirements.txt`.
 
+## Verification and Validation
+
+The repository now includes a layered V&V harness aligned with the TU Delft SVV framing:
+
+- code verification through focused unit tests of the core policy, CSC, replay utilities, and economics math
+- calculation/system verification through small seeded pipeline tests for the simulator and replay logic
+- offline validation through accepted reference fixtures for the published synthetic metrics, ROC sweep, replay anchors, and economics summary
+
+From a fresh environment, install the project and test dependencies and run the fast suite:
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+python -m pytest -m "not slow and not validation"
+```
+
+Run the full automated suite:
+
+```bash
+python -m pytest
+```
+
+Run only the offline validation checks:
+
+```bash
+python -m pytest -m validation
+```
+
+Heavy plot-oriented smoke tests are marked `slow`, and the validation baselines are isolated behind the `validation` marker so routine development runs stay fast and deterministic.
+
+The detailed V&V plan and acceptance criteria live in [docs/verification_validation_plan.md](docs/verification_validation_plan.md).
+
 ## Real MODIS Replay
 
 The real-scene replay uses official AppEEARS subsets of `MOD13A1.061` EVI plus QA, `MOD11A1.061` daytime LST plus QC, and `MOD09A1.061` surface reflectance for NDWI over the Westlands / Firebaugh AOI in California. It is framed as scheduler validation on official MODIS scenes, not as a labeled disease benchmark.

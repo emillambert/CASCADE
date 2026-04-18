@@ -1,0 +1,34 @@
+{
+  "revenue_assumptions": {
+    "price_per_ha_usd": 4.0,
+    "platform_take_rate": 0.2,
+    "variable_service_cost_per_ha_usd": 0.35,
+    "carbon_mrv_per_ha_usd": 0.5,
+    "carbon_fraction": 0.5,
+    "contribution_margin_no_mrv_usd_per_ha": 2.85,
+    "contribution_margin_with_mrv_usd_per_ha": 3.1
+  },
+  "break_even_summary": {
+    "low": {
+      "scenario": "low",
+      "year": "Y2",
+      "milestone": "California scale",
+      "hectares": 400000,
+      "fixed_cost_musd": 0.95
+    },
+    "base": {
+      "scenario": "base",
+      "year": "Y3",
+      "milestone": "US national",
+      "hectares": 2500000,
+      "fixed_cost_musd": 2.1
+    },
+    "high": {
+      "scenario": "high",
+      "year": "Y3",
+      "milestone": "US national",
+      "hectares": 2500000,
+      "fixed_cost_musd": 3.22
+    }
+  }
+}

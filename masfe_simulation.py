@@ -33,7 +33,6 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Callable, Dict
 
-import matplotlib
 import numpy as np
 
 from masfe_core import (
@@ -50,11 +49,6 @@ from masfe_core import (
     posterior_tail_probability,
     update_stress_belief,
 )
-
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-
 
 POLICY_SEED_OFFSET = {
     "RAW_DUMP": 101,
@@ -85,6 +79,19 @@ ALERT_THRESH_SWEEP = [0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70]
 WEIGHT_SWEEP = [0.70, 1.00, 1.30]
 SATURATION_SWEEP = [0.70, 1.00, 1.30]
 OUTPUTS_DIR = Path("outputs")
+
+
+def _require_pyplot():
+    try:
+        import matplotlib
+
+        matplotlib.use("Agg", force=True)
+        import matplotlib.pyplot as plt
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "matplotlib is required for plot generation. Install the plotting dependencies first."
+        ) from exc
+    return plt
 
 
 # ---------------------------------------------------------------------------
@@ -597,22 +604,42 @@ def evaluate_policy_generated(
         "energy_wh",
     ]
 
-    seed_records: list[dict] = []
-    with ProcessPoolExecutor(max_workers=max_workers) as pool:
-        seed_records = evaluate_policy_generated_with_pool(
-            pool,
-            policy_name,
-            policy_class,
-            policy_kwargs,
-            cfg,
-            n_seeds=n_seeds,
-            n_patches=n_patches,
-            n_t=n_t,
-            n_dis=n_dis,
-            n_benign=n_benign,
-            cloud_pass_prob=cloud_pass_prob,
-            csc_kwargs=csc_kwargs,
-        )["seed_records"]
+    if max_workers <= 1:
+        seed_records = [
+            _policy_seed_worker(
+                (
+                    seed,
+                    policy_name,
+                    policy_class,
+                    policy_kwargs,
+                    cfg,
+                    n_patches,
+                    n_t,
+                    n_dis,
+                    n_benign,
+                    cloud_pass_prob,
+                    csc_kwargs,
+                )
+            )
+            for seed in range(int(n_seeds))
+        ]
+        seed_records.sort(key=lambda r: r["seed"])
+    else:
+        with ProcessPoolExecutor(max_workers=max_workers) as pool:
+            seed_records = evaluate_policy_generated_with_pool(
+                pool,
+                policy_name,
+                policy_class,
+                policy_kwargs,
+                cfg,
+                n_seeds=n_seeds,
+                n_patches=n_patches,
+                n_t=n_t,
+                n_dis=n_dis,
+                n_benign=n_benign,
+                cloud_pass_prob=cloud_pass_prob,
+                csc_kwargs=csc_kwargs,
+            )["seed_records"]
 
     stats = {
         metric_name: mean_std_ci([record[metric_name] for record in seed_records])
@@ -965,6 +992,7 @@ def run_roc_sweep_ci_generated_with_pool(
 
 
 def write_roc_plot(roc_metrics: dict, destination: Path) -> None:
+    plt = _require_pyplot()
     points = roc_metrics["thresholds"]
     x = [point["false_positive_rate_pct"] for point in points]
     y = [point["science_retention_pct"] for point in points]
@@ -981,6 +1009,7 @@ def write_roc_plot(roc_metrics: dict, destination: Path) -> None:
     ax.set_xlim(left=0.0)
     ax.set_ylim(bottom=max(0.0, min(y) - 1.0), top=min(100.5, max(y) + 1.0))
     fig.tight_layout()
+    destination.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(destination, dpi=220)
     plt.close(fig)
 
@@ -991,6 +1020,7 @@ def write_multi_roc_plot(
     labels: tuple[str, str],
     destination: Path,
 ) -> None:
+    plt = _require_pyplot()
     points_a = roc_a["thresholds"]
     points_b = roc_b["thresholds"]
 
@@ -1010,6 +1040,7 @@ def write_multi_roc_plot(
     ax.set_ylim(bottom=0.0, top=100.5)
     ax.legend(frameon=False, fontsize=9, loc="lower right")
     fig.tight_layout()
+    destination.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(destination, dpi=220)
     plt.close(fig)
 
@@ -1022,6 +1053,7 @@ def run_additional_ablations(cfg: Config) -> dict:
     - Sparse Stage-1 cadence: screening every Nth pass (others forced SKIP).
     - Cloud strictness sweep: effective cloud-flag rate (more/less masked passes).
     """
+    plt = _require_pyplot()
     thresholds = np.linspace(0.30, 0.80, 25).tolist()
     stride_values = [1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7]
     # Wide enough range that recall can degrade at high cloud-flag rates (ablation visibility).
@@ -1194,16 +1226,24 @@ def run_csc_sensitivity(cfg: Config, datasets: list[Dict]) -> dict:
                 datasets,
                 csc_kwargs=csc_kwargs,
             )
+            recall = eval_result["stats"]["science_retention_pct"]
+            fp = eval_result["stats"]["false_positive_rate_pct"]
             cases.append(
                 {
+                    "weight_sweep_scale": float(weight_scale),
+                    "saturation_sweep_scale": float(saturation_scale),
                     "evi_weight_raw": round(evi_weight, 4),
                     "lst_weight_raw": round(lst_weight, 4),
                     "ndwi_weight_raw": round(ndwi_weight, 4),
                     "evi_saturation_sigma": round(5.0 * saturation_scale, 3),
                     "lst_saturation_sigma": round(4.0 * saturation_scale, 3),
                     "ndwi_saturation_sigma": round(4.0 * saturation_scale, 3),
-                    "science_retention_pct": round(eval_result["stats"]["science_retention_pct"]["mean"], 3),
-                    "false_positive_rate_pct": round(eval_result["stats"]["false_positive_rate_pct"]["mean"], 3),
+                    "science_retention_pct": round(float(recall["mean"]), 3),
+                    "science_retention_ci95_low": round(float(recall["ci95_low"]), 3),
+                    "science_retention_ci95_high": round(float(recall["ci95_high"]), 3),
+                    "false_positive_rate_pct": round(float(fp["mean"]), 3),
+                    "false_positive_rate_ci95_low": round(float(fp["ci95_low"]), 3),
+                    "false_positive_rate_ci95_high": round(float(fp["ci95_high"]), 3),
                     "alert_precision_pct": round(eval_result["stats"]["alert_precision_pct"]["mean"], 3),
                 }
             )
@@ -1398,6 +1438,16 @@ if __name__ == "__main__":
         print("MASFE Simulation - running additional ablations only...")
         additional_ablations = run_additional_ablations(cfg)
         write_json(OUTPUTS_DIR / "additional_ablations.json", additional_ablations)
+        # Keep Figure 2 reproducible without running the full benchmark.
+        datasets = build_datasets(
+            ADDITIONAL_ABLATION_DEFAULTS["n_seeds"],
+            ADDITIONAL_ABLATION_DEFAULTS["n_patches"],
+            ADDITIONAL_ABLATION_DEFAULTS["n_t"],
+            ADDITIONAL_ABLATION_DEFAULTS["n_dis"],
+            ADDITIONAL_ABLATION_DEFAULTS["n_benign"],
+        )
+        csc_sensitivity = run_csc_sensitivity(cfg, datasets)
+        write_json(OUTPUTS_DIR / "csc_sensitivity.json", csc_sensitivity)
         write_multi_roc_plot(
             additional_ablations["ndwi_removed"]["roc_baseline"],
             additional_ablations["ndwi_removed"]["roc_ndwi_removed"],

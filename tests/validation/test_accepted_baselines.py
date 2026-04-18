@@ -1,0 +1,44 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+
+pytestmark = pytest.mark.validation
+
+ROOT = Path(__file__).resolve().parents[2]
+FIXTURES = ROOT / "tests" / "fixtures" / "accepted"
+
+
+def read_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_simulation_headline_metrics_match_accepted_baseline() -> None:
+    current = read_json(ROOT / "outputs" / "simulation_metrics.json")
+    accepted = read_json(FIXTURES / "simulation_headline_metrics.json")
+    subset = {key: current[key] for key in accepted}
+    assert subset == accepted
+
+
+def test_roc_operating_point_matches_accepted_baseline() -> None:
+    current = read_json(ROOT / "outputs" / "roc_metrics.json")
+    accepted = read_json(FIXTURES / "roc_metrics.json")
+    assert current == accepted
+
+
+def test_replay_anchor_matches_accepted_baseline() -> None:
+    current = read_json(
+        ROOT / "outputs" / "real_modis" / "westlands_ca_2024-06-01_2024-10-31" / "replay_metrics.json"
+    )
+    accepted = read_json(FIXTURES / "replay_metrics.json")
+    assert current == accepted
+
+
+def test_unit_economics_summary_matches_accepted_baseline() -> None:
+    current = read_json(ROOT / "outputs" / "unit_economics" / "unit_economics.json")
+    accepted = read_json(FIXTURES / "unit_economics_summary.json")
+    subset = {key: current[key] for key in accepted}
+    assert subset == accepted

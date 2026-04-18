@@ -243,11 +243,11 @@ Across that benchmark, 95\% confidence intervals were 99.32--99.33\% for downlin
 }{%
   \fcolorbox{gray!40}{gray!6}{\parbox[c][0.22\textheight][c]{0.98\linewidth}{\centering\small Missing figure asset:\\\texttt{outputs/additional\_ablation\_curves.png}}}%
 }%
-\caption{Additional ablations and curves (95\% CI bands from the Monte Carlo seeds). Left: operating-point sweep comparing baseline CSC to an NDWI-removed fallback (EVI/LST-only); horizontal axis limited to 0--5\% FP rate for readability. Middle: sparse Stage~1 cadence (screening every $N$th pass) illustrating the recall trade with under-sampling. Right: sensitivity to effective cloud-mask strictness (cloud-flag rate from 0.05 to 0.75) as a proxy for a more/less conservative onboard mask.}
+\caption{Additional ablations and curves (95\% CI bands where applicable). Left: operating-point sweep comparing baseline CSC to an NDWI-removed fallback (EVI/LST-only); horizontal axis limited to 0--5\% FP rate. Middle: sparse Stage~1 cadence; recall often remains at ceiling under the synthetic benchmark while \emph{seasonal-average compute} (right axis) shows the cost of under-sampling Stage~1. Right: $\pm30\%$ CSC weight/saturation grid (horizontal tick labels: $w$=weight scale, $s$=saturation scale); recall stays within 99--100.5\% while \emph{FP rate} (right axis) varies across calibration corners.}
 \label{fig:additional-ablations}
 \end{figure}
 
-A matched-recall ablation that removes the Bayesian belief memory and reacts only to current-pass anomalies increases false-positive rate from 1.6\% to 1.7\% while driving seasonal compute from 49.2\% to 76.2\%.
+A matched-recall ablation that removes the Bayesian belief memory drives seasonal-average compute from 49.2\% to 76.2\% (a 27 pp increase), while changing false-positive rate only slightly from 1.6\% to 1.7\%.
 
 The code component now also replays official MOD13A1 and MOD11A1 subsets over Westlands/Firebaugh, California, from June through October 2024. That run aligns MOD13A1 composite dates to a 1 km grid, collapses MOD11A1 to median clear-sky daytime LST over the same 16-day window, and applies the unchanged MASFE policy as a real-scene scheduler validation rather than a labeled disease benchmark. The replay path now also accepts MOD09A1-derived NDWI where available, but the tracked Westlands anchor bundle predates that extension and therefore falls back cleanly to EVI/LST fusion on the cached artifacts. Across 7 valid composite windows after a 3-window warmup, MASFE issued one confirmed FUSE\_PRIORITY alert on July 27, 2024 and six additional FUSE-only windows at 99.5\% mean valid coverage.
 
@@ -293,6 +293,8 @@ That generalization story matters for the judges' business-model criterion. Agri
 \section{Expected Next Steps}
 
 MASFE is currently a TRL 3 concept: the scheduling logic, fusion equation, SWAP closure, and real-scene replay are demonstrated in software, but the payload has not yet been exercised on target hardware. The next milestone is a TRL 4 hardware-in-the-loop demonstration on a LEON4FT-class evaluation platform under the NASA AIST (Advanced Information Systems Technology) instrument demonstration pathway using the replayed EarthData scene set. TRL-4 hardware work should also add FPGA-side Fmask-style Stage~0 cloud screening, replacing the current software approximation used in the replay path. After that, the cleanest TRL 5 path is a hosted-payload pilot through Loft Orbital, with external validation focused on the Y1 paid-pilot assumptions, agronomy review, and distribution-partner plausibility.
+
+If selected as a finalist, the three actions before the June pitch are: (1)~run the replay on a live MODIS tile for a live demonstration; (2)~obtain a first-pass Loft Orbital hosted-payload cost estimate; (3)~conduct two farmer interviews to validate the $\leq$90-min latency and \$4/ha price assumptions.
 
 
 \section{Conclusion}
