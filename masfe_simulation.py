@@ -27,6 +27,9 @@ from __future__ import annotations
 
 import json
 import math
+import os
+import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Callable, Dict
 
@@ -68,6 +71,16 @@ MONTE_CARLO_DEFAULTS = {
     "n_benign": 9,
 }
 
+# Additional-ablation sweeps aim for smoother curves (not headline metrics).
+# Keep seeds modest for runtime; increase patches for smoother statistics.
+ADDITIONAL_ABLATION_DEFAULTS = {
+    "n_seeds": int(os.environ.get("MASFE_ADDITIONAL_ABLATION_SEEDS", "100")),
+    "n_patches": 1000,
+    "n_t": 120,
+    "n_dis": 21,
+    "n_benign": 9,
+}
+
 ALERT_THRESH_SWEEP = [0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70]
 WEIGHT_SWEEP = [0.70, 1.00, 1.30]
 SATURATION_SWEEP = [0.70, 1.00, 1.30]
@@ -84,6 +97,7 @@ def make_data(
     n_dis: int = 21,
     n_benign: int = 9,
     seed: int = 42,
+    cloud_pass_prob: float = 0.30,
 ) -> Dict:
     """
     Simulates MODIS MOD13 (EVI), MOD11 (LST), and MOD09 (NDWI-like) signals.
@@ -103,7 +117,7 @@ def make_data(
     benign_onset = {int(i): int(rng.integers(12, 90)) for i in benign_idx}
     benign_duration = {int(i): int(rng.integers(4, 10)) for i in benign_idx}
 
-    cloud_pass = rng.random(n_t) < 0.30
+    cloud_pass = rng.random(n_t) < cloud_pass_prob
 
     evi = np.zeros((n_t, n_patches))
     lst = np.zeros((n_t, n_patches))
@@ -159,6 +173,7 @@ def build_datasets(
     n_t: int,
     n_dis: int,
     n_benign: int,
+    cloud_pass_prob: float = 0.30,
 ) -> list[Dict]:
     return [
         make_data(
@@ -167,6 +182,7 @@ def build_datasets(
             n_dis=n_dis,
             n_benign=n_benign,
             seed=seed,
+            cloud_pass_prob=cloud_pass_prob,
         )
         for seed in range(n_seeds)
     ]
@@ -192,6 +208,15 @@ def simulate(
     ndwi_base = data["ndwi_base"]
     detection_threshold = getattr(policy, "csc_alert_thr", 0.55) if policy else 0.55
 
+    stage1_stride_raw = getattr(cfg, "stage1_stride", 1) or 1
+    try:
+        stage1_stride = float(stage1_stride_raw)
+    except (TypeError, ValueError):
+        stage1_stride = 1.0
+    if stage1_stride <= 0:
+        stage1_stride = 1.0
+    use_ndwi = bool(getattr(cfg, "ndwi_enabled", True))
+
     batt = 0.84
     csc = np.full(n_p, 0.18)
     alpha = np.ones(n_p, dtype="float32")
@@ -215,23 +240,35 @@ def simulate(
 
         evi_t = data["evi"][t].copy()
         lst_t = data["lst"][t].copy()
-        ndwi_t = data["ndwi"][t].copy()
+        ndwi_t = data["ndwi"][t].copy() if use_ndwi else None
         clouded = bool(data["cloud_pass"][t])
         if clouded:
             evi_t[:] = np.nan
             lst_t[:] = np.nan
-            ndwi_t[:] = np.nan
+            if ndwi_t is not None:
+                ndwi_t[:] = np.nan
         else:
             evi_t += rng.normal(0.0, 0.010, n_p)
             lst_t += rng.normal(0.0, 0.35, n_p)
-            ndwi_t += rng.normal(0.0, 0.012, n_p)
+            if ndwi_t is not None:
+                ndwi_t += rng.normal(0.0, 0.012, n_p)
 
         evi_anom = np.maximum(0.0, (evi_base - evi_t) / 0.042)
         evi_anom = np.nan_to_num(evi_anom, nan=0.0)
-        ndwi_anom = np.maximum(0.0, (ndwi_base - ndwi_t) / 0.05)
-        ndwi_anom = np.nan_to_num(ndwi_anom, nan=0.0)
+        if use_ndwi and ndwi_t is not None:
+            ndwi_anom = np.maximum(0.0, (ndwi_base - ndwi_t) / 0.05)
+            ndwi_anom = np.nan_to_num(ndwi_anom, nan=0.0)
+        else:
+            ndwi_anom = np.zeros(n_p, dtype="float32")
 
-        if clouded:
+        # Integer stride: screen every Nth pass. Fractional stride: Bernoulli cadence
+        # with p=1/stride (e.g., 1.5 means ~2/3 of passes run Stage-1).
+        if float(stage1_stride).is_integer():
+            stride_int = max(1, int(stage1_stride))
+            stage1_due = (t % stride_int) == 0
+        else:
+            stage1_due = rng.random() < (1.0 / stage1_stride)
+        if (not stage1_due) or clouded:
             alpha_state = alpha.copy()
             beta_state = beta.copy()
         else:
@@ -257,7 +294,9 @@ def simulate(
             steps_since_fuse=steps_sf,
         )
 
-        if policy_name == "RAW_DUMP":
+        if (not stage1_due) and policy_name not in ("RAW_DUMP", "FIXED_ONBOARD"):
+            action = "SKIP"
+        elif policy_name == "RAW_DUMP":
             action = "RAW"
         elif policy_name == "FIXED_ONBOARD":
             action = "FUSE"
@@ -268,26 +307,16 @@ def simulate(
             new_csc = csc * 0.92
             steps_sf += 1
         elif action in ("FUSE", "FUSE_PRIORITY", "RAW"):
-            new_csc = compute_csc(
-                evi_t,
-                lst_t,
-                evi_base,
-                lst_base,
-                ndwi_t=ndwi_t,
-                ndwi_base=ndwi_base,
-                **csc_kwargs,
-            )
+            csc_call = dict(csc_kwargs)
+            if use_ndwi and ndwi_t is not None:
+                csc_call.update({"ndwi_t": ndwi_t, "ndwi_base": ndwi_base})
+            new_csc = compute_csc(evi_t, lst_t, evi_base, lst_base, **csc_call)
             steps_sf = 0
         elif action == "MOD13":
-            new_csc = csc * 0.70 + compute_csc(
-                evi_t,
-                lst_base,
-                evi_base,
-                lst_base,
-                ndwi_t=ndwi_t,
-                ndwi_base=ndwi_base,
-                **csc_kwargs,
-            ) * 0.30
+            csc_call = dict(csc_kwargs)
+            if use_ndwi and ndwi_t is not None:
+                csc_call.update({"ndwi_t": ndwi_t, "ndwi_base": ndwi_base})
+            new_csc = csc * 0.70 + compute_csc(evi_t, lst_base, evi_base, lst_base, **csc_call) * 0.30
             steps_sf += 1
         else:
             new_csc = csc * 0.97
@@ -498,6 +527,160 @@ def evaluate_policy(
     }
 
 
+def _policy_seed_worker(args: tuple) -> dict:
+    (
+        seed,
+        policy_name,
+        policy_class,
+        policy_kwargs,
+        cfg,
+        n_patches,
+        n_t,
+        n_dis,
+        n_benign,
+        cloud_pass_prob,
+        csc_kwargs,
+    ) = args
+    data = make_data(
+        n_patches=n_patches,
+        n_t=n_t,
+        n_dis=n_dis,
+        n_benign=n_benign,
+        seed=int(seed),
+        cloud_pass_prob=float(cloud_pass_prob),
+    )
+    run = simulate(
+        policy_name,
+        policy_class(**policy_kwargs),
+        data,
+        cfg,
+        outer_seed=int(seed),
+        csc_kwargs=csc_kwargs,
+    )
+    return build_policy_seed_record(int(seed), run, data)
+
+
+def evaluate_policy_generated(
+    policy_name: str,
+    policy_class: type,
+    policy_kwargs: dict | None,
+    cfg: Config,
+    *,
+    n_seeds: int,
+    n_patches: int,
+    n_t: int,
+    n_dis: int,
+    n_benign: int,
+    cloud_pass_prob: float = 0.30,
+    csc_kwargs: Dict | None = None,
+    max_workers: int | None = None,
+) -> dict:
+    """
+    Evaluate a policy by generating each seed's dataset on the fly.
+    This avoids holding all datasets in memory and enables parallel per-seed execution.
+    """
+    csc_kwargs = csc_kwargs or {}
+    policy_kwargs = policy_kwargs or {}
+    if max_workers is None:
+        # Keep concurrency bounded (also helps on laptops).
+        max_workers = min(8, max(1, (os.cpu_count() or 2) - 1))
+
+    metric_names = [
+        "science_retention_pct",
+        "alert_precision_pct",
+        "false_positive_rate_pct",
+        "n_priority_alerts",
+        "min_battery_soc",
+        "cloud_obscured_passes",
+        "seasonal_average_compute_utilisation_pct",
+        "data_mb",
+        "energy_wh",
+    ]
+
+    seed_records: list[dict] = []
+    with ProcessPoolExecutor(max_workers=max_workers) as pool:
+        seed_records = evaluate_policy_generated_with_pool(
+            pool,
+            policy_name,
+            policy_class,
+            policy_kwargs,
+            cfg,
+            n_seeds=n_seeds,
+            n_patches=n_patches,
+            n_t=n_t,
+            n_dis=n_dis,
+            n_benign=n_benign,
+            cloud_pass_prob=cloud_pass_prob,
+            csc_kwargs=csc_kwargs,
+        )["seed_records"]
+
+    stats = {
+        metric_name: mean_std_ci([record[metric_name] for record in seed_records])
+        for metric_name in metric_names
+    }
+    return {"policy_name": policy_name, "stats": stats, "seed_records": seed_records}
+
+
+def evaluate_policy_generated_with_pool(
+    pool: ProcessPoolExecutor,
+    policy_name: str,
+    policy_class: type,
+    policy_kwargs: dict | None,
+    cfg: Config,
+    *,
+    n_seeds: int,
+    n_patches: int,
+    n_t: int,
+    n_dis: int,
+    n_benign: int,
+    cloud_pass_prob: float = 0.30,
+    csc_kwargs: Dict | None = None,
+) -> dict:
+    """Same as evaluate_policy_generated, but reuses an existing process pool."""
+    csc_kwargs = csc_kwargs or {}
+    policy_kwargs = policy_kwargs or {}
+
+    metric_names = [
+        "science_retention_pct",
+        "alert_precision_pct",
+        "false_positive_rate_pct",
+        "n_priority_alerts",
+        "min_battery_soc",
+        "cloud_obscured_passes",
+        "seasonal_average_compute_utilisation_pct",
+        "data_mb",
+        "energy_wh",
+    ]
+
+    futures = [
+        pool.submit(
+            _policy_seed_worker,
+            (
+                seed,
+                policy_name,
+                policy_class,
+                policy_kwargs,
+                cfg,
+                n_patches,
+                n_t,
+                n_dis,
+                n_benign,
+                cloud_pass_prob,
+                csc_kwargs,
+            ),
+        )
+        for seed in range(int(n_seeds))
+    ]
+    seed_records = [f.result() for f in futures]
+    seed_records.sort(key=lambda r: r["seed"])
+
+    stats = {
+        metric_name: mean_std_ci([record[metric_name] for record in seed_records])
+        for metric_name in metric_names
+    }
+    return {"policy_name": policy_name, "stats": stats, "seed_records": seed_records}
+
+
 def run_monte_carlo(
     cfg: Config,
     n_seeds: int = MONTE_CARLO_DEFAULTS["n_seeds"],
@@ -698,6 +881,89 @@ def run_roc_sweep(cfg: Config, datasets: list[Dict]) -> dict:
     }
 
 
+def run_roc_sweep_ci(cfg: Config, datasets: list[Dict], thresholds: list[float]) -> dict:
+    """ROC sweep with per-threshold 95% CI for both axes."""
+    points = []
+    for threshold in thresholds:
+        # This variant is used by run_additional_ablations, which passes generated params.
+        eval_result = evaluate_policy(
+            "MASFE_MDP",
+            lambda thr=threshold: MASFEPolicy(csc_alert_thr=thr),
+            cfg,
+            datasets,
+        )
+        fp = eval_result["stats"]["false_positive_rate_pct"]
+        recall = eval_result["stats"]["science_retention_pct"]
+        points.append(
+            {
+                "threshold": round(float(threshold), 3),
+                "false_positive_rate_pct": round(float(fp["mean"]), 3),
+                "false_positive_rate_ci95_low": round(float(fp["ci95_low"]), 3),
+                "false_positive_rate_ci95_high": round(float(fp["ci95_high"]), 3),
+                "science_retention_pct": round(float(recall["mean"]), 3),
+                "science_retention_ci95_low": round(float(recall["ci95_low"]), 3),
+                "science_retention_ci95_high": round(float(recall["ci95_high"]), 3),
+            }
+        )
+    return {"thresholds": points, "operating_point_threshold": 0.55}
+
+
+def run_roc_sweep_ci_generated(cfg: Config, *, thresholds: list[float], gen: dict) -> dict:
+    """ROC sweep using evaluate_policy_generated with per-threshold 2D CI."""
+    points = []
+    for threshold in thresholds:
+        eval_result = evaluate_policy_generated(
+            "MASFE_MDP",
+            MASFEPolicy,
+            {"csc_alert_thr": float(threshold)},
+            cfg,
+            **gen,
+        )
+        fp = eval_result["stats"]["false_positive_rate_pct"]
+        recall = eval_result["stats"]["science_retention_pct"]
+        points.append(
+            {
+                "threshold": round(float(threshold), 3),
+                "false_positive_rate_pct": round(float(fp["mean"]), 3),
+                "false_positive_rate_ci95_low": round(float(fp["ci95_low"]), 3),
+                "false_positive_rate_ci95_high": round(float(fp["ci95_high"]), 3),
+                "science_retention_pct": round(float(recall["mean"]), 3),
+                "science_retention_ci95_low": round(float(recall["ci95_low"]), 3),
+                "science_retention_ci95_high": round(float(recall["ci95_high"]), 3),
+            }
+        )
+    return {"thresholds": points, "operating_point_threshold": 0.55}
+
+
+def run_roc_sweep_ci_generated_with_pool(
+    pool: ProcessPoolExecutor, cfg: Config, *, thresholds: list[float], gen: dict
+) -> dict:
+    points = []
+    for threshold in thresholds:
+        eval_result = evaluate_policy_generated_with_pool(
+            pool,
+            "MASFE_MDP",
+            MASFEPolicy,
+            {"csc_alert_thr": float(threshold)},
+            cfg,
+            **gen,
+        )
+        fp = eval_result["stats"]["false_positive_rate_pct"]
+        recall = eval_result["stats"]["science_retention_pct"]
+        points.append(
+            {
+                "threshold": round(float(threshold), 3),
+                "false_positive_rate_pct": round(float(fp["mean"]), 3),
+                "false_positive_rate_ci95_low": round(float(fp["ci95_low"]), 3),
+                "false_positive_rate_ci95_high": round(float(fp["ci95_high"]), 3),
+                "science_retention_pct": round(float(recall["mean"]), 3),
+                "science_retention_ci95_low": round(float(recall["ci95_low"]), 3),
+                "science_retention_ci95_high": round(float(recall["ci95_high"]), 3),
+            }
+        )
+    return {"thresholds": points, "operating_point_threshold": 0.55}
+
+
 def write_roc_plot(roc_metrics: dict, destination: Path) -> None:
     points = roc_metrics["thresholds"]
     x = [point["false_positive_rate_pct"] for point in points]
@@ -717,6 +983,192 @@ def write_roc_plot(roc_metrics: dict, destination: Path) -> None:
     fig.tight_layout()
     fig.savefig(destination, dpi=220)
     plt.close(fig)
+
+
+def write_multi_roc_plot(
+    roc_a: dict,
+    roc_b: dict,
+    labels: tuple[str, str],
+    destination: Path,
+) -> None:
+    points_a = roc_a["thresholds"]
+    points_b = roc_b["thresholds"]
+
+    xa = [point["false_positive_rate_pct"] for point in points_a]
+    ya = [point["science_retention_pct"] for point in points_a]
+    xb = [point["false_positive_rate_pct"] for point in points_b]
+    yb = [point["science_retention_pct"] for point in points_b]
+
+    fig, ax = plt.subplots(figsize=(6.0, 4.2))
+    ax.plot(xa, ya, marker="o", linewidth=1.8, color="#1b5e8a", label=labels[0])
+    ax.plot(xb, yb, marker="o", linewidth=1.8, color="#b00020", label=labels[1])
+    ax.set_xlabel("False-positive rate (%)")
+    ax.set_ylabel("Disease-event recall (%)")
+    ax.set_title("MASFE operating-point sweep (NDWI ablation)")
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.45)
+    ax.set_xlim(left=0.0)
+    ax.set_ylim(bottom=0.0, top=100.5)
+    ax.legend(frameon=False, fontsize=9, loc="lower right")
+    fig.tight_layout()
+    fig.savefig(destination, dpi=220)
+    plt.close(fig)
+
+
+def run_additional_ablations(cfg: Config) -> dict:
+    """
+    Additional Tier-3 evidence: non-obvious ablations + curves.
+
+    - NDWI removed: CSC uses EVI/LST-only fallback; belief updates use EVI only.
+    - Sparse Stage-1 cadence: screening every Nth pass (others forced SKIP).
+    - Cloud strictness sweep: effective cloud-flag rate (more/less masked passes).
+    """
+    thresholds = np.linspace(0.30, 0.80, 25).tolist()
+    stride_values = [1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7]
+    cloud_values = np.linspace(0.05, 0.55, 12).tolist()
+
+    gen_base = dict(ADDITIONAL_ABLATION_DEFAULTS)
+    gen_base["cloud_pass_prob"] = 0.30
+    max_workers = int(os.environ.get("MASFE_ABLATION_MAX_WORKERS", "8"))
+    max_workers = min(max_workers, max(1, (os.cpu_count() or 2) - 1))
+
+    with ProcessPoolExecutor(max_workers=max_workers) as pool:
+        roc_base = run_roc_sweep_ci_generated_with_pool(pool, cfg, thresholds=thresholds, gen=gen_base)
+
+        cfg_no_ndwi = Config()
+        setattr(cfg_no_ndwi, "ndwi_enabled", False)
+        setattr(cfg_no_ndwi, "stage1_stride", 1)
+        roc_no_ndwi = run_roc_sweep_ci_generated_with_pool(
+            pool, cfg_no_ndwi, thresholds=thresholds, gen=gen_base
+        )
+
+        stride_points = []
+        for stride in stride_values:
+            cfg_stride = Config()
+            setattr(cfg_stride, "ndwi_enabled", True)
+            setattr(cfg_stride, "stage1_stride", stride)
+            eval_result = evaluate_policy_generated_with_pool(
+                pool,
+                "MASFE_MDP",
+                MASFEPolicy,
+                {},
+                cfg_stride,
+                **gen_base,
+            )
+            recall = eval_result["stats"]["science_retention_pct"]
+            fp = eval_result["stats"]["false_positive_rate_pct"]
+            stride_points.append(
+                {
+                    "stage1_stride": float(stride),
+                    "science_retention_pct": round(float(recall["mean"]), 3),
+                    "science_retention_ci95_low": round(float(recall["ci95_low"]), 3),
+                    "science_retention_ci95_high": round(float(recall["ci95_high"]), 3),
+                    "false_positive_rate_pct": round(float(fp["mean"]), 3),
+                    "false_positive_rate_ci95_low": round(float(fp["ci95_low"]), 3),
+                    "false_positive_rate_ci95_high": round(float(fp["ci95_high"]), 3),
+                    "seasonal_average_compute_utilisation_pct": round(
+                        eval_result["stats"]["seasonal_average_compute_utilisation_pct"]["mean"], 3
+                    ),
+                }
+            )
+
+        cloud_points = []
+        for cloud_prob in cloud_values:
+            gen_cloud = dict(ADDITIONAL_ABLATION_DEFAULTS)
+            gen_cloud["cloud_pass_prob"] = float(cloud_prob)
+            eval_result = evaluate_policy_generated_with_pool(
+                pool,
+                "MASFE_MDP",
+                MASFEPolicy,
+                {},
+                cfg,
+                **gen_cloud,
+            )
+            recall = eval_result["stats"]["science_retention_pct"]
+            fp = eval_result["stats"]["false_positive_rate_pct"]
+            cloud_points.append(
+                {
+                    "cloud_pass_prob": round(float(cloud_prob), 2),
+                    "science_retention_pct": round(float(recall["mean"]), 3),
+                    "science_retention_ci95_low": round(float(recall["ci95_low"]), 3),
+                    "science_retention_ci95_high": round(float(recall["ci95_high"]), 3),
+                    "false_positive_rate_pct": round(float(fp["mean"]), 3),
+                    "false_positive_rate_ci95_low": round(float(fp["ci95_low"]), 3),
+                    "false_positive_rate_ci95_high": round(float(fp["ci95_high"]), 3),
+                    "cloud_obscured_passes": round(
+                        eval_result["stats"]["cloud_obscured_passes"]["mean"], 3
+                    ),
+                }
+            )
+
+    fig, axes = plt.subplots(1, 3, figsize=(10.4, 3.2))
+
+    ax = axes[0]
+    ax.plot(
+        [p["false_positive_rate_pct"] for p in roc_base["thresholds"]],
+        [p["science_retention_pct"] for p in roc_base["thresholds"]],
+        marker="o",
+        linewidth=1.6,
+        color="#1b5e8a",
+        label="Baseline",
+    )
+    ax.plot(
+        [p["false_positive_rate_pct"] for p in roc_no_ndwi["thresholds"]],
+        [p["science_retention_pct"] for p in roc_no_ndwi["thresholds"]],
+        marker="o",
+        linewidth=1.6,
+        color="#b00020",
+        label="NDWI removed",
+    )
+    ax.set_xlabel("FP rate (%)")
+    ax.set_ylabel("Recall (%)")
+    ax.set_title("CSC threshold sweep")
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.35)
+    ax.legend(frameon=False, fontsize=8, loc="lower right")
+
+    ax = axes[1]
+    ax.plot(
+        [p["stage1_stride"] for p in stride_points],
+        [p["science_retention_pct"] for p in stride_points],
+        marker="o",
+        linewidth=1.6,
+        color="#1b5e8a",
+    )
+    ax.set_xlabel("Stage-1 stride (passes)")
+    ax.set_ylabel("Recall (%)")
+    ax.set_title("Sparse screening cadence")
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.35)
+    ax.set_xticks([p["stage1_stride"] for p in stride_points])
+
+    ax = axes[2]
+    ax.plot(
+        [p["cloud_pass_prob"] for p in cloud_points],
+        [p["science_retention_pct"] for p in cloud_points],
+        marker="o",
+        linewidth=1.6,
+        color="#1b5e8a",
+    )
+    ax.set_xlabel("Cloud-flag rate")
+    ax.set_ylabel("Recall (%)")
+    ax.set_title("Cloud mask strictness")
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.35)
+
+    fig.tight_layout()
+    curve_path = OUTPUTS_DIR / "additional_ablation_curves.png"
+    curve_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(curve_path, dpi=220)
+    plt.close(fig)
+
+    return {
+        "ndwi_removed": {
+            "roc_baseline": roc_base,
+            "roc_ndwi_removed": roc_no_ndwi,
+        },
+        "stage1_stride_sweep": stride_points,
+        "cloud_pass_prob_sweep": cloud_points,
+        "artifacts": {
+            "curves_png": str(curve_path),
+        },
+    }
 
 
 def run_csc_sensitivity(cfg: Config, datasets: list[Dict]) -> dict:
@@ -904,6 +1356,9 @@ def report(metrics: dict, ablation_metrics: dict, roc_metrics: dict, csc_sensiti
     print("  * outputs/roc_metrics.json")
     print("  * outputs/roc.png")
     print("  * outputs/csc_sensitivity.json")
+    print("  * outputs/additional_ablations.json")
+    print("  * outputs/additional_ablation_curves.png")
+    print("  * outputs/roc_baseline_vs_no_ndwi.png")
     print(
         "  * CSC sweep summary: recall "
         f"{csc_sensitivity['summary']['science_retention_pct']['min']:.1f}-"
@@ -925,8 +1380,32 @@ def report(metrics: dict, ablation_metrics: dict, roc_metrics: dict, csc_sensiti
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("MASFE Simulation - running 100-seed Monte Carlo benchmark...")
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--additional-ablations-only",
+        action="store_true",
+        help="Only regenerate outputs/additional_ablations.json (skips headline Monte Carlo).",
+    )
+    args = parser.parse_args()
+
     cfg = Config()
+    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    if args.additional_ablations_only:
+        print("MASFE Simulation - running additional ablations only...")
+        additional_ablations = run_additional_ablations(cfg)
+        write_json(OUTPUTS_DIR / "additional_ablations.json", additional_ablations)
+        write_multi_roc_plot(
+            additional_ablations["ndwi_removed"]["roc_baseline"],
+            additional_ablations["ndwi_removed"]["roc_ndwi_removed"],
+            ("Baseline", "NDWI removed"),
+            OUTPUTS_DIR / "roc_baseline_vs_no_ndwi.png",
+        )
+        sys.exit(0)
+
+    print("MASFE Simulation - running 100-seed Monte Carlo benchmark...")
     datasets = build_datasets(
         MONTE_CARLO_DEFAULTS["n_seeds"],
         MONTE_CARLO_DEFAULTS["n_patches"],
@@ -938,10 +1417,17 @@ if __name__ == "__main__":
     ablation_metrics = run_ablation_analysis(cfg, datasets, metrics)
     roc_metrics = run_roc_sweep(cfg, datasets)
     csc_sensitivity = run_csc_sensitivity(cfg, datasets)
+    additional_ablations = run_additional_ablations(cfg)
 
-    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     write_json(OUTPUTS_DIR / "ablation_metrics.json", ablation_metrics)
     write_json(OUTPUTS_DIR / "roc_metrics.json", roc_metrics)
     write_roc_plot(roc_metrics, OUTPUTS_DIR / "roc.png")
     write_json(OUTPUTS_DIR / "csc_sensitivity.json", csc_sensitivity)
+    write_json(OUTPUTS_DIR / "additional_ablations.json", additional_ablations)
+    write_multi_roc_plot(
+        additional_ablations["ndwi_removed"]["roc_baseline"],
+        additional_ablations["ndwi_removed"]["roc_ndwi_removed"],
+        ("Baseline", "NDWI removed"),
+        OUTPUTS_DIR / "roc_baseline_vs_no_ndwi.png",
+    )
     report(metrics, ablation_metrics, roc_metrics, csc_sensitivity)

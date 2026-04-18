@@ -1,0 +1,144 @@
+\begin{thebibliography}{10}
+
+\bibitem{nasa-challenge-brief}
+{NASA Earth Science Technology Office}.
+\newblock Space-to-soil challenge: Challenge brief and guidelines.
+\newblock \url{https://nasa-space-to-soil.org}, 2026.
+\newblock Accessed April 2026.
+
+\bibitem{gold-webinar1}
+K.~Gold.
+\newblock Spectral early detection of crop pathogens for regenerative
+  agriculture applications, 2026.
+\newblock NASA Space-to-Soil Challenge Informational Webinar 1, Cornell
+  University Plant Disease Diagnostics Laboratory, February 12, 2026.
+
+\bibitem{mod13a1}
+{NASA EOSDIS Land Processes DAAC}.
+\newblock {MOD13A1 MODIS/Terra Vegetation Indices 16-Day L3 Global 500 m SIN
+  Grid V061}.
+\newblock \url{https://doi.org/10.5067/MODIS/MOD13A1.061}, 2021.
+
+\bibitem{mod11a1}
+{NASA EOSDIS Land Processes DAAC}.
+\newblock {MOD11A1 MODIS/Terra Land Surface Temperature/Emissivity Daily L3
+  Global 1 km SIN Grid V061}.
+\newblock \url{https://doi.org/10.5067/MODIS/MOD11A1.061}, 2021.
+
+\bibitem{mod09a1}
+E.~Vermote.
+\newblock {MODIS/Terra Surface Reflectance 8-Day L3 Global 500m SIN Grid V061}.
+\newblock \url{https://doi.org/10.5067/MODIS/MOD09A1.061}, 2021.
+\newblock NASA Land Processes Distributed Active Archive Center.
+
+\bibitem{mod09-guide}
+{MODIS Land Surface Reflectance Science Computing Facility}.
+\newblock {MODIS Surface Reflectance User's Guide, Collection 6}.
+\newblock
+  \url{https://www.earthdata.nasa.gov/s3fs-public/2025-04/MOD09_User_Guide_V61.pdf},
+  2020.
+
+\bibitem{jpl-scheduling}
+{JPL Artificial Intelligence Group}.
+\newblock Scheduling and planning technology.
+\newblock \url{https://ai.jpl.nasa.gov/public/projects/}, 2024.
+
+\bibitem{eo1-autonomy}
+R.~Sherwood, S.~Chien, D.~Tran, R.~Castano, et~al.
+\newblock Intelligent systems in space: The eo-1 autonomous sciencecraft.
+\newblock \url{https://ntrs.nasa.gov/citations/20060044325}, 2005.
+\newblock NASA Technical Reports Server.
+
+\bibitem{amd-xqr}
+{AMD}.
+\newblock Kintex ultrascale xqr radiation-tolerant fpga family.
+\newblock
+  \url{https://www.amd.com/en/products/adaptive-socs-and-fpgas/fpga/kintex-ultrascale-xqr.html},
+  2026.
+
+\bibitem{esa-cwicom}
+{European Space Agency}.
+\newblock Ccsds image data compression asic.
+\newblock
+  \url{https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Onboard_Data_Processing/CCSDS_Image_Data_Compression_ASIC},
+  2026.
+
+\bibitem{wisconsin-lateblight}
+{University of Wisconsin Horticulture}.
+\newblock Late blight.
+\newblock \url{https://hort.extension.wisc.edu/articles/late-blight/}, 2024.
+
+\bibitem{usda-2022}
+{USDA National Agricultural Statistics Service}.
+\newblock 2022 census of agriculture: United states summary and state data.
+\newblock
+  \url{https://www.nass.usda.gov/Publications/AgCensus/2022/Full_Report/Volume_1%2C_Chapter_1_US/usv1.pdf},
+  2024.
+
+\bibitem{eurostat-farms}
+{Eurostat}.
+\newblock Farms and farmland in the european union.
+\newblock
+  \url{https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Farms_and_farmland_in_the_European_Union},
+  2025.
+\newblock Statistics Explained.
+
+\bibitem{ana-atlas}
+{Agencia Nacional de Aguas e Saneamento Basico}.
+\newblock Atlas irrigacao.
+\newblock \url{https://www.ana.gov.br/atlasirrigacao/}, 2021.
+
+\bibitem{fao-aquastat}
+{FAO AQUASTAT}.
+\newblock Irrigated areas and water use: Conclusions.
+\newblock
+  \url{https://www.fao.org/aquastat/en/data-analysis/irrig-water-use/conclusions/},
+  2025.
+
+\bibitem{climate-pricing}
+{Climate FieldView}.
+\newblock Fieldview pricing.
+\newblock \url{https://climate.com/pricing}, 2026.
+
+\bibitem{verra-vm0042}
+{Verra}.
+\newblock Vm0042 methodology for improved agricultural land management.
+\newblock
+  \url{https://verra.org/methodologies/vm0042-methodology-for-improved-agricultural-land-management-v2-0/},
+  2025.
+
+\bibitem{nasa-aist}
+{NASA Earth Science Technology Office}.
+\newblock Advanced information systems technology and esto funding process.
+\newblock \url{https://esto.nasa.gov/funding-process/}, 2026.
+
+\bibitem{nasa-sbir}
+{NASA}.
+\newblock Small business innovation research / small business technology
+  transfer.
+\newblock \url{https://www.nasa.gov/sbir_sttr/}, 2026.
+
+\bibitem{wildfire-market}
+{Future Market Report}.
+\newblock Forest wildfire detection system market size, share, growth and
+  forecast to 2032.
+\newblock
+  \url{https://www.futuremarketreport.com/industry-report/forest-wildfire-detection-system-market},
+  2026.
+
+\bibitem{fao-plant-production}
+{FAO Plant Production and Protection Division}.
+\newblock About: Plant production and protection (facts and figures).
+\newblock \url{https://www.fao.org/plant-production-protection/about/en}, 2026.
+\newblock Accessed April 2026.
+
+\bibitem{ifc-food-loss-2017}
+{IFC (World Bank Group)}.
+\newblock From farm to fork: Private enterprise can reduce food loss through
+  climate-smart agriculture.
+\newblock
+  \url{https://documents1.worldbank.org/curated/en/719911510727256518/pdf/121269-BRI-EMCompass-Note-47-PUBLIC.pdf},
+  2017.
+\newblock EM Compass Note 47, October 2017. Accessed April 2026.
+
+\end{thebibliography}

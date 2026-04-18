@@ -19,6 +19,7 @@ import re
 import shutil
 import time
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -491,18 +492,58 @@ def download_or_reuse_bundle(
     )
 
     total = len(tif_files)
-    downloaded = 0
+    # Parallelize bundle downloads with a small bounded pool.
+    max_workers = int(os.environ.get("APPEEARS_DOWNLOAD_WORKERS", "6"))
+    max_workers = max(1, min(max_workers, 12))
+
     skipped = 0
+    to_download: list[tuple[int, dict, Path]] = []
     for index, item in enumerate(tif_files, start=1):
         destination = bundle_dir / item["file_name"]
         if destination.exists() and destination.stat().st_size > 0 and not force_download:
             skipped += 1
-            if index == 1 or index == total or index % 25 == 0:
-                log(f"Download progress: {index}/{total} files checked ({skipped} already present)")
-            continue
-        log(f"Downloading {index}/{total}: {item['file_name']}")
-        client.download_bundle_file(task_id, item["file_id"], destination)
-        downloaded += 1
+        else:
+            to_download.append((index, item, destination))
+
+    downloaded = 0
+    failures: list[str] = []
+
+    def _download_one(file_id: str, destination: Path) -> None:
+        # Use a fresh session per worker for thread safety.
+        url = f"{APP_EEARS_API}/bundle/{task_id}/{file_id}"
+        headers = {}
+        if getattr(client, "token", None):
+            headers["Authorization"] = f"Bearer {client.token}"
+        with requests.Session() as session:
+            with session.get(url, headers=headers, stream=True, timeout=120) as resp:
+                resp.raise_for_status()
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                with destination.open("wb") as f:
+                    for chunk in resp.iter_content(chunk_size=1024 * 256):
+                        if chunk:
+                            f.write(chunk)
+
+    if to_download:
+        log(f"Downloading {len(to_download)}/{total} GeoTIFFs with {max_workers} workers")
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            futs = {
+                pool.submit(_download_one, item["file_id"], destination): (index, item["file_name"])
+                for (index, item, destination) in to_download
+            }
+            for fut in as_completed(futs):
+                index, name = futs[fut]
+                try:
+                    fut.result()
+                    downloaded += 1
+                    if downloaded == 1 or downloaded == len(to_download) or downloaded % 25 == 0:
+                        log(f"Download progress: {downloaded}/{len(to_download)} completed (e.g., {name})")
+                except Exception as e:
+                    failures.append(f"{name}: {e}")
+
+    if failures:
+        raise RuntimeError(
+            "One or more AppEEARS bundle downloads failed:\n" + "\n".join(f"- {msg}" for msg in failures)
+        )
 
     log(
         f"Bundle ready in {bundle_dir} "
