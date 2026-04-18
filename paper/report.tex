@@ -156,7 +156,7 @@ The scheduling logic is modeled as a finite-horizon MDP with per-patch Beta post
 \centering
 \caption{Mission requirements and demonstrated MASFE results.}
 \label{tab:req-results}
-\begin{tabularx}{\linewidth}{p{3.2cm}X}
+\begin{tabularx}{\linewidth}{p{4cm}X}
 \toprule
 \textbf{Requirement} & \textbf{MASFE response} \\
 \midrule
@@ -225,7 +225,7 @@ The 92.5\% LEON4FT figure is a worst-case simultaneous-execution ceiling; Stage~
 
 Each priority alert packet contains a geo-tagged field-patch polygon with centroid coordinates, CSC severity score, contributing EVI/LST/NDWI anomaly components, timestamp and pass ID, and a confidence flag derived from consecutive confirming passes. Priority evidence tiles are compressed onboard using CCSDS 122.0 wavelet coding with a planning assumption of roughly 2.5:1, reducing a nominal 8.4\,MB/km$^2$ native alert stream to about 3.36\,MB/km$^2$ delivered before packetization \cite{esa-cwicom}. Per-patch geolocation is derived from bus ephemeris and attitude solutions and is budgeted to remain comfortably inside the 30\,m effective-GSD requirement. These packets are delivered through Loft Orbital's ground network to farm software as geo-tagged overlays via the OpenET-linked API, enabling push notifications within 15 minutes of contact.
 
-Full simulation source code (\texttt{masfe\_simulation.py}) is submitted as Code Component 3 at \href{\masferepo}{github.com/emillambert/Emil\_MASFE}.
+Full simulation source code is available as Code Component 3 at \href{\masferepo}{github.com/emillambert/Emil\_MASFE}.
 
 \section{Potential Impact}
 \label{sec:impact}
