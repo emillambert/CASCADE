@@ -1024,7 +1024,8 @@ def run_additional_ablations(cfg: Config) -> dict:
     """
     thresholds = np.linspace(0.30, 0.80, 25).tolist()
     stride_values = [1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7]
-    cloud_values = np.linspace(0.05, 0.55, 12).tolist()
+    # Wide enough range that recall can degrade at high cloud-flag rates (ablation visibility).
+    cloud_values = np.linspace(0.05, 0.75, 14).tolist()
 
     gen_base = dict(ADDITIONAL_ABLATION_DEFAULTS)
     gen_base["cloud_pass_prob"] = 0.30

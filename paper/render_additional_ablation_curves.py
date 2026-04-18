@@ -5,7 +5,6 @@ from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
 
 
 def configure_style() -> None:
@@ -32,11 +31,47 @@ def load_payload(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _roc_by_fp(points: list[dict]) -> list[dict]:
+    """Sort ROC-style points by mean FP rate so fill_between has non-decreasing x."""
+    return sorted(points, key=lambda p: p["false_positive_rate_pct"])
+
+
+def _ylim_recall(stride_points: list[dict], cloud_points: list[dict], pad: float = 0.35) -> tuple[float, float]:
+    """Per-panel y range from recall mean + 95% CI; avoids flat 98–100% when variation is tiny."""
+    lows: list[float] = []
+    highs: list[float] = []
+    for seq in (stride_points, cloud_points):
+        for p in seq:
+            lows.append(p["science_retention_pct"])
+            highs.append(p["science_retention_pct"])
+            if "science_retention_ci95_low" in p:
+                lows.append(p["science_retention_ci95_low"])
+                highs.append(p["science_retention_ci95_high"])
+    if not lows:
+        return 98.0, 100.5
+    return min(lows) - pad, max(highs) + pad
+
+
+def _ylim_roc(roc_base: list[dict], roc_no_ndwi: list[dict], pad: float = 0.35) -> tuple[float, float]:
+    lows: list[float] = []
+    highs: list[float] = []
+    for seq in (roc_base, roc_no_ndwi):
+        for p in seq:
+            if "science_retention_ci95_low" in p:
+                lows.append(p["science_retention_ci95_low"])
+                highs.append(p["science_retention_ci95_high"])
+            lows.append(p["science_retention_pct"])
+            highs.append(p["science_retention_pct"])
+    if not lows:
+        return 98.0, 100.5
+    return min(lows) - pad, max(highs) + pad
+
+
 def render(payload: dict, out_base: Path) -> None:
     roc_base = payload["ndwi_removed"]["roc_baseline"]["thresholds"]
     roc_no_ndwi = payload["ndwi_removed"]["roc_ndwi_removed"]["thresholds"]
-    stride_points = payload["stage1_stride_sweep"]
-    cloud_points = payload["cloud_pass_prob_sweep"]
+    stride_points = sorted(payload["stage1_stride_sweep"], key=lambda p: p["stage1_stride"])
+    cloud_points = sorted(payload["cloud_pass_prob_sweep"], key=lambda p: p["cloud_pass_prob"])
 
     blue = "#1f77b4"
     red = "#b00020"
@@ -50,115 +85,111 @@ def render(payload: dict, out_base: Path) -> None:
         ax.spines["left"].set_color("#777777")
         ax.spines["bottom"].set_color("#777777")
 
-    # Panel 1: threshold sweep
+    # Panel 1: threshold sweep (FP vs recall); x clipped to operating-relevant FP band
     ax = axes[0]
-    # 2D CI rectangles (FP CI × Recall CI)
-    for p in roc_base:
-        if "false_positive_rate_ci95_low" not in p:
-            break
-        ax.add_patch(
-            Rectangle(
-                (p["false_positive_rate_ci95_low"], p["science_retention_ci95_low"]),
-                p["false_positive_rate_ci95_high"] - p["false_positive_rate_ci95_low"],
-                p["science_retention_ci95_high"] - p["science_retention_ci95_low"],
-                facecolor=blue,
-                edgecolor="none",
-                alpha=0.12,
-                zorder=1,
-            )
+    rb = _roc_by_fp(roc_base)
+    rn = _roc_by_fp(roc_no_ndwi)
+    if rb and "science_retention_ci95_low" in rb[0]:
+        ax.fill_between(
+            [p["false_positive_rate_pct"] for p in rb],
+            [p["science_retention_ci95_low"] for p in rb],
+            [p["science_retention_ci95_high"] for p in rb],
+            color=blue,
+            alpha=0.15,
+            linewidth=0,
+            zorder=1,
         )
-    for p in roc_no_ndwi:
-        if "false_positive_rate_ci95_low" not in p:
-            break
-        ax.add_patch(
-            Rectangle(
-                (p["false_positive_rate_ci95_low"], p["science_retention_ci95_low"]),
-                p["false_positive_rate_ci95_high"] - p["false_positive_rate_ci95_low"],
-                p["science_retention_ci95_high"] - p["science_retention_ci95_low"],
-                facecolor=red,
-                edgecolor="none",
-                alpha=0.12,
-                zorder=1,
-            )
+        ax.fill_between(
+            [p["false_positive_rate_pct"] for p in rn],
+            [p["science_retention_ci95_low"] for p in rn],
+            [p["science_retention_ci95_high"] for p in rn],
+            color=red,
+            alpha=0.15,
+            linewidth=0,
+            zorder=1,
         )
     ax.plot(
-        [p["false_positive_rate_pct"] for p in roc_base],
-        [p["science_retention_pct"] for p in roc_base],
+        [p["false_positive_rate_pct"] for p in rb],
+        [p["science_retention_pct"] for p in rb],
         marker="o",
+        markersize=3,
         linewidth=1.6,
         color=blue,
         label="Baseline",
+        zorder=2,
     )
     ax.plot(
-        [p["false_positive_rate_pct"] for p in roc_no_ndwi],
-        [p["science_retention_pct"] for p in roc_no_ndwi],
+        [p["false_positive_rate_pct"] for p in rn],
+        [p["science_retention_pct"] for p in rn],
         marker="o",
+        markersize=3,
         linewidth=1.6,
         color=red,
         label="NDWI removed",
+        zorder=2,
     )
     ax.set_title("CSC threshold sweep")
     ax.set_xlabel("FP rate (%)")
     ax.set_ylabel("Recall (%)")
-    ax.legend(frameon=False, fontsize=8, loc="lower right")
-    ax.set_ylim(98.2, 100.2)
+    ax.legend(frameon=False, fontsize=8, loc="lower left")
+    ax.set_xlim(0.0, 5.0)
+    y0, y1 = _ylim_roc(rb, rn)
+    ax.set_ylim(y0, y1)
 
     # Panel 2: stride sweep
     ax = axes[1]
-    for p in stride_points:
-        if "science_retention_ci95_low" not in p:
-            break
-        ax.add_patch(
-            Rectangle(
-                (p["stage1_stride"] - 0.12, p["science_retention_ci95_low"]),
-                0.24,
-                p["science_retention_ci95_high"] - p["science_retention_ci95_low"],
-                facecolor=blue,
-                edgecolor="none",
-                alpha=0.12,
-                zorder=1,
-            )
+    if stride_points and "science_retention_ci95_low" in stride_points[0]:
+        ax.fill_between(
+            [p["stage1_stride"] for p in stride_points],
+            [p["science_retention_ci95_low"] for p in stride_points],
+            [p["science_retention_ci95_high"] for p in stride_points],
+            color=blue,
+            alpha=0.15,
+            linewidth=0,
+            zorder=1,
         )
     ax.plot(
         [p["stage1_stride"] for p in stride_points],
         [p["science_retention_pct"] for p in stride_points],
         marker="o",
+        markersize=3,
         linewidth=1.6,
         color=blue,
+        zorder=2,
     )
     ax.set_title("Sparse screening cadence")
     ax.set_xlabel("Stage-1 stride (passes)")
     ax.set_ylabel("Recall (%)")
     ax.set_xticks([p["stage1_stride"] for p in stride_points])
-    ax.set_ylim(98.2, 100.2)
+    sy0, sy1 = _ylim_recall(stride_points, [])
+    ax.set_ylim(sy0, sy1)
 
     # Panel 3: cloud strictness sweep
     ax = axes[2]
-    for p in cloud_points:
-        if "science_retention_ci95_low" not in p:
-            break
-        ax.add_patch(
-            Rectangle(
-                (p["cloud_pass_prob"] - 0.01, p["science_retention_ci95_low"]),
-                0.02,
-                p["science_retention_ci95_high"] - p["science_retention_ci95_low"],
-                facecolor=blue,
-                edgecolor="none",
-                alpha=0.12,
-                zorder=1,
-            )
+    if cloud_points and "science_retention_ci95_low" in cloud_points[0]:
+        ax.fill_between(
+            [p["cloud_pass_prob"] for p in cloud_points],
+            [p["science_retention_ci95_low"] for p in cloud_points],
+            [p["science_retention_ci95_high"] for p in cloud_points],
+            color=blue,
+            alpha=0.15,
+            linewidth=0,
+            zorder=1,
         )
     ax.plot(
         [p["cloud_pass_prob"] for p in cloud_points],
         [p["science_retention_pct"] for p in cloud_points],
         marker="o",
+        markersize=3,
         linewidth=1.6,
         color=blue,
+        zorder=2,
     )
     ax.set_title("Cloud mask strictness")
     ax.set_xlabel("Cloud-flag rate")
     ax.set_ylabel("Recall (%)")
-    ax.set_ylim(98.2, 100.2)
+    cy0, cy1 = _ylim_recall([], cloud_points)
+    ax.set_ylim(cy0, cy1)
 
     out_base.parent.mkdir(parents=True, exist_ok=True)
     fig.subplots_adjust(left=0.06, right=0.995, top=0.88, bottom=0.22, wspace=0.28)
@@ -180,4 +211,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
