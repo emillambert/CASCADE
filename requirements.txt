@@ -1,6 +1,7 @@
-requests>=2.31
-numpy>=1.26
-pandas>=2.2
-matplotlib>=3.8
-rasterio>=1.3
-tqdm>=4.66
+# Pinned for reproducible installs (bump intentionally after testing).
+requests==2.33.1
+numpy==2.4.4
+pandas==3.0.2
+matplotlib==3.10.8
+rasterio==1.5.0
+tqdm==4.67.3

@@ -41,7 +41,7 @@ Optional economics refresh:
 python unit_economics.py
 ```
 
-This repository has been verified in a fresh virtual environment using the dependencies in `requirements.txt`.
+This repository has been verified in a fresh virtual environment using the dependencies in `requirements.txt` (exact versions are pinned there for reproducible installs).
 
 ## Verification and Validation
 

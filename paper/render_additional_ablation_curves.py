@@ -229,7 +229,9 @@ def render(payload: dict, out_base: Path) -> None:
         series_linestyles = ["-", "--", "-.", ":"]
         # FP axis: cycle linestyles (not all dashed) so curves stay distinguishable in greyscale print.
         fp_linestyles = ["--", "-.", ":", (0, (4, 2, 1, 2))]
-        series_colors = plt.cm.viridis(np.linspace(0.20, 0.85, max(len(sats), 2)))
+        # Greyscale-friendly: fixed luminance steps (viridis collapses in B/W print).
+        _grey = ["#141414", "#595959", "#a8a8a8"]
+        series_colors = [_grey[i % len(_grey)] for i in range(len(sats))]
 
         def _pick(w: float, s: float) -> dict:
             return next(p for p in cases if float(p["weight_sweep_scale"]) == w and float(p["saturation_sweep_scale"]) == s)
@@ -244,8 +246,10 @@ def render(payload: dict, out_base: Path) -> None:
                 weights,
                 _clip_pct_series([p["science_retention_pct"] for p in pts]),
                 marker=series_markers_recall[i % len(series_markers_recall)],
-                markersize=3,
-                linewidth=1.5,
+                markersize=5.5,
+                markeredgewidth=0.85,
+                markeredgecolor="white" if i < 2 else "black",
+                linewidth=2.0,
                 linestyle=series_linestyles[i % len(series_linestyles)],
                 color=series_colors[i],
                 label=f"Recall (s={s:.2f})",
@@ -277,14 +281,14 @@ def render(payload: dict, out_base: Path) -> None:
                 weights,
                 [p["false_positive_rate_pct"] for p in pts],
                 marker=series_markers_fp[i % len(series_markers_fp)],
-                markersize=3.2,
-                linewidth=1.35,
+                markersize=5.0,
+                linewidth=1.85,
                 linestyle=fp_linestyles[i % len(fp_linestyles)],
                 color=series_colors[i],
                 label=f"FP (s={s:.2f})",
                 zorder=3,
-                markeredgecolor="white",
-                markeredgewidth=0.45,
+                markeredgecolor="white" if i < 2 else "black",
+                markeredgewidth=0.85,
             )
         ax2.set_ylabel("FP rate (%)")
         lines1, lab1 = ax.get_legend_handles_labels()
