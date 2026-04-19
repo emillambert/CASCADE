@@ -115,6 +115,7 @@
         "min_batt_mean": 0.8598750000000002,
         "cloud_passes_mean": 36.73,
         "seasonal_average_compute_pct_mean": 92.5,
+        "detected_patches_mean": 21.0,
         "action_mix": {
           "RAW": {
             "count_mean": 120.0,
@@ -134,6 +135,7 @@
         "min_batt_mean": 0.8602916666666668,
         "cloud_passes_mean": 36.73,
         "seasonal_average_compute_pct_mean": 92.5,
+        "detected_patches_mean": 21.0,
         "action_mix": {
           "FUSE": {
             "count_mean": 106.91,
@@ -159,6 +161,7 @@
         "min_batt_mean": 0.8604054166666668,
         "cloud_passes_mean": 36.73,
         "seasonal_average_compute_pct_mean": 49.162222222222226,
+        "detected_patches_mean": 21.0,
         "action_mix": {
           "FUSE": {
             "count_mean": 22.49,

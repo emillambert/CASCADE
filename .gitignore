@@ -2,6 +2,7 @@
 .claude/
 .venv/
 .ipynb_checkpoints/
+.vscode/
 data/modis_cache/
 outputs/real_modis/.DS_Store
 outputs/real_modis/*/csc_stack.npz

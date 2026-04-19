@@ -86,14 +86,20 @@ def render(payload: dict, out_base: Path) -> None:
         ax.spines["left"].set_color("#777777")
         ax.spines["bottom"].set_color("#777777")
 
-    # Panel 1: threshold sweep (FP vs recall); x clipped to operating-relevant FP band
+    # Panel 1: threshold sweep (FP vs recall) focused on the operating-relevant band
     ax = axes[0]
     rb = [_clip_point_recall(p) for p in _roc_by_fp(roc_base)]
     rn = [_clip_point_recall(p) for p in _roc_by_fp(roc_no_ndwi)]
-    if rb and "science_retention_ci95_low" in rb[0]:
-        rlo, rhi = _recall_fill_arrays(rb)
+    def _subset(points: list[dict], fp_max: float = 2.5, y_min: float = 99.0) -> list[dict]:
+        return [p for p in points if p["false_positive_rate_pct"] <= fp_max and p["science_retention_pct"] >= y_min]
+
+    rb_zoom = _subset(rb)
+    rn_zoom = _subset(rn)
+
+    if rb_zoom and "science_retention_ci95_low" in rb_zoom[0]:
+        rlo, rhi = _recall_fill_arrays(rb_zoom)
         ax.fill_between(
-            [p["false_positive_rate_pct"] for p in rb],
+            [p["false_positive_rate_pct"] for p in rb_zoom],
             rlo,
             rhi,
             color=blue,
@@ -101,9 +107,9 @@ def render(payload: dict, out_base: Path) -> None:
             linewidth=0,
             zorder=1,
         )
-        rlo2, rhi2 = _recall_fill_arrays(rn)
+        rlo2, rhi2 = _recall_fill_arrays(rn_zoom)
         ax.fill_between(
-            [p["false_positive_rate_pct"] for p in rn],
+            [p["false_positive_rate_pct"] for p in rn_zoom],
             rlo2,
             rhi2,
             color=red,
@@ -112,8 +118,8 @@ def render(payload: dict, out_base: Path) -> None:
             zorder=1,
         )
     ax.plot(
-        [p["false_positive_rate_pct"] for p in rb],
-        _clip_pct_series([p["science_retention_pct"] for p in rb]),
+        [p["false_positive_rate_pct"] for p in rb_zoom],
+        _clip_pct_series([p["science_retention_pct"] for p in rb_zoom]),
         marker="o",
         markersize=3,
         linewidth=1.6,
@@ -122,8 +128,8 @@ def render(payload: dict, out_base: Path) -> None:
         zorder=2,
     )
     ax.plot(
-        [p["false_positive_rate_pct"] for p in rn],
-        _clip_pct_series([p["science_retention_pct"] for p in rn]),
+        [p["false_positive_rate_pct"] for p in rn_zoom],
+        _clip_pct_series([p["science_retention_pct"] for p in rn_zoom]),
         marker="o",
         markersize=3,
         linewidth=1.6,
@@ -131,12 +137,14 @@ def render(payload: dict, out_base: Path) -> None:
         label="NDWI removed",
         zorder=2,
     )
-    ax.set_title("CSC threshold sweep")
+    ax.set_title("CSC threshold sweep (operating regime)")
     ax.set_xlabel("FP rate (%)")
     ax.set_ylabel("Recall (%)")
     ax.legend(frameon=False, fontsize=8, loc="lower left")
-    ax.set_xlim(0.0, 5.0)
-    ax.set_ylim(96.0, 100.5)
+    ax.set_xlim(0.0, 2.5)
+    ax.set_ylim(99.0, 100.2)
+    ax.set_xticks([0.0, 0.5, 1.0, 1.5, 2.0, 2.5])
+    ax.set_yticks([99.0, 99.5, 100.0])
 
     # Panel 2: stride — recall (left) capped 99–100.15; seasonal compute varies (right)
     ax = axes[1]
@@ -200,64 +208,66 @@ def render(payload: dict, out_base: Path) -> None:
     csc_cases = (csc or {}).get("cases") if isinstance(csc, dict) else None
     has_csc_ci = bool(csc_cases and isinstance(csc_cases, list) and "science_retention_ci95_low" in csc_cases[0])
 
-    if has_csc_ci:
+    if has_csc_ci and all("weight_sweep_scale" in p and "saturation_sweep_scale" in p for p in csc_cases):
         cases = [_clip_point_recall(p) for p in csc_cases]
-        n = len(cases)
-        x = np.arange(n, dtype=float)
-        # Meaningful x: weight and saturation scale factors from sweep grid
-        xlabs: list[str] = []
-        for i, p in enumerate(cases):
-            if "weight_sweep_scale" in p and "saturation_sweep_scale" in p:
-                xlabs.append(f"w={p['weight_sweep_scale']:.2f}\ns={p['saturation_sweep_scale']:.2f}")
-            else:
-                xlabs.append(str(i))
+        weights = sorted({float(p["weight_sweep_scale"]) for p in cases})
+        sats = sorted({float(p["saturation_sweep_scale"]) for p in cases})
 
-        rlo, rhi = _recall_fill_arrays(cases)
-        ax.fill_between(x, rlo, rhi, color=blue, alpha=0.15, linewidth=0, zorder=1)
-        ax.plot(
-            x,
-            _clip_pct_series([p["science_retention_pct"] for p in cases]),
-            marker="o",
-            markersize=3,
-            linewidth=1.6,
-            color=blue,
-            label="Recall",
-            zorder=2,
-        )
-        ax.set_xticks(x)
-        ax.set_xticklabels(xlabs, fontsize=6, rotation=0)
+        def _pick(w: float, s: float) -> dict:
+            return next(p for p in cases if float(p["weight_sweep_scale"]) == w and float(p["saturation_sweep_scale"]) == s)
+
+        # Recall curves (one per saturation level) on left axis.
+        for i, s in enumerate(sats):
+            pts = [_pick(w, s) for w in weights]
+            if pts and "science_retention_ci95_low" in pts[0]:
+                lo, hi = _recall_fill_arrays(pts)
+                ax.fill_between(weights, lo, hi, alpha=0.10, linewidth=0, zorder=1)
+            ax.plot(
+                weights,
+                _clip_pct_series([p["science_retention_pct"] for p in pts]),
+                marker="o",
+                markersize=3,
+                linewidth=1.5,
+                label=f"Recall (s={s:.2f})",
+                zorder=2,
+            )
+
+        ax.set_xticks(weights)
+        ax.set_xticklabels([f"{w:.2f}" for w in weights])
         ax.set_title("CSC parameter sensitivity")
-        ax.set_xlabel(r"$\pm30\%$ grid (weight $w$, saturation $s$)")
+        ax.set_xlabel(r"Weight scale $w$ (±30%)")
         ax.set_ylabel("Recall (%)")
         ax.set_ylim(99.0, 100.15)
 
+        # FP curves on twin axis (one per saturation level).
         ax2 = ax.twinx()
-        if "false_positive_rate_ci95_low" in cases[0]:
-            ax2.fill_between(
-                x,
-                [p["false_positive_rate_ci95_low"] for p in cases],
-                [p["false_positive_rate_ci95_high"] for p in cases],
+        for s in sats:
+            pts = [_pick(w, s) for w in weights]
+            if pts and "false_positive_rate_ci95_low" in pts[0]:
+                ax2.fill_between(
+                    weights,
+                    [p["false_positive_rate_ci95_low"] for p in pts],
+                    [p["false_positive_rate_ci95_high"] for p in pts],
+                    alpha=0.10,
+                    linewidth=0,
+                    zorder=1,
+                )
+            ax2.plot(
+                weights,
+                [p["false_positive_rate_pct"] for p in pts],
+                marker="s",
+                markersize=3,
+                linewidth=1.3,
+                linestyle="--",
                 color=orange,
-                alpha=0.12,
-                linewidth=0,
-                zorder=1,
+                label=f"FP (s={s:.2f})",
+                zorder=3,
             )
-        ax2.plot(
-            x,
-            [p["false_positive_rate_pct"] for p in cases],
-            marker="s",
-            markersize=3,
-            linewidth=1.4,
-            color=orange,
-            linestyle="--",
-            label="FP rate",
-            zorder=3,
-        )
         ax2.set_ylabel("FP rate (%)", color=orange)
         ax2.tick_params(axis="y", labelcolor=orange)
         lines1, lab1 = ax.get_legend_handles_labels()
         lines2, lab2 = ax2.get_legend_handles_labels()
-        ax.legend(lines1 + lines2, lab1 + lab2, frameon=False, fontsize=7, loc="upper right")
+        ax.legend(lines1 + lines2, lab1 + lab2, frameon=False, fontsize=7, loc="lower right")
     else:
         cloud_points = [_clip_point_recall(p) for p in cloud_points]
         xc = [p["cloud_pass_prob"] for p in cloud_points]

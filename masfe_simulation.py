@@ -17,6 +17,7 @@ Three policies compared:
   2. FIXED_ONBOARD    - always run full pipeline onboard
   3. MASFE_MDP        - adaptive: two-stage MDP scheduling, smart priority downlink
   4. ABLATE_NO_BELIEF - current-pass EVI trigger without the stored stress belief
+  5. EVI_ONLY_THRESHOLD - Stage-1 EVI-only trigger; downlink only exceedance tiles
 
 Synthetic validation:
   The benchmark runs as a 100-seed Monte Carlo study over 500 field patches,
@@ -55,6 +56,7 @@ POLICY_SEED_OFFSET = {
     "FIXED_ONBOARD": 202,
     "MASFE_MDP": 303,
     "ABLATE_NO_BELIEF": 404,
+    "EVI_ONLY_THRESHOLD": 505,
 }
 
 MONTE_CARLO_DEFAULTS = {
@@ -79,6 +81,45 @@ ALERT_THRESH_SWEEP = [0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70]
 WEIGHT_SWEEP = [0.70, 1.00, 1.30]
 SATURATION_SWEEP = [0.70, 1.00, 1.30]
 OUTPUTS_DIR = Path("outputs")
+
+EVI_ONLY_THRESH_SWEEP = [
+    6.0,
+    5.5,
+    5.0,
+    4.5,
+    4.0,
+    3.8,
+    3.6,
+    3.4,
+    3.2,
+    3.0,
+    2.9,
+    2.8,
+    2.7,
+    2.6,
+    2.59,
+    2.58,
+    2.57,
+    2.56,
+    2.55,
+    2.5,
+    2.4,
+    2.3,
+    2.2,
+    2.1,
+    2.0,
+    1.5,
+    1.0,
+]
+EVI_ONLY_TARGET_FP_PCT = 2.3
+
+
+class EviOnlyThresholdPolicy:
+    def __init__(self, evi_alert_thr: float = 4.0):
+        self.evi_alert_thr = float(evi_alert_thr)
+
+    def act(self, s: State) -> str:
+        return "MOD13"
 
 
 def _require_pyplot():
@@ -310,6 +351,11 @@ def simulate(
         else:
             action = policy.act(state)
 
+        evi_only_detected = None
+        if policy_name == "EVI_ONLY_THRESHOLD" and action == "MOD13":
+            evi_thr = float(getattr(policy, "evi_alert_thr", 4.0))
+            evi_only_detected = (evi_anom >= evi_thr) & (~np.isnan(evi_t))
+
         if clouded and action in ("MOD13", "FUSE", "FUSE_PRIORITY", "RAW"):
             new_csc = csc * 0.92
             steps_sf += 1
@@ -336,7 +382,13 @@ def simulate(
         elif policy_name == "FIXED_ONBOARD" and action == "FUSE" and dl_window and new_csc.max() >= detection_threshold:
             action = "FUSE_PRIORITY"
 
-        if not clouded and action in ("FUSE", "FUSE_PRIORITY", "RAW"):
+        if not clouded and policy_name == "EVI_ONLY_THRESHOLD" and action == "MOD13":
+            detected = evi_only_detected if evi_only_detected is not None else np.zeros(n_p, dtype=bool)
+            tp += int(np.sum(detected & data["truth"][t]))
+            fp += int(np.sum(detected & ~data["truth"][t]))
+            for idx in np.where(detected & data["truth"][t])[0]:
+                detected_patches.add(int(idx))
+        elif not clouded and action in ("FUSE", "FUSE_PRIORITY", "RAW"):
             detected = new_csc >= detection_threshold
             tp += int(np.sum(detected & data["truth"][t]))
             fp += int(np.sum(detected & ~data["truth"][t]))
@@ -345,6 +397,12 @@ def simulate(
 
         if action == "RAW":
             data_mb = cfg.raw_mb
+        elif policy_name == "EVI_ONLY_THRESHOLD" and action == "MOD13":
+            if (not dl_window) or clouded or evi_only_detected is None or (int(evi_only_detected.sum()) == 0):
+                data_mb = 0.0
+            else:
+                alerted = int(evi_only_detected.sum())
+                data_mb = 0.1 * cfg.indices_mb + alerted * cfg.alert_mb
         elif action == "FUSE":
             data_mb = cfg.csc_map_mb
         elif action == "FUSE_PRIORITY":
@@ -373,7 +431,16 @@ def simulate(
         actions.append(action)
         batt_hist.append(batt)
 
-        if action == "FUSE_PRIORITY" and (new_csc >= detection_threshold).any():
+        if policy_name == "EVI_ONLY_THRESHOLD" and action == "MOD13" and dl_window and not clouded:
+            if evi_only_detected is not None and evi_only_detected.any():
+                alerts.append(
+                    {
+                        "t": t,
+                        "n": int(evi_only_detected.sum()),
+                        "csc_max": round(float(new_csc.max()), 3),
+                    }
+                )
+        elif action == "FUSE_PRIORITY" and (new_csc >= detection_threshold).any():
             alerts.append(
                 {
                     "t": t,
@@ -481,6 +548,7 @@ def aggregate_policy_results(name: str, policy_runs: list[Dict], n_t: int) -> di
     min_batt = [run["min_batt"] for run in policy_runs]
     cloud = [run["cloud_passes"] for run in policy_runs]
     avg_compute = [run["seasonal_average_compute_pct"] for run in policy_runs]
+    detected_patches = [run["detected_patches"] for run in policy_runs]
 
     return {
         "name": name,
@@ -492,6 +560,7 @@ def aggregate_policy_results(name: str, policy_runs: list[Dict], n_t: int) -> di
         "min_batt_mean": float(np.mean(min_batt)),
         "cloud_passes_mean": float(np.mean(cloud)),
         "seasonal_average_compute_pct_mean": float(np.mean(avg_compute)),
+        "detected_patches_mean": float(np.mean(detected_patches)),
         "action_mix": summarize_action_mix([run["action_dist"] for run in policy_runs], n_t),
     }
 
@@ -881,6 +950,145 @@ def run_ablation_analysis(cfg: Config, datasets: list[Dict], baseline_metrics: d
         "ablation_stats": round_stats(selected_eval["stats"]),
         "threshold_sweep_checked": sweep_results,
     }
+
+
+def run_evi_only_baseline(cfg: Config, datasets: list[Dict], baseline_metrics: dict) -> dict:
+    target_recall = round(float(baseline_metrics["science_retention_pct"]), 1)
+    selected_threshold = None
+    selected_eval = None
+    best_fp_gap = float("inf")
+    sweep_results = {}
+
+    for thr in EVI_ONLY_THRESH_SWEEP:
+        eval_result = evaluate_policy(
+            "EVI_ONLY_THRESHOLD",
+            lambda t=thr: EviOnlyThresholdPolicy(evi_alert_thr=t),
+            cfg,
+            datasets,
+        )
+        recall_mean = eval_result["stats"]["science_retention_pct"]["mean"]
+        fp_mean = eval_result["stats"]["false_positive_rate_pct"]["mean"]
+        sweep_results[f"{thr:.2f}"] = round_stats(eval_result["stats"])
+        if round(recall_mean, 1) < target_recall:
+            continue
+        fp_gap = abs(float(fp_mean) - float(EVI_ONLY_TARGET_FP_PCT))
+        if fp_gap < best_fp_gap:
+            best_fp_gap = fp_gap
+            selected_threshold = float(thr)
+            selected_eval = eval_result
+
+    if selected_eval is None or selected_threshold is None:
+        # Fall back to the least conservative threshold if none meet recall.
+        thr = float(EVI_ONLY_THRESH_SWEEP[-1])
+        selected_threshold = float(thr)
+        selected_eval = evaluate_policy(
+            "EVI_ONLY_THRESHOLD",
+            lambda t=thr: EviOnlyThresholdPolicy(evi_alert_thr=t),
+            cfg,
+            datasets,
+        )
+
+    return {
+        "target_recall_pct": target_recall,
+        "selected_evi_threshold": round(selected_threshold, 2),
+        "evi_only_stats": round_stats(selected_eval["stats"]),
+        "threshold_sweep_checked": sweep_results,
+    }
+
+
+def write_baselines_comparison_table(
+    metrics: dict,
+    ablation_metrics: dict,
+    evi_only_metrics: dict,
+    destination: Path,
+) -> None:
+    mc = metrics["monte_carlo"]
+    raw = mc["policy_summary"]["RAW_DUMP"]
+    fixed = mc["policy_summary"]["FIXED_ONBOARD"]
+    masfe = mc["policy_summary"]["MASFE_MDP"]
+    n_dis = float(mc["n_dis"])
+
+    def downlink_reduction_vs_raw(policy_data_mb_mean: float) -> float:
+        denom = max(float(raw["data_mb_mean"]), 1e-9)
+        return (1.0 - float(policy_data_mb_mean) / denom) * 100.0
+
+    def fmt_pct(x: float, digits: int = 1) -> str:
+        return f"{round(float(x), digits):.{digits}f}\\%"
+
+    evi_stats = evi_only_metrics["evi_only_stats"]
+    ab_stats = ablation_metrics["ablation_stats"]
+
+    def recall_from_aggregate(run: dict) -> float:
+        return float(run.get("detected_patches_mean", 0.0)) / max(n_dis, 1.0) * 100.0
+
+    def fp_rate_from_aggregate(run: dict) -> float:
+        return float(run["fp_mean"]) / max(float(run["tp_mean"]) + float(run["fp_mean"]), 1.0) * 100.0
+
+    table_rows = [
+        (
+            "Raw downlink",
+            0.0,
+            recall_from_aggregate(raw),
+            fp_rate_from_aggregate(raw),
+            r"N/A",
+        ),
+        (
+            "Fixed-period onboard",
+            downlink_reduction_vs_raw(float(fixed["data_mb_mean"])),
+            recall_from_aggregate(fixed),
+            fp_rate_from_aggregate(fixed),
+            float(fixed["seasonal_average_compute_pct_mean"]),
+        ),
+        (
+            "EVI-only threshold",
+            downlink_reduction_vs_raw(float(evi_stats["data_mb"]["mean"])),
+            float(evi_stats["science_retention_pct"]["mean"]),
+            float(evi_stats["false_positive_rate_pct"]["mean"]),
+            float(evi_stats["seasonal_average_compute_utilisation_pct"]["mean"]),
+        ),
+        (
+            "No-belief MASFE",
+            downlink_reduction_vs_raw(float(ab_stats["data_mb"]["mean"])),
+            float(ab_stats["science_retention_pct"]["mean"]),
+            float(ab_stats["false_positive_rate_pct"]["mean"]),
+            float(ab_stats["seasonal_average_compute_utilisation_pct"]["mean"]),
+        ),
+        (
+            "Full MASFE",
+            downlink_reduction_vs_raw(float(masfe["data_mb_mean"])),
+            recall_from_aggregate(masfe),
+            fp_rate_from_aggregate(masfe),
+            float(masfe["seasonal_average_compute_pct_mean"]),
+        ),
+    ]
+
+    lines = []
+    lines.append(r"\begin{table}[!htbp]")
+    lines.append(r"\centering")
+    lines.append(r"\caption{Baseline comparisons under the synthetic Monte Carlo benchmark.}")
+    lines.append(r"\label{tab:baselines}")
+    lines.append(r"\small")
+    lines.append(r"\setlength{\tabcolsep}{5pt}")
+    lines.append(r"\renewcommand{\arraystretch}{1.1}")
+    lines.append(r"\begin{tabular}{lcccc}")
+    lines.append(r"\toprule")
+    lines.append(r"Variant & Downlink\,$\downarrow$ & Recall\,$\uparrow$ & FP\,$\downarrow$ & Compute\,$\downarrow$ \\")
+    lines.append(r"\midrule")
+    for name, downlink_red, recall, fp, compute in table_rows:
+        compute_cell = compute if isinstance(compute, str) else fmt_pct(compute)
+        lines.append(
+            f"{name} & {fmt_pct(downlink_red)} & {fmt_pct(recall)} & {fmt_pct(fp)} & {compute_cell} \\\\"
+        )
+    lines.append(r"\bottomrule")
+    lines.append(r"\end{tabular}")
+    lines.append(
+        r"{\footnotesize Raw downlink denotes no onboard triage; recall and false-positive rate apply the same detector after ground-processing the full dataset.}"
+    )
+    lines.append(r"\end{table}")
+    lines.append("")
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text("\n".join(lines), encoding="utf-8")
 
 
 def run_roc_sweep(cfg: Config, datasets: list[Dict]) -> dict:
@@ -1394,6 +1602,8 @@ def report(metrics: dict, ablation_metrics: dict, roc_metrics: dict, csc_sensiti
 
     print("\n  ADDITIONAL REPO OUTPUTS")
     print("  * outputs/ablation_metrics.json")
+    print("  * outputs/evi_only_baseline.json")
+    print("  * outputs/baselines_comparison_table.tex")
     print("  * outputs/roc_metrics.json")
     print("  * outputs/roc.png")
     print("  * outputs/csc_sensitivity.json")
@@ -1434,8 +1644,20 @@ if __name__ == "__main__":
     cfg = Config()
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 
+    try:
+        import matplotlib  # noqa: F401
+
+        plots_enabled = True
+    except ModuleNotFoundError:
+        plots_enabled = False
+
     if args.additional_ablations_only:
         print("MASFE Simulation - running additional ablations only...")
+        if not plots_enabled:
+            raise RuntimeError(
+                "matplotlib is required for --additional-ablations-only. "
+                "Install matplotlib or run the full benchmark (which can skip plots)."
+            )
         additional_ablations = run_additional_ablations(cfg)
         write_json(OUTPUTS_DIR / "additional_ablations.json", additional_ablations)
         # Keep Figure 2 reproducible without running the full benchmark.
@@ -1466,19 +1688,31 @@ if __name__ == "__main__":
     )
     metrics = run_monte_carlo(cfg, datasets=datasets)
     ablation_metrics = run_ablation_analysis(cfg, datasets, metrics)
+    evi_only_metrics = run_evi_only_baseline(cfg, datasets, metrics)
     roc_metrics = run_roc_sweep(cfg, datasets)
     csc_sensitivity = run_csc_sensitivity(cfg, datasets)
-    additional_ablations = run_additional_ablations(cfg)
+    additional_ablations = None
+    if plots_enabled:
+        additional_ablations = run_additional_ablations(cfg)
 
     write_json(OUTPUTS_DIR / "ablation_metrics.json", ablation_metrics)
-    write_json(OUTPUTS_DIR / "roc_metrics.json", roc_metrics)
-    write_roc_plot(roc_metrics, OUTPUTS_DIR / "roc.png")
-    write_json(OUTPUTS_DIR / "csc_sensitivity.json", csc_sensitivity)
-    write_json(OUTPUTS_DIR / "additional_ablations.json", additional_ablations)
-    write_multi_roc_plot(
-        additional_ablations["ndwi_removed"]["roc_baseline"],
-        additional_ablations["ndwi_removed"]["roc_ndwi_removed"],
-        ("Baseline", "NDWI removed"),
-        OUTPUTS_DIR / "roc_baseline_vs_no_ndwi.png",
+    write_json(OUTPUTS_DIR / "evi_only_baseline.json", evi_only_metrics)
+    write_baselines_comparison_table(
+        metrics,
+        ablation_metrics,
+        evi_only_metrics,
+        OUTPUTS_DIR / "baselines_comparison_table.tex",
     )
+    write_json(OUTPUTS_DIR / "roc_metrics.json", roc_metrics)
+    if plots_enabled:
+        write_roc_plot(roc_metrics, OUTPUTS_DIR / "roc.png")
+    write_json(OUTPUTS_DIR / "csc_sensitivity.json", csc_sensitivity)
+    if plots_enabled and additional_ablations is not None:
+        write_json(OUTPUTS_DIR / "additional_ablations.json", additional_ablations)
+        write_multi_roc_plot(
+            additional_ablations["ndwi_removed"]["roc_baseline"],
+            additional_ablations["ndwi_removed"]["roc_ndwi_removed"],
+            ("Baseline", "NDWI removed"),
+            OUTPUTS_DIR / "roc_baseline_vs_no_ndwi.png",
+        )
     report(metrics, ablation_metrics, roc_metrics, csc_sensitivity)
