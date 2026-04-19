@@ -1,8 +1,8 @@
 {
-  "downlink_reduction_vs_raw_pct": 99.3,
-  "downlink_reduction_vs_fixed_pct": 80.7,
-  "energy_saving_vs_raw_pct": 38.6,
-  "energy_saving_vs_fixed_pct": 24.6,
+  "downlink_reduction_vs_raw_pct": 98.9,
+  "downlink_reduction_vs_fixed_pct": 79.7,
+  "energy_saving_vs_raw_pct": 38.3,
+  "energy_saving_vs_fixed_pct": 26.4,
   "science_retention_pct": 100.0,
   "alert_precision_pct": 98.4,
   "false_positive_rate_pct": 1.6,

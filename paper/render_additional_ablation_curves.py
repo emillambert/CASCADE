@@ -173,7 +173,8 @@ def render(payload: dict, out_base: Path) -> None:
     )
     ax.set_title("Sparse screening cadence")
     ax.set_xlabel("Stage-1 stride (passes)")
-    ax.set_ylabel("Recall (%)")
+    ax.set_ylabel("Recall (%)", labelpad=6)
+    ax.yaxis.set_label_coords(-0.12, 0.5)
     ax.set_xticks(xstride)
     ax.set_ylim(99.0, 100.15)
 
@@ -190,13 +191,24 @@ def render(payload: dict, out_base: Path) -> None:
             label="Seasonal compute",
             zorder=3,
         )
-        ax2.set_ylabel("Seasonal compute (%)", color=orange)
+        # Keep the right-axis label just outside orange tick numerals; pushing it
+        # too far right collides with Panel 3. Prefer a bit more wspace + a left
+        # nudge on the primary y-label for twin-axis legibility.
+        ax2.set_ylabel("Seasonal compute (%)", color=orange, labelpad=11)
+        ax2.yaxis.set_label_coords(1.09, 0.5)
         ax2.tick_params(axis="y", labelcolor=orange)
         ax2.spines["top"].set_visible(False)
         ax2.set_frame_on(True)
         lines1, lab1 = ax.get_legend_handles_labels()
         lines2, lab2 = ax2.get_legend_handles_labels()
-        ax.legend(lines1 + lines2, lab1 + lab2, frameon=False, fontsize=7, loc="center right")
+        ax.legend(
+            lines1 + lines2,
+            lab1 + lab2,
+            frameon=False,
+            fontsize=7,
+            loc="center right",
+            labelspacing=0.65,
+        )
     else:
         ax.legend(frameon=False, fontsize=8, loc="lower right")
 
@@ -212,6 +224,12 @@ def render(payload: dict, out_base: Path) -> None:
         cases = [_clip_point_recall(p) for p in csc_cases]
         weights = sorted({float(p["weight_sweep_scale"]) for p in cases})
         sats = sorted({float(p["saturation_sweep_scale"]) for p in cases})
+        series_markers_recall = ["o", "^", "D", "P", "X", "v"]
+        series_markers_fp = ["s", ">", "<", "h", "d", "*"]
+        series_linestyles = ["-", "--", "-.", ":"]
+        # FP axis: cycle linestyles (not all dashed) so curves stay distinguishable in greyscale print.
+        fp_linestyles = ["--", "-.", ":", (0, (4, 2, 1, 2))]
+        series_colors = plt.cm.viridis(np.linspace(0.20, 0.85, max(len(sats), 2)))
 
         def _pick(w: float, s: float) -> dict:
             return next(p for p in cases if float(p["weight_sweep_scale"]) == w and float(p["saturation_sweep_scale"]) == s)
@@ -221,13 +239,15 @@ def render(payload: dict, out_base: Path) -> None:
             pts = [_pick(w, s) for w in weights]
             if pts and "science_retention_ci95_low" in pts[0]:
                 lo, hi = _recall_fill_arrays(pts)
-                ax.fill_between(weights, lo, hi, alpha=0.10, linewidth=0, zorder=1)
+                ax.fill_between(weights, lo, hi, alpha=0.10, linewidth=0, zorder=1, color=series_colors[i])
             ax.plot(
                 weights,
                 _clip_pct_series([p["science_retention_pct"] for p in pts]),
-                marker="o",
+                marker=series_markers_recall[i % len(series_markers_recall)],
                 markersize=3,
                 linewidth=1.5,
+                linestyle=series_linestyles[i % len(series_linestyles)],
+                color=series_colors[i],
                 label=f"Recall (s={s:.2f})",
                 zorder=2,
             )
@@ -241,7 +261,7 @@ def render(payload: dict, out_base: Path) -> None:
 
         # FP curves on twin axis (one per saturation level).
         ax2 = ax.twinx()
-        for s in sats:
+        for i, s in enumerate(sats):
             pts = [_pick(w, s) for w in weights]
             if pts and "false_positive_rate_ci95_low" in pts[0]:
                 ax2.fill_between(
@@ -251,23 +271,35 @@ def render(payload: dict, out_base: Path) -> None:
                     alpha=0.10,
                     linewidth=0,
                     zorder=1,
+                    color=series_colors[i],
                 )
             ax2.plot(
                 weights,
                 [p["false_positive_rate_pct"] for p in pts],
-                marker="s",
-                markersize=3,
-                linewidth=1.3,
-                linestyle="--",
-                color=orange,
+                marker=series_markers_fp[i % len(series_markers_fp)],
+                markersize=3.2,
+                linewidth=1.35,
+                linestyle=fp_linestyles[i % len(fp_linestyles)],
+                color=series_colors[i],
                 label=f"FP (s={s:.2f})",
                 zorder=3,
+                markeredgecolor="white",
+                markeredgewidth=0.45,
             )
-        ax2.set_ylabel("FP rate (%)", color=orange)
-        ax2.tick_params(axis="y", labelcolor=orange)
+        ax2.set_ylabel("FP rate (%)")
         lines1, lab1 = ax.get_legend_handles_labels()
         lines2, lab2 = ax2.get_legend_handles_labels()
-        ax.legend(lines1 + lines2, lab1 + lab2, frameon=False, fontsize=7, loc="lower right")
+        ax.legend(
+            lines1 + lines2,
+            lab1 + lab2,
+            frameon=False,
+            fontsize=7,
+            loc="lower right",
+            ncol=2,
+            columnspacing=0.9,
+            handletextpad=0.45,
+            markerscale=1.35,
+        )
     else:
         cloud_points = [_clip_point_recall(p) for p in cloud_points]
         xc = [p["cloud_pass_prob"] for p in cloud_points]
@@ -320,7 +352,20 @@ def render(payload: dict, out_base: Path) -> None:
             ax.legend(frameon=False, fontsize=8, loc="lower right")
 
     out_base.parent.mkdir(parents=True, exist_ok=True)
-    fig.subplots_adjust(left=0.06, right=0.995, top=0.88, bottom=0.28, wspace=0.30)
+    for ax, tag in zip(axes, ("(a)", "(b)", "(c)")):
+        ax.text(
+            0.02,
+            0.98,
+            tag,
+            transform=ax.transAxes,
+            fontsize=10,
+            fontweight="bold",
+            va="top",
+            ha="left",
+            color="#333333",
+            clip_on=False,
+        )
+    fig.subplots_adjust(left=0.06, right=0.99, top=0.88, bottom=0.28, wspace=0.50)
 
     fig.savefig(out_base.with_suffix(".png"), dpi=300)
     fig.savefig(out_base.with_suffix(".pdf"), format="pdf")

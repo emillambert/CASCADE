@@ -23,10 +23,10 @@
 \usetikzlibrary{arrows.meta, backgrounds, calc, decorations.pathreplacing, fit, positioning}
 \renewcommand{\ttdefault}{cmtt}
 
-\singlespacing
+\setstretch{0.97}
 \raggedright
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.5pt}
+\setlength{\parskip}{0pt}
 \setlength{\headheight}{14pt}
 \setlength{\textfloatsep}{4pt plus 1pt minus 2pt}
 \setlength{\intextsep}{4pt plus 1pt minus 2pt}
@@ -55,12 +55,12 @@
 
 \makeatletter
 \renewcommand\section{\@startsection{section}{1}{\z@}
-  {0.4\baselineskip}
-  {0.1\baselineskip}
+  {0.25\baselineskip}
+  {0.05\baselineskip}
   {\normalfont\large\bfseries}}
 \renewcommand\subsection{\@startsection{subsection}{2}{\z@}
-  {0.35\baselineskip}
-  {0.1\baselineskip}
+  {0.22\baselineskip}
+  {0.05\baselineskip}
   {\normalfont\normalsize\bfseries}}
 \makeatother
 
@@ -108,7 +108,7 @@ Solo submission
 
 \begingroup
 \small
-\textbf{Abstract.} MASFE moves regenerative-agriculture monitoring onboard by screening every pass with lightweight EVI/NDWI cues, escalating likely stress through CSC fusion, and downlinking only alert tiles. In a submitted 100-seed Monte Carlo benchmark, MASFE achieves 99.3\% downlink reduction versus raw, 38.6\% energy savings, 100\% disease-event recall, and a 1.6\% false-positive rate within the selected payload budget. A Westlands 2024 MODIS replay supports the scheduler on real scenes. The remaining gap is hardware-side validation.
+\textbf{Abstract.} MASFE moves regenerative-agriculture monitoring onboard by screening every pass with lightweight EVI/NDWI cues, escalating likely stress through CSC fusion, and downlinking only alert tiles. In a 100-seed Monte Carlo benchmark, MASFE achieves 98.9\% downlink reduction versus raw, 38.3\% energy savings, 100\% disease-event recall, and a 1.6\% false-positive rate within the selected payload budget. A 2024 Westlands/Firebaugh MODIS replay exercises the policy on real scenes (\S\ref{sec:impact}). The critical path to TRL~4 is hardware-in-the-loop validation (\S\ref{sec:next}).
 \par
 \endgroup
 
@@ -116,7 +116,7 @@ Solo submission
 
 MASFE (Multi-Algorithm Scheduling and Fusion Engine) answers NASA's Space-to-Soil challenge by moving land-observation orchestration onboard for regenerative agriculture, where crop stress must be detected early enough for patch-level intervention instead of blanket chemical application \cite{nasa-challenge-brief,gold-webinar1,mod13a1,mod11a1}. Current land products are often too slow or coarse for that workflow.
 
-The proposed contribution is a two-stage, MDP-formulated scheduling policy deployed as a rule-based controller on a LEON4FT processor; Fig.~\ref{fig:architecture} and \S\ref{sec:solution} summarize the architecture and implementation.
+The proposed contribution is a finite-horizon MDP with per-patch Beta stress posteriors, CSC-based confirmation, and a rule-based LEON4FT controller; Fig.~\ref{fig:architecture} and \S\ref{sec:solution} give the full pipeline and implementation.
 
 \begin{table}[H]
 \centering
@@ -130,11 +130,11 @@ The proposed contribution is a two-stage, MDP-formulated scheduling policy deplo
 \toprule
 \textbf{Criterion} & \textbf{Where} & \textbf{Key evidence} \\
 \midrule
-Creativity & \S2--3 & Beta-posterior scheduler advancing EO-1 ASE heritage \cite{eo1-autonomy}; complementary cadence to Dynamic Targeting \cite{dynamic-targeting}. \\
+Creativity & \S2--3 & EO-1 ASE heritage vs.\ ASPEN/CASPER planners; complement to Dynamic Targeting---details and citations in \S\ref{sec:solution}. \\
 Feasibility & \S2--3 & SWAP closure, compute margin, and real-scene replay. \\
 Impact & \S3 & Monte Carlo reduction, recall, and false-positive evidence. \\
 Business & \S4 & 5-year rollout and multi-platform distribution. \\
-Presentation & Eq.~\eqref{eq:csc}, Fig.~\ref{fig:architecture}, code & Architecture, CSC equation, reproducible simulation submission. \\
+Presentation & Eq.~(1), Fig.~\ref{fig:architecture} & repository link; architecture diagram; CSC equation; reproducible simulation submission. \\
 \bottomrule
 \end{tabularx}
 \endgroup
@@ -143,7 +143,7 @@ Presentation & Eq.~\eqref{eq:csc}, Fig.~\ref{fig:architecture}, code & Architect
 \section{Proposed Solution Detail}
 \label{sec:solution}
 
-MASFE uses a two-stage adaptive sensing loop. Stage 1 executes an EVI anomaly screen derived from MOD13A1 logic on every observed field patch and updates a per-patch stress posterior using EVI and NDWI cues from the same MSI acquisition. When the posterior indicates likely stress, Stage 2 runs a thermal retrieval derived from MOD11A1 and fuses EVI, LST, and MOD09A1-derived NDWI into a Crop Stress Composite (CSC), a normalized anomaly index conceptually related to temperature--vegetation dryness indices (e.g., TVDI) \cite{mod13a1,mod11a1,mod09a1,mod09-guide}. Only confirmed anomalous tiles are buffered for priority downlink. This makes sensing content-driven rather than timeline-driven and distinguishes MASFE from ASPEN/CASPER-style planners, which optimize scheduled activities rather than per-patch stress belief \cite{aspen-spaceops,eo1-planner-lessons}. EO-1 ASE demonstrated rule-based change-detection triggers in orbit \cite{eo1-autonomy}; MASFE advances that heritage with per-patch Beta posteriors that accumulate evidence across passes, enabling stress-trajectory-sensitive scheduling rather than single-pass exceedance detection. Candela et al.'s Dynamic Targeting instead focuses on rapid retargeting of pointable instruments toward transient high-value scenes; MASFE is complementary in operating at composite cadence for chronic crop stress that must be accumulated across passes \cite{dynamic-targeting}.
+MASFE uses a two-stage adaptive sensing loop. Stage 1 executes an EVI anomaly screen derived from MOD13A1 logic on every observed field patch and updates a per-patch stress posterior using EVI and NDWI cues from the MSI pass. When the posterior indicates likely stress, Stage 2 runs a thermal retrieval derived from MOD11A1 and fuses EVI, LST, and MOD09A1-derived NDWI into a Crop Stress Composite (CSC), a normalized anomaly index conceptually related to temperature--vegetation dryness indices (e.g., TVDI) \cite{mod13a1,mod11a1,mod09a1,mod09-guide}. Only confirmed anomalous tiles are buffered for priority downlink. This makes sensing content-driven rather than timeline-driven and distinguishes MASFE from ASPEN/CASPER-style planners, which optimize scheduled activities rather than per-patch stress belief \cite{aspen-spaceops,eo1-casper-autonomous-science}. EO-1 ASE demonstrated rule-based change-detection triggers in orbit \cite{eo1-autonomy}; MASFE advances that heritage with per-patch Beta posteriors that accumulate evidence across passes, enabling stress-trajectory-sensitive scheduling rather than single-pass exceedance detection. Candela et al.'s Dynamic Targeting instead focuses on rapid retargeting of pointable instruments toward transient high-value scenes; MASFE is complementary in operating at composite cadence for chronic crop stress that must be accumulated across passes \cite{dynamic-targeting}.
 
 \begin{equation}
 \text{CSC} = 0.40 \cdot \text{clip}\!\left(\frac{\Delta\text{EVI}}{5\sigma_e}, 0, 1\right)
@@ -153,9 +153,9 @@ MASFE uses a two-stage adaptive sensing loop. Stage 1 executes an EVI anomaly sc
 \end{equation}
 
 where $\Delta\text{EVI} = \max(0, \text{EVI}_{base} - \text{EVI}_{obs})$, $\Delta\text{LST} = \max(0, \text{LST}_{obs} - \text{LST}_{base})$, and $\Delta\text{NDWI} = \max(0, \text{NDWI}_{base} - \text{NDWI}_{obs})$.
-The factors of $5$, $4$, and $4$ are simulation-calibrated saturation constants that map anomaly magnitude into $[0,1]$ before CSC composition; field recalibration against crop-specific agronomy is a pre-TRL-4 item.
+The factors of $5$, $4$, and $4$ are heuristic saturation divisors chosen so CSC terms map typical benchmark anomalies into $[0,1]$ before composition; crop-specific agronomic recalibration is a pre-TRL-4 item.
 
-The scheduling logic is modeled as a finite-horizon MDP with per-patch Beta posteriors $\text{Beta}(\alpha_i,\beta_i)$ over stress probability. Stage~1 increments $\alpha_i$ when EVI or NDWI exceedance is observed and $\beta_i$ otherwise, with the evidence window capped to preserve responsiveness. Action selection compresses that patchwise belief into a mission state vector $s = (\mu_{\max}, \tau_{\max}, \text{SOC}, d, k)$, where $\mu_{\max}$ is the maximum posterior mean, $\tau_{\max}$ is the maximum $P(p > 0.5)$ tail probability, SOC is battery state of charge, $d \in \{0,1\}$ indicates downlink availability, and $k$ counts passes since last fusion. The action set remains \{SKIP, MOD13, FUSE, FUSE\_PRIORITY\}; NDWI is derived from the same MSI acquisition rather than requiring a separate action. The reward trades information gain against energy cost and missed-alert risk. The deployed solver is a hand-tuned deterministic policy chosen for flight-V\&V traceability.
+The scheduling logic is modeled as a finite-horizon MDP with per-patch Beta posteriors $\text{Beta}(\alpha_i,\beta_i)$ over stress probability. Stage~1 increments $\alpha_i$ when EVI or NDWI exceedance is observed and $\beta_i$ otherwise, with the evidence window capped to preserve responsiveness. The deployed rule-based controller maps patchwise beliefs into a compact summary $(\mu_{\max}, \tau_{\max}, \text{SOC}, d, k)$ for exposition, where $\mu_{\max}$ is the maximum posterior mean, $\tau_{\max}$ is the maximum $P(p > 0.5)$ tail probability, SOC is battery state of charge, $d \in \{0,1\}$ indicates downlink availability, and $k$ counts passes since last fusion. Among these, \textbf{action selection} in code uses $\tau_{\max}$, SOC, and $k$ (battery tiers and exploration cadence); $\mu_{\max}$ and $d$ enter the separate \texttt{FUSE}$\rightarrow$\texttt{FUSE\_PRIORITY} promotion gate for alert-tile export under a duty-cycled contact window. The action set remains \{SKIP, MOD13, FUSE, FUSE\_PRIORITY\}; NDWI is derived from the same MSI acquisition rather than requiring a separate action. In the benchmark, the tiered resolution pyramid is modeled as action metadata: MOD13 corresponds to 30\,m screening, FUSE corresponds to a 10\,m confirmation tier, and FUSE\_PRIORITY corresponds to 4.6\,m native alert evidence; the 10\,m tier is the confirmation-resolution metadata attached to FUSE, not a separate fifth action. The deployed solver is a hand-tuned deterministic policy chosen for flight-V\&V traceability.
 
 \begin{table}[!htbp]
 \centering
@@ -166,10 +166,10 @@ The scheduling logic is modeled as a finite-horizon MDP with per-patch Beta post
 \textbf{Requirement} & \textbf{MASFE response} \\
 \midrule
 Alert latency (observation pass to first ground contact) $\leq$ 90 min & One-pass onboard screening and fusion followed by X-band priority downlink at the first available contact. \\
-Spatial resolution $\leq$ 30 m GSD & Tiered GSD pyramid: 30\,m screening on all passes, 10\,m confirmation on suspect patches, and 4.6\,m native evidence tiles for priority alerts. \\
-False-positive rate $\leq$ 15\% & 1.6\% with benign confounders and roughly 30\% cloud-obscured passes per seed (\S\ref{sec:impact}). \\
-SmallSat SWAP compliance & 9.6 W peak / 5.05 W duty-cycled payload average; 92.5\% peak LEON4FT ceiling with 39.2\% Stage-1 and 49.2\% seasonal-average compute; 86\% observed benchmark minimum SOC in a local 40 Wh battery buffer. \\
-Downlink efficiency & 99.3\% reduction versus raw downlink baseline while retaining 100\% disease-event recall (\S\ref{sec:impact}). \\
+Spatial resolution $\leq$ 30 m GSD & Tiered GSD (30/10/4.6\,m) tied to MOD13, FUSE, and FUSE\_PRIORITY action metadata (\S\ref{sec:solution}). \\
+False-positive rate $\leq$ 15\% & 1.6\% with benign confounders and roughly 37 cloud-obscured passes per seed ($\sim$30\% of passes; \S\ref{sec:impact}). \\
+SmallSat SWAP compliance & \shortstack[l]{Power: 9.6 W peak / 5.05 W duty-cycled payload average\\Compute: 92.5\% peak LEON4FT ceiling; 39.2\% Stage-1; 49.2\% seasonal average\\Energy: 86\% observed benchmark minimum SOC in local 40 Wh buffer.} \\
+Downlink efficiency & Large reduction versus raw downlink with full disease-event recall; point estimates and CIs in \S\ref{sec:impact}. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -181,7 +181,7 @@ Downlink efficiency & 99.3\% reduction versus raw downlink baseline while retain
     box/.style={
       draw, rounded corners=3pt, align=center,
       minimum height=1.05cm, minimum width=2.5cm,
-      inner sep=6pt, font=\small\strut
+      inner sep=6pt, font=\normalsize\strut
     },
     sat/.style={
       box,
@@ -276,17 +276,17 @@ Downlink efficiency & 99.3\% reduction versus raw downlink baseline while retain
       fill=blue!3,
       fit=(sensor)(fpga)(cpu)(tx),
       inner sep=13pt,
-      label={[font=\footnotesize\itshape, text=blue!45!black, yshift=4pt]
+      label={[font=\normalsize\itshape, text=blue!45!black, yshift=4pt]
              above:Hosted payload module - Loft Orbital YAM}
     ] {};
   \end{scope}
   
   \end{tikzpicture}
-  \caption{MASFE end-to-end architecture. The onboard payload (dashed box) runs on a
-    hosted module aboard Loft Orbital's YAM bus. Stage~1 EVI/NDWI screening executes
-    every pass; Stage~2 thermal fusion fires only on stress-confirmed patches; priority
-    alert tiles are downlinked X-band and delivered to farm software via the OpenET API.}
+  \begingroup
+  \captionsetup{font=normalsize,labelfont=bf}
+  \caption{MASFE end-to-end architecture: hosted payload (dashed) on Loft Orbital YAM from sensors through priority X-band downlink; ground path to farm software via OpenET (full sensing loop, \S\ref{sec:solution}).}
   \label{fig:architecture}
+  \endgroup
   \end{figure}
 
 The FPGA performs radiometric preprocessing and per-pixel CSC computation, then transfers frames to the LEON4FT over AXI4-Stream (budgeted under 1 ms). Onboard preprocessing includes radiometric calibration and cloud screening, while CSC itself is evaluated as a pass-to-pass relative anomaly detector rather than a fully atmosphere-corrected retrieval; full atmospheric correction is deferred to later validation because CSC is used for change detection rather than absolute retrieval. The selected Kintex UltraScale+ RT part comes from AMD's radiation-tolerant XQR family \cite{amd-xqr}. MASFE is framed as a hosted payload module within a Loft Orbital YAM bus rather than as a full standalone 6U satellite; the SWAP budget therefore describes the payload module itself, not the host spacecraft.
@@ -306,11 +306,9 @@ Dr.\ Katie Gold's disease-detection work emphasizes that spectral stress often a
 
 In a 100-seed Monte Carlo benchmark, MASFE was tested over 120 passes, 500 field patches, 21 disease events, and 9 benign confounders per seed, with roughly 36.7 cloud-obscured passes per seed.
 
-Across that benchmark, 95\% confidence intervals were 99.32--99.33\% for downlink reduction versus raw, 38.52--38.70\% for energy saving versus raw, 100.0--100.0\% for disease-event recall, and 1.34--1.78\% for false-positive rate. The downlink-reduction interval is exceptionally tight because the raw baseline is fixed and MASFE's total byte count is dominated by stable Stage-1 screening traffic, so seed-to-seed variability mainly changes alert counts rather than total data volume. The operating point is tunable: sweeping $csc\_alert\_thr$ from 0.40 to 0.70 preserved 100.0\% recall until the most conservative endpoint while moving false-positive rate from 2.23\% to 1.26\%, and a $\pm30\%$ CSC-parameter sweep kept recall at 100.0\% with false-positive rate in the 1.0--2.3\% band; detailed curves and cases are included in the code submission.
+Across that benchmark, 95\% confidence intervals were 98.92--98.97\% for downlink reduction versus raw, 38.17--38.34\% for energy saving versus raw, 100.0--100.0\% for disease-event recall, and 1.34--1.78\% for false-positive rate. The downlink-reduction interval is tight because the raw baseline is fixed and MASFE's total byte count is dominated by stable Stage-1 screening traffic, so seed-to-seed variability mainly changes alert counts rather than total data volume. The operating point is tunable: sweeping $csc\_alert\_thr$ from 0.40 to 0.65 preserved 100.0\% recall while moving false-positive rate from 2.23\% to 1.26\%; at the sweep endpoint 0.70 recall falls to $\sim$98.5\% as the policy hits battery-driven conserve behavior, and a $\pm30\%$ CSC-parameter sweep kept recall at 100.0\% with false-positive rate in the 1.0--2.3\% band; detailed curves and cases are included in the code submission.
 
 \input{../outputs/baselines_comparison_table.tex}
-
-Belief memory drives the 27 pp compute reduction; NDWI fusion drives FP from 2.3\% to 1.6\%; staged confirmation preserves 100\% recall; onboard filtering drives the 99.3\% downlink reduction.
 
 \begin{figure}[!htbp]
 \centering
@@ -323,12 +321,12 @@ Belief memory drives the 27 pp compute reduction; NDWI fusion drives FP from 2.3
 \label{fig:additional-ablations}
 \end{figure}
 
-The code component also replays official MOD13A1 and MOD11A1 subsets over Westlands/Firebaugh, California, from June through October 2024, aligning MOD13A1 composite dates to a 1 km grid, collapsing MOD11A1 to median clear-sky daytime LST over the same 16-day window, and applying the unchanged MASFE policy as a real-scene scheduler validation rather than a labeled disease benchmark. The replay path accepts MOD09A1-derived NDWI where available, but the tracked Westlands anchor bundle predates that extension and therefore falls back cleanly to EVI/LST fusion on the cached artifacts. Across 7 valid composite windows after a 3-window warmup, MASFE issued one confirmed FUSE\_PRIORITY alert on July 27, 2024 and six additional FUSE-only windows at 99.5\% mean valid coverage. These results are software-demonstrated today and require hardware-side validation before TRL~4.
+The code component also replays official MOD13A1 and MOD11A1 subsets over Westlands/Firebaugh, California, from June through October 2024, aligning MOD13A1 composite dates to a 1 km grid, collapsing MOD11A1 to median clear-sky daytime LST over the same 16-day window, and applying the unchanged MASFE policy as a real-scene scheduler validation rather than a labeled disease benchmark. The replay path accepts MOD09A1-derived NDWI where available, but the tracked Westlands anchor bundle predates that extension and therefore falls back cleanly to EVI/LST fusion on the cached artifacts. Across 7 valid composite windows after a 3-window warmup, MASFE issued one confirmed FUSE\_PRIORITY alert on July 27, 2024 and six additional FUSE-only windows at 99.5\% mean valid coverage.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{../outputs/action_timeline_2024.pdf}
-\caption{Westlands 2024 replay action timeline showing baseline windows, FUSE windows, and the single FUSE\_PRIORITY alert on July 27, 2024.}
+\caption{Action timeline for the Westlands replay: MOD13 baseline, FUSE windows, and the single FUSE\_PRIORITY alert on July 27, 2024 (setup in \S\ref{sec:impact}).}
 \label{fig:action-timeline}
 \end{figure}
 
@@ -338,7 +336,7 @@ The farm-scale value proposition is concrete. For a 500 ha regenerative tomato o
 
 Emil Wes Lambert is completing a BSc in Aerospace Engineering at TU Delft, with coursework in spacecraft systems, AOCS, mission analysis, and embedded flight software. At AeroDelft he has led partnerships and business operations, including procurement, sponsor relations, and participation in the EUR~73\,M HAPSS hydrogen-propulsion consortium alongside Airbus, KLM, and NLR. That background supports MASFE's SWAP realism, AIST-track funding strategy, and commercial positioning.
 
-California is the validation anchor and initial go-to-market wedge. The same architecture scales from SJV into the wider U.S. irrigated base, then into EU and Brazilian irrigation markets, and finally into a global irrigated-farmland platform with the same onboard scheduler and region-specific recalibration of CSC thresholds \cite{usda-2022,eurostat-farms,ana-atlas,fao-aquastat}. The paper-facing economics therefore use a low/design-to-cost case, a \$4/ha/year alerting product, a modeled 90\% annual retention rate, and a Year~2 soil-carbon MRV add-on aligned to Verra VM0042-style workflows \cite{climate-pricing,verra-vm0042}.
+California is the validation anchor and initial go-to-market wedge. The same architecture scales from SJV into the wider U.S. irrigated base, then into EU and Brazilian irrigation markets, and finally into a global irrigated-farmland platform with the same onboard scheduler and region-specific recalibration of CSC thresholds \cite{usda-2022,eurostat-farms,ana-atlas,fao-aquastat}. The paper-facing economics therefore use a low/design-to-cost case, a \$4/ha/year alerting product, a modeled 90\% annual retention rate, and a Year~2 soil-carbon MRV add-on aligned to Verra VM0042-style workflows \cite{verra-vm0042}.
 
 \begin{table}[!htbp]
 \centering
@@ -362,9 +360,10 @@ Y5 & Global platform & Global & 6.0\% global & \$76.50\,M & 70.7\% \\
 
 In this rollout, Y1 is a paid pilot; Y2 scales through Climate FieldView API integration plus direct enterprise sales; Y3 targets U.S.-scale profitability via Climate FieldView and John Deere Operations Center; Y4 expands through xarvio and John Deere Brazil; and Y5 targets global multi-platform distribution that could also include CropX. These platforms are API integration targets rather than committed channels, and no agreements are yet in place. Y1 is intentionally modeled as an AIST- or NASA SBIR/STTR-style co-funded bridge-to-MVP year rather than a self-financing steady state \cite{nasa-aist,nasa-sbir}. In the retained fixed-cost sensitivity, the low case breaks even at Y2 and 400\,kha, while the base and high cases still break even at Y3 and 2.5\,Mha.
 
-Agriculture is the entry market, but the scheduler can also be retuned for wildfire fuel-moisture monitoring in a broader fire-detection market projected to reach about \$55\,B by 2030 \cite{fire-detection-market}; flood-front tracking would swap CSC for water-extent products, and urban heat-island response would replace farm polygons with city blocks while reusing the anomaly-driven scheduler.
+Agriculture is the entry market, but the scheduler can also be retuned for wildfire fuel-moisture monitoring in a broader fire-detection market that one industry estimate projects at about \$55\,B by 2030 \cite{fire-detection-market}; flood-front tracking would swap CSC for water-extent products, and urban heat-island response would replace farm polygons with city blocks while reusing the anomaly-driven scheduler.
 
 \section{Expected Next Steps}
+\label{sec:next}
 
 MASFE is currently a TRL 3 concept: the scheduling logic, fusion equation, SWAP closure, and real-scene replay are demonstrated in software, but the payload has not yet been exercised on target hardware. The next milestone is a TRL 4 hardware-in-the-loop demonstration on a LEON4FT-class platform under NASA AIST using the replayed EarthData scene set. That work should also add FPGA-side Fmask-style Stage~0 cloud screening. After that, the clearest TRL 5 path is a hosted-payload pilot through Loft Orbital, with external validation focused on Y1 pilot assumptions, agronomy review, and channel plausibility.
 
@@ -375,12 +374,15 @@ If selected as a finalist, the immediate pre-pitch actions are a live MODIS repl
 
 \label{chapter:conclusion}
 
-MASFE is a credible Space-to-Soil solution: in the current benchmark it achieves 99.3\% downlink reduction versus raw, 38.6\% energy savings, 100\% disease-event recall, and a 1.6\% false-positive rate while meeting stated latency and payload-feasibility constraints. Released under the MIT License and built on free NASA MODIS products, it is deployable by public food-security programmes without new sensing infrastructure; Mutanga et al. document 30--60\% maize yield losses from grey leaf spot in sub-Saharan Africa and note that fungicides are often sprayed uniformly because timely patch-level disease maps are unavailable \cite{chemura-africa}. The remaining gap is hardware validation, not conceptual viability.
+MASFE is a credible Space-to-Soil solution: Table~\ref{tab:req-results} and \S\ref{sec:impact} capture latency, resolution, false-positive, SWAP, and downlink performance at the stated operating point. Released under the MIT License, it is deployable by food-security programmes without new sensing infrastructure; Mutanga et al. document 30--60\% maize yield losses from grey leaf spot in Africa and note that fungicides are often sprayed uniformly because timely patch-level disease maps are unavailable \cite{chemura-africa}. Closing TRL~4 requires the hardware path laid out in \S\ref{sec:next}.
 
 \clearpage
 \begingroup
-\footnotesize
+\normalsize
+\setstretch{1.0}
 \setlength{\parskip}{0pt}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
 \sloppy
 \bibliographystyle{unsrt}
 \bibliography{references}

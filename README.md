@@ -6,9 +6,9 @@ MASFE (Multi-Algorithm Scheduling and Fusion Engine) is a NASA Space-to-Soil sub
 
 | vs raw downlink | vs fixed onboard | Recall | FP rate | CPU (peak / seasonal) |
 |:---:|:---:|:---:|:---:|:---:|
-| **99.3%** downlink reduction<br>**38.6%** energy saving | **80.7%** downlink reduction<br>**24.6%** energy saving | **100.0%** | **1.6%** | **92.5% / 49.2%** |
+| **98.9%** downlink reduction<br>**38.3%** energy saving | **79.7%** downlink reduction<br>**26.4%** energy saving | **100.0%** | **1.6%** | **92.5% / 49.2%** |
 
-The Bayesian belief gate keeps **81.3%** of passes at cheap 30 m screening and escalates only **18.7%** to full fusion — that is what drops seasonal compute from 92.5% (always-on fusion baseline) to 49.2% while preserving full disease-event recall. Removing the posterior raises FP from 1.6% to 1.7% and seasonal compute from 49.2% to 76.2%; the posterior is load-bearing as a scheduler.
+The Bayesian belief gate keeps about **81%** of passes at cheap 30 m screening, **17%** at FUSE confirmation, and **~2%** at FUSE_PRIORITY alert export in the 100-seed benchmark — that is what drops seasonal compute from 92.5% (always-on fusion baseline) to 49.2% while preserving full disease-event recall. Removing the posterior raises FP from 1.6% to 1.7% and seasonal compute from 49.2% to 76.2%; the posterior is load-bearing as a scheduler.
 
 Priority evidence tiles are compressed onboard via CCSDS 122.0 wavelet coding at ~2.5:1, reducing an 8.4 MB/km² native alert stream to ~3.36 MB/km² delivered.
 
@@ -25,7 +25,9 @@ pip install -r requirements.txt
 python masfe_simulation.py
 ```
 
-After a successful run, the main judge-facing artifacts are refreshed at:
+The full benchmark can take several minutes. **Progress:** `tqdm` bars on stderr for Monte Carlo, each policy evaluation, and the ROC sweep; phase banners mark ablation / EVI / CSC / optional “additional ablations”. A plain-text milestone log is always written to **`outputs/benchmark_run.log`** (phase lines and start/finish timestamps), so you can `tail -f outputs/benchmark_run.log` even when the terminal UI hides stderr. Use `python -u masfe_simulation.py` if stdout/stderr appear stuck in a pipe. Set `MASFE_BENCHMARK_QUIET=1` (or legacy `MASFE_MONTE_CARLO_QUIET=1`) to silence tqdm and phase banners on stderr only—the milestone log file is still updated.
+
+After a successful run, the main judge-facing artifacts are refreshed at (headline percentages in the paper and README match `outputs/simulation_metrics.json`—re-run the benchmark after any change to policy or downlink timing):
 
 - `outputs/simulation_metrics.json`
 - `outputs/roc.png`
@@ -168,8 +170,12 @@ Tracked replay anchor used in the paper:
 - `outputs/unit_economics/unit_economics_table.tex`: paper-ready LaTeX rendering of the economics table.
 - `outputs/real_modis/westlands_ca_2024-06-01_2024-10-31/`: tracked replay artifacts used in the paper.
 - `docs/unit_economics.md`: supporting explanation of the rollout model and assumptions.
-- `paper/report.tex`: submission paper source of truth.
+- `paper/EmilLambert_MASFE.tex`: submission paper source of truth.
 - `paper/EmilLambert_MASFE.pdf`: compiled submission PDF.
+
+## Submission alignment (source of truth)
+
+The submitted paper corresponds to commit `002cdc0`. The paper source used for the submission is `paper/EmilLambert_MASFE.tex`.
 
 ## License
 

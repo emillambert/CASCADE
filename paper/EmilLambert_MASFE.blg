@@ -3,44 +3,44 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: EmilLambert_MASFE.aux
 The style file: unsrt.bst
 Database file #1: references.bib
-You've used 25 entries,
+You've used 24 entries,
             1791 wiz_defined-function locations,
-            566 strings with 8037 characters,
-and the built_in function-call counts, 3626 in all, are:
-= -- 320
-> -- 129
+            562 strings with 8182 characters,
+and the built_in function-call counts, 3708 in all, are:
+= -- 309
+> -- 173
 < -- 0
-+ -- 58
-- -- 33
-* -- 72
-:= -- 579
-add.period$ -- 83
-call.type$ -- 25
-change.case$ -- 25
++ -- 72
+- -- 48
+* -- 108
+:= -- 607
+add.period$ -- 80
+call.type$ -- 24
+change.case$ -- 24
 chr.to.int$ -- 0
-cite$ -- 25
-duplicate$ -- 133
-empty$ -- 462
-format.name$ -- 33
-if$ -- 851
+cite$ -- 24
+duplicate$ -- 128
+empty$ -- 444
+format.name$ -- 48
+if$ -- 852
 int.to.chr$ -- 0
-int.to.str$ -- 25
+int.to.str$ -- 24
 missing$ -- 2
-newline$ -- 136
-num.names$ -- 25
-pop$ -- 138
+newline$ -- 131
+num.names$ -- 24
+pop$ -- 132
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 70
+skip$ -- 65
 stack$ -- 0
 substring$ -- 50
-swap$ -- 25
+swap$ -- 24
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 0
-while$ -- 29
-width$ -- 27
-write$ -- 270
+while$ -- 28
+width$ -- 26
+write$ -- 260

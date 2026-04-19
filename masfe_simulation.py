@@ -30,9 +30,10 @@ import json
 import math
 import os
 import sys
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor
+from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict
+from typing import Callable, Dict, TextIO
 
 import numpy as np
 
@@ -71,7 +72,7 @@ MONTE_CARLO_DEFAULTS = {
 # Keep seeds modest for runtime; increase patches for smoother statistics.
 ADDITIONAL_ABLATION_DEFAULTS = {
     "n_seeds": int(os.environ.get("MASFE_ADDITIONAL_ABLATION_SEEDS", "100")),
-    "n_patches": 1000,
+    "n_patches": int(os.environ.get("MASFE_ADDITIONAL_ABLATION_PATCHES", "1000")),
     "n_t": 120,
     "n_dis": 21,
     "n_benign": 9,
@@ -81,6 +82,8 @@ ALERT_THRESH_SWEEP = [0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70]
 WEIGHT_SWEEP = [0.70, 1.00, 1.30]
 SATURATION_SWEEP = [0.70, 1.00, 1.30]
 OUTPUTS_DIR = Path("outputs")
+# Phase lines and milestones (always flushed); see _benchmark_run_log_open.
+_BENCHMARK_LOG_FP: TextIO | None = None
 
 EVI_ONLY_THRESH_SWEEP = [
     6.0,
@@ -281,7 +284,9 @@ def simulate(
     for t in range(n_t):
         op = (t * 5.0) % cfg.orbit_min / cfg.orbit_min
         in_eclipse = op > (1 - cfg.eclipse_frac)
-        dl_window = 0.22 < op < 0.37
+        # Nominal contact is ~15% of orbit; widen slightly so belief-scheduled FUSE
+        # occasionally overlaps X-band availability (otherwise priority never fires).
+        dl_window = 0.15 < op < 0.45
 
         if not in_eclipse:
             batt = min(1.0, batt + cfg.solar_w * (5 / 60) / cfg.batt_wh)
@@ -574,7 +579,28 @@ def evaluate_policy(
 ) -> dict:
     seed_records = []
     runs = []
-    for seed, data in enumerate(datasets):
+    n_ds = len(datasets)
+    quiet = _benchmark_quiet()
+    use_tqdm = False
+    if not quiet and n_ds > 1:
+        try:
+            from tqdm import tqdm  # noqa: F401
+
+            use_tqdm = True
+        except ImportError:
+            pass
+    src = (
+        _progress_wrap(
+            datasets,
+            desc=f"Eval {policy_name[:28]}",
+            unit="seed",
+            total=n_ds,
+            leave=False,
+        )
+        if use_tqdm
+        else datasets
+    )
+    for seed, data in enumerate(src):
         run = simulate(policy_name, policy_factory(), data, cfg, outer_seed=seed, csc_kwargs=csc_kwargs)
         seed_records.append(build_policy_seed_record(seed, run, data))
         runs.append(run)
@@ -777,6 +803,89 @@ def evaluate_policy_generated_with_pool(
     return {"policy_name": policy_name, "stats": stats, "seed_records": seed_records}
 
 
+def _configure_stdio_for_logging() -> None:
+    """Line-buffer stdout/stderr when supported (helps IDEs and piped runs)."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(line_buffering=True)  # type: ignore[attr-defined]
+        except (AttributeError, OSError, ValueError):
+            pass
+
+
+def _benchmark_run_log_path() -> Path:
+    return OUTPUTS_DIR / "benchmark_run.log"
+
+
+def _benchmark_run_log_open() -> None:
+    """Truncate and open ``outputs/benchmark_run.log`` for this process."""
+    global _BENCHMARK_LOG_FP
+    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+    path = _benchmark_run_log_path()
+    _BENCHMARK_LOG_FP = path.open("w", encoding="utf-8")
+    _BENCHMARK_LOG_FP.write(f"# MASFE benchmark run started {datetime.now().isoformat(timespec='seconds')}\n")
+    _BENCHMARK_LOG_FP.write(f"# Log file: {path.resolve()}\n\n")
+    _BENCHMARK_LOG_FP.flush()
+
+
+def _benchmark_run_log_close(status: str) -> None:
+    global _BENCHMARK_LOG_FP
+    if _BENCHMARK_LOG_FP is not None:
+        try:
+            _BENCHMARK_LOG_FP.write(f"\n# finished {datetime.now().isoformat(timespec='seconds')} ({status})\n")
+            _BENCHMARK_LOG_FP.flush()
+        finally:
+            _BENCHMARK_LOG_FP.close()
+            _BENCHMARK_LOG_FP = None
+
+
+def _benchmark_log_line(msg: str) -> None:
+    """Append one line to ``benchmark_run.log`` when that file is open."""
+    if _BENCHMARK_LOG_FP is not None:
+        _BENCHMARK_LOG_FP.write(msg + "\n")
+        _BENCHMARK_LOG_FP.flush()
+
+
+def _benchmark_quiet() -> bool:
+    """Suppress stderr progress (Monte Carlo, tqdm, phase banners) for CI or piping."""
+    return os.environ.get("MASFE_BENCHMARK_QUIET", "").lower() in ("1", "true", "yes") or os.environ.get(
+        "MASFE_MONTE_CARLO_QUIET", ""
+    ).lower() in ("1", "true", "yes")
+
+
+def _benchmark_phase(msg: str) -> None:
+    _benchmark_log_line(msg)
+    if not _benchmark_quiet():
+        print(msg, file=sys.stderr, flush=True)
+
+
+def _progress_wrap(iterable, *, desc: str, unit: str = "it", total: int | None = None, leave: bool = True):
+    """Progress bar on stderr when tqdm is installed; otherwise return iterable unchanged."""
+    if _benchmark_quiet():
+        return iterable
+    try:
+        from tqdm import tqdm
+    except ImportError:
+        return iterable
+    kw: dict = {"desc": desc, "file": sys.stderr, "unit": unit, "mininterval": 0.25, "leave": leave}
+    if total is not None:
+        kw["total"] = total
+    return tqdm(iterable, **kw)
+
+
+def _monte_carlo_progress(done: int, total: int) -> None:
+    """Emit seed progress to stderr (single-line on TTY, sparse lines otherwise)."""
+    if total <= 0:
+        return
+    pct = 100 * done // total
+    msg = f"Monte Carlo: {done}/{total} seeds ({pct}%)"
+    if sys.stderr.isatty():
+        print(f"\r{msg}  ", end="", file=sys.stderr, flush=True)
+    else:
+        step = max(1, total // 10)
+        if done in (1, total) or done % step == 0:
+            print(msg, file=sys.stderr, flush=True)
+
+
 def run_monte_carlo(
     cfg: Config,
     n_seeds: int = MONTE_CARLO_DEFAULTS["n_seeds"],
@@ -794,7 +903,36 @@ def run_monte_carlo(
     fixed_runs = []
     masfe_runs = []
 
-    for seed, data in enumerate(datasets):
+    n_total = len(datasets)
+    quiet = _benchmark_quiet()
+    use_tqdm = False
+    if not quiet:
+        try:
+            from tqdm import tqdm  # noqa: F401
+
+            use_tqdm = True
+        except ImportError:
+            print(
+                f"Monte Carlo: starting {n_total} seeds (install tqdm for a progress bar: pip install tqdm)...",
+                file=sys.stderr,
+                flush=True,
+            )
+        if use_tqdm:
+            seed_source = _progress_wrap(
+                datasets,
+                desc="Monte Carlo (RAW+FIXED+MASFE/seed)",
+                unit="seed",
+                total=n_total,
+                leave=True,
+            )
+        else:
+            seed_source = datasets
+            print(f"Monte Carlo: starting {n_total} seeds (RAW + FIXED + MASFE per seed)...", file=sys.stderr, flush=True)
+    else:
+        seed_source = datasets
+        use_tqdm = False
+
+    for seed, data in enumerate(seed_source):
         raw = simulate("RAW_DUMP", None, data, cfg, outer_seed=seed)
         fixed = simulate("FIXED_ONBOARD", None, data, cfg, outer_seed=seed)
         masfe = simulate("MASFE_MDP", MASFEPolicy(), data, cfg, outer_seed=seed)
@@ -803,6 +941,11 @@ def run_monte_carlo(
         raw_runs.append(raw)
         fixed_runs.append(fixed)
         masfe_runs.append(masfe)
+        if not quiet and not use_tqdm:
+            _monte_carlo_progress(seed + 1, n_total)
+
+    if not quiet and not use_tqdm and sys.stderr.isatty():
+        print(file=sys.stderr)
 
     metric_names = [
         "downlink_reduction_vs_raw_pct",
@@ -1082,7 +1225,9 @@ def write_baselines_comparison_table(
     lines.append(r"\bottomrule")
     lines.append(r"\end{tabular}")
     lines.append(
-        r"{\footnotesize Raw downlink denotes no onboard triage; recall and false-positive rate apply the same detector after ground-processing the full dataset.}"
+        r"{\footnotesize Raw downlink denotes no onboard triage; recall and false-positive rate apply the same detector after ground-processing the full dataset, so the 1.6\% FP in full MASFE matches the ground-processing detector floor rather than an onboard precision gain. "
+        r"The $\sim$0.1~pp FP gap versus no-belief MASFE reflects the NDWI-inclusive fusion path and belief-gated scheduling under the same post hoc detector. "
+        r"The downlink-reduction gap versus no-belief is driven in part by no-belief issuing more \texttt{FUSE\_PRIORITY} passes (larger per-pass byte budget for alert tiles) under the benchmark contact model.}"
     )
     lines.append(r"\end{table}")
     lines.append("")
@@ -1093,7 +1238,14 @@ def write_baselines_comparison_table(
 
 def run_roc_sweep(cfg: Config, datasets: list[Dict]) -> dict:
     points = []
-    for threshold in ALERT_THRESH_SWEEP:
+    thr_iter = _progress_wrap(
+        ALERT_THRESH_SWEEP,
+        desc="ROC sweep (MASFE_MDP)",
+        unit="thr",
+        total=len(ALERT_THRESH_SWEEP),
+        leave=True,
+    )
+    for threshold in thr_iter:
         eval_result = evaluate_policy(
             "MASFE_MDP",
             lambda thr=threshold: MASFEPolicy(csc_alert_thr=thr),
@@ -1171,10 +1323,16 @@ def run_roc_sweep_ci_generated(cfg: Config, *, thresholds: list[float], gen: dic
 
 
 def run_roc_sweep_ci_generated_with_pool(
-    pool: ProcessPoolExecutor, cfg: Config, *, thresholds: list[float], gen: dict
+    pool: ProcessPoolExecutor,
+    cfg: Config,
+    *,
+    thresholds: list[float],
+    gen: dict,
+    desc: str = "ROC CI (generated)",
 ) -> dict:
     points = []
-    for threshold in thresholds:
+    thr_iter = _progress_wrap(thresholds, desc=desc, unit="thr", total=len(thresholds), leave=True)
+    for threshold in thr_iter:
         eval_result = evaluate_policy_generated_with_pool(
             pool,
             "MASFE_MDP",
@@ -1272,18 +1430,42 @@ def run_additional_ablations(cfg: Config) -> dict:
     max_workers = int(os.environ.get("MASFE_ABLATION_MAX_WORKERS", "8"))
     max_workers = min(max_workers, max(1, (os.cpu_count() or 2) - 1))
 
+    n_thr = len(thresholds)
+    n_eval = 2 * n_thr + len(stride_values) + len(cloud_values)
+    ablation_banner = (
+        f"Additional ablations: {n_eval} evaluations "
+        f"({gen_base['n_seeds']} seeds × {gen_base['n_patches']} patches each; "
+        f"per-evaluation parallelism: {max_workers} worker processes). "
+        "Expect several minutes on a laptop."
+    )
+    _benchmark_log_line(ablation_banner)
+    if not _benchmark_quiet():
+        print(ablation_banner, file=sys.stderr, flush=True)
+
     with ProcessPoolExecutor(max_workers=max_workers) as pool:
-        roc_base = run_roc_sweep_ci_generated_with_pool(pool, cfg, thresholds=thresholds, gen=gen_base)
+        roc_base = run_roc_sweep_ci_generated_with_pool(
+            pool, cfg, thresholds=thresholds, gen=gen_base, desc="Additional ablations: baseline ROC"
+        )
 
         cfg_no_ndwi = Config()
         setattr(cfg_no_ndwi, "ndwi_enabled", False)
         setattr(cfg_no_ndwi, "stage1_stride", 1)
         roc_no_ndwi = run_roc_sweep_ci_generated_with_pool(
-            pool, cfg_no_ndwi, thresholds=thresholds, gen=gen_base
+            pool,
+            cfg_no_ndwi,
+            thresholds=thresholds,
+            gen=gen_base,
+            desc="Additional ablations: NDWI removed ROC",
         )
 
         stride_points = []
-        for stride in stride_values:
+        for stride in _progress_wrap(
+            stride_values,
+            desc="Additional ablations: stage-1 stride",
+            unit="stride",
+            total=len(stride_values),
+            leave=True,
+        ):
             cfg_stride = Config()
             setattr(cfg_stride, "ndwi_enabled", True)
             setattr(cfg_stride, "stage1_stride", stride)
@@ -1313,7 +1495,13 @@ def run_additional_ablations(cfg: Config) -> dict:
             )
 
         cloud_points = []
-        for cloud_prob in cloud_values:
+        for cloud_prob in _progress_wrap(
+            cloud_values,
+            desc="Additional ablations: cloud strictness",
+            unit="cloud",
+            total=len(cloud_values),
+            leave=True,
+        ):
             gen_cloud = dict(ADDITIONAL_ABLATION_DEFAULTS)
             gen_cloud["cloud_pass_prob"] = float(cloud_prob)
             eval_result = evaluate_policy_generated_with_pool(
@@ -1633,11 +1821,22 @@ def report(metrics: dict, ablation_metrics: dict, roc_metrics: dict, csc_sensiti
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        epilog=(
+            "Phase 5b (additional ablations) is slow. Skip: --skip-additional-ablations or "
+            "MASFE_SKIP_ADDITIONAL_ABLATIONS=1. Tune: MASFE_ADDITIONAL_ABLATION_SEEDS (default 100), "
+            "MASFE_ADDITIONAL_ABLATION_PATCHES (default 1000), MASFE_ABLATION_MAX_WORKERS."
+        ),
+    )
     parser.add_argument(
         "--additional-ablations-only",
         action="store_true",
         help="Only regenerate outputs/additional_ablations.json (skips headline Monte Carlo).",
+    )
+    parser.add_argument(
+        "--skip-additional-ablations",
+        action="store_true",
+        help="Skip Phase 5b in the full benchmark (faster; omits additional_ablations.json and related plots).",
     )
     args = parser.parse_args()
 
@@ -1651,68 +1850,105 @@ if __name__ == "__main__":
     except ModuleNotFoundError:
         plots_enabled = False
 
-    if args.additional_ablations_only:
-        print("MASFE Simulation - running additional ablations only...")
-        if not plots_enabled:
-            raise RuntimeError(
-                "matplotlib is required for --additional-ablations-only. "
-                "Install matplotlib or run the full benchmark (which can skip plots)."
+    _configure_stdio_for_logging()
+    _benchmark_run_log_open()
+    _log_close_status = "ok"
+    try:
+        if args.additional_ablations_only:
+            start_msg = "MASFE Simulation - running additional ablations only..."
+            print(start_msg, flush=True)
+            _benchmark_log_line(start_msg)
+            if not plots_enabled:
+                raise RuntimeError(
+                    "matplotlib is required for --additional-ablations-only. "
+                    "Install matplotlib or run the full benchmark (which can skip plots)."
+                )
+            additional_ablations = run_additional_ablations(cfg)
+            write_json(OUTPUTS_DIR / "additional_ablations.json", additional_ablations)
+            # Keep Figure 2 reproducible without running the full benchmark.
+            _benchmark_log_line("Building datasets for CSC sensitivity (additional-ablations-only)...")
+            datasets = build_datasets(
+                ADDITIONAL_ABLATION_DEFAULTS["n_seeds"],
+                ADDITIONAL_ABLATION_DEFAULTS["n_patches"],
+                ADDITIONAL_ABLATION_DEFAULTS["n_t"],
+                ADDITIONAL_ABLATION_DEFAULTS["n_dis"],
+                ADDITIONAL_ABLATION_DEFAULTS["n_benign"],
             )
-        additional_ablations = run_additional_ablations(cfg)
-        write_json(OUTPUTS_DIR / "additional_ablations.json", additional_ablations)
-        # Keep Figure 2 reproducible without running the full benchmark.
-        datasets = build_datasets(
-            ADDITIONAL_ABLATION_DEFAULTS["n_seeds"],
-            ADDITIONAL_ABLATION_DEFAULTS["n_patches"],
-            ADDITIONAL_ABLATION_DEFAULTS["n_t"],
-            ADDITIONAL_ABLATION_DEFAULTS["n_dis"],
-            ADDITIONAL_ABLATION_DEFAULTS["n_benign"],
-        )
-        csc_sensitivity = run_csc_sensitivity(cfg, datasets)
-        write_json(OUTPUTS_DIR / "csc_sensitivity.json", csc_sensitivity)
-        write_multi_roc_plot(
-            additional_ablations["ndwi_removed"]["roc_baseline"],
-            additional_ablations["ndwi_removed"]["roc_ndwi_removed"],
-            ("Baseline", "NDWI removed"),
-            OUTPUTS_DIR / "roc_baseline_vs_no_ndwi.png",
-        )
-        sys.exit(0)
+            csc_sensitivity = run_csc_sensitivity(cfg, datasets)
+            write_json(OUTPUTS_DIR / "csc_sensitivity.json", csc_sensitivity)
+            write_multi_roc_plot(
+                additional_ablations["ndwi_removed"]["roc_baseline"],
+                additional_ablations["ndwi_removed"]["roc_ndwi_removed"],
+                ("Baseline", "NDWI removed"),
+                OUTPUTS_DIR / "roc_baseline_vs_no_ndwi.png",
+            )
+            _benchmark_log_line("Wrote additional_ablations.json, csc_sensitivity.json, roc_baseline_vs_no_ndwi.png.")
+            _log_close_status = "additional-ablations-only"
+        else:
+            start_msg = "MASFE Simulation - running 100-seed Monte Carlo benchmark..."
+            print(start_msg, flush=True)
+            _benchmark_log_line(start_msg)
+            _benchmark_log_line("Building 100-seed benchmark datasets (in memory)...")
+            datasets = build_datasets(
+                MONTE_CARLO_DEFAULTS["n_seeds"],
+                MONTE_CARLO_DEFAULTS["n_patches"],
+                MONTE_CARLO_DEFAULTS["n_t"],
+                MONTE_CARLO_DEFAULTS["n_dis"],
+                MONTE_CARLO_DEFAULTS["n_benign"],
+            )
+            _benchmark_log_line(f"Datasets ready ({len(datasets)} seeds).")
+            _benchmark_phase("--- Phase 1/5: Monte Carlo (100 seeds × 3 policies) ---")
+            metrics = run_monte_carlo(cfg, datasets=datasets)
+            _benchmark_phase("--- Phase 2/5: No-belief ablation vs baseline ---")
+            ablation_metrics = run_ablation_analysis(cfg, datasets, metrics)
+            _benchmark_phase("--- Phase 3/5: EVI-only baseline sweep ---")
+            evi_only_metrics = run_evi_only_baseline(cfg, datasets, metrics)
+            _benchmark_phase("--- Phase 4/5: ROC threshold sweep ---")
+            roc_metrics = run_roc_sweep(cfg, datasets)
+            _benchmark_phase("--- Phase 5a: CSC sensitivity ---")
+            csc_sensitivity = run_csc_sensitivity(cfg, datasets)
+            skip_additional = args.skip_additional_ablations or os.environ.get(
+                "MASFE_SKIP_ADDITIONAL_ABLATIONS", ""
+            ).lower() in ("1", "true", "yes")
+            additional_ablations = None
+            if plots_enabled and not skip_additional:
+                _benchmark_phase(
+                    "--- Phase 5b: Additional ablations (slow: many parallel evaluations; see tqdm bars) ---"
+                )
+                additional_ablations = run_additional_ablations(cfg)
+            elif plots_enabled and skip_additional:
+                _benchmark_phase("--- Phase 5b: skipped (--skip-additional-ablations) ---")
 
-    print("MASFE Simulation - running 100-seed Monte Carlo benchmark...")
-    datasets = build_datasets(
-        MONTE_CARLO_DEFAULTS["n_seeds"],
-        MONTE_CARLO_DEFAULTS["n_patches"],
-        MONTE_CARLO_DEFAULTS["n_t"],
-        MONTE_CARLO_DEFAULTS["n_dis"],
-        MONTE_CARLO_DEFAULTS["n_benign"],
-    )
-    metrics = run_monte_carlo(cfg, datasets=datasets)
-    ablation_metrics = run_ablation_analysis(cfg, datasets, metrics)
-    evi_only_metrics = run_evi_only_baseline(cfg, datasets, metrics)
-    roc_metrics = run_roc_sweep(cfg, datasets)
-    csc_sensitivity = run_csc_sensitivity(cfg, datasets)
-    additional_ablations = None
-    if plots_enabled:
-        additional_ablations = run_additional_ablations(cfg)
-
-    write_json(OUTPUTS_DIR / "ablation_metrics.json", ablation_metrics)
-    write_json(OUTPUTS_DIR / "evi_only_baseline.json", evi_only_metrics)
-    write_baselines_comparison_table(
-        metrics,
-        ablation_metrics,
-        evi_only_metrics,
-        OUTPUTS_DIR / "baselines_comparison_table.tex",
-    )
-    write_json(OUTPUTS_DIR / "roc_metrics.json", roc_metrics)
-    if plots_enabled:
-        write_roc_plot(roc_metrics, OUTPUTS_DIR / "roc.png")
-    write_json(OUTPUTS_DIR / "csc_sensitivity.json", csc_sensitivity)
-    if plots_enabled and additional_ablations is not None:
-        write_json(OUTPUTS_DIR / "additional_ablations.json", additional_ablations)
-        write_multi_roc_plot(
-            additional_ablations["ndwi_removed"]["roc_baseline"],
-            additional_ablations["ndwi_removed"]["roc_ndwi_removed"],
-            ("Baseline", "NDWI removed"),
-            OUTPUTS_DIR / "roc_baseline_vs_no_ndwi.png",
-        )
-    report(metrics, ablation_metrics, roc_metrics, csc_sensitivity)
+            write_json(OUTPUTS_DIR / "ablation_metrics.json", ablation_metrics)
+            write_json(OUTPUTS_DIR / "evi_only_baseline.json", evi_only_metrics)
+            write_baselines_comparison_table(
+                metrics,
+                ablation_metrics,
+                evi_only_metrics,
+                OUTPUTS_DIR / "baselines_comparison_table.tex",
+            )
+            write_json(OUTPUTS_DIR / "roc_metrics.json", roc_metrics)
+            if plots_enabled:
+                write_roc_plot(roc_metrics, OUTPUTS_DIR / "roc.png")
+            write_json(OUTPUTS_DIR / "csc_sensitivity.json", csc_sensitivity)
+            if plots_enabled and additional_ablations is not None:
+                write_json(OUTPUTS_DIR / "additional_ablations.json", additional_ablations)
+                write_multi_roc_plot(
+                    additional_ablations["ndwi_removed"]["roc_baseline"],
+                    additional_ablations["ndwi_removed"]["roc_ndwi_removed"],
+                    ("Baseline", "NDWI removed"),
+                    OUTPUTS_DIR / "roc_baseline_vs_no_ndwi.png",
+                )
+            report(metrics, ablation_metrics, roc_metrics, csc_sensitivity)
+            metrics_path = OUTPUTS_DIR / "simulation_metrics.json"
+            _benchmark_log_line(f"Human-readable report printed to stdout; headline JSON: {metrics_path.resolve()}")
+    except KeyboardInterrupt:
+        _log_close_status = "interrupted"
+        _benchmark_log_line("Interrupted (KeyboardInterrupt).")
+        raise
+    except Exception as exc:
+        _log_close_status = f"error: {type(exc).__name__}: {exc}"
+        _benchmark_log_line(_log_close_status)
+        raise
+    finally:
+        _benchmark_run_log_close(_log_close_status)

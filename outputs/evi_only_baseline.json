@@ -21,10 +21,10 @@
       "ci95_high": 2.417
     },
     "n_priority_alerts": {
-      "mean": 9.1,
-      "std": 1.726,
-      "ci95_low": 8.762,
-      "ci95_high": 9.438
+      "mean": 19.31,
+      "std": 2.465,
+      "ci95_low": 18.827,
+      "ci95_high": 19.793
     },
     "min_battery_soc": {
       "mean": 0.861,
@@ -45,10 +45,10 @@
       "ci95_high": 39.167
     },
     "data_mb": {
-      "mean": 275.594,
-      "std": 55.381,
-      "ci95_low": 264.739,
-      "ci95_high": 286.449
+      "mean": 542.415,
+      "std": 76.441,
+      "ci95_low": 527.433,
+      "ci95_high": 557.398
     },
     "energy_wh": {
       "mean": 5.5,
@@ -78,10 +78,10 @@
         "ci95_high": 0.05
       },
       "n_priority_alerts": {
-        "mean": 6.36,
-        "std": 1.655,
-        "ci95_low": 6.036,
-        "ci95_high": 6.684
+        "mean": 12.58,
+        "std": 2.09,
+        "ci95_low": 12.17,
+        "ci95_high": 12.99
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -102,10 +102,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 111.842,
-        "std": 31.564,
-        "ci95_low": 105.656,
-        "ci95_high": 118.029
+        "mean": 225.645,
+        "std": 44.242,
+        "ci95_low": 216.974,
+        "ci95_high": 234.317
       },
       "energy_wh": {
         "mean": 5.5,
@@ -134,10 +134,10 @@
         "ci95_high": 0.158
       },
       "n_priority_alerts": {
-        "mean": 7.63,
-        "std": 1.568,
-        "ci95_low": 7.323,
-        "ci95_high": 7.937
+        "mean": 14.61,
+        "std": 2.03,
+        "ci95_low": 14.212,
+        "ci95_high": 15.008
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -158,10 +158,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 170.79,
-        "std": 41.215,
-        "ci95_low": 162.712,
-        "ci95_high": 178.868
+        "mean": 339.527,
+        "std": 57.167,
+        "ci95_low": 328.323,
+        "ci95_high": 350.732
       },
       "energy_wh": {
         "mean": 5.5,
@@ -190,10 +190,10 @@
         "ci95_high": 0.332
       },
       "n_priority_alerts": {
-        "mean": 7.81,
-        "std": 1.574,
-        "ci95_low": 7.501,
-        "ci95_high": 8.119
+        "mean": 15.11,
+        "std": 2.155,
+        "ci95_low": 14.688,
+        "ci95_high": 15.532
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -214,10 +214,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 216.391,
-        "std": 47.684,
-        "ci95_low": 207.045,
-        "ci95_high": 225.738
+        "mean": 420.507,
+        "std": 66.253,
+        "ci95_low": 407.522,
+        "ci95_high": 433.493
       },
       "energy_wh": {
         "mean": 5.5,
@@ -246,10 +246,10 @@
         "ci95_high": 0.556
       },
       "n_priority_alerts": {
-        "mean": 8.32,
-        "std": 1.769,
-        "ci95_low": 7.973,
-        "ci95_high": 8.667
+        "mean": 16.84,
+        "std": 2.436,
+        "ci95_low": 16.363,
+        "ci95_high": 17.317
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -270,10 +270,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 241.573,
-        "std": 50.902,
-        "ci95_low": 231.596,
-        "ci95_high": 251.55
+        "mean": 465.588,
+        "std": 69.946,
+        "ci95_low": 451.878,
+        "ci95_high": 479.297
       },
       "energy_wh": {
         "mean": 5.5,
@@ -302,10 +302,10 @@
         "ci95_high": 0.766
       },
       "n_priority_alerts": {
-        "mean": 8.84,
-        "std": 1.71,
-        "ci95_low": 8.505,
-        "ci95_high": 9.175
+        "mean": 18.26,
+        "std": 2.402,
+        "ci95_low": 17.789,
+        "ci95_high": 18.731
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -326,10 +326,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 253.742,
-        "std": 52.289,
-        "ci95_low": 243.493,
-        "ci95_high": 263.99
+        "mean": 492.084,
+        "std": 71.219,
+        "ci95_low": 478.125,
+        "ci95_high": 506.043
       },
       "energy_wh": {
         "mean": 5.5,
@@ -358,10 +358,10 @@
         "ci95_high": 0.902
       },
       "n_priority_alerts": {
-        "mean": 8.91,
-        "std": 1.694,
-        "ci95_low": 8.578,
-        "ci95_high": 9.242
+        "mean": 18.52,
+        "std": 2.397,
+        "ci95_low": 18.05,
+        "ci95_high": 18.99
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -382,10 +382,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 257.315,
-        "std": 52.596,
-        "ci95_low": 247.007,
-        "ci95_high": 267.624
+        "mean": 499.933,
+        "std": 71.528,
+        "ci95_low": 485.913,
+        "ci95_high": 513.952
       },
       "energy_wh": {
         "mean": 5.5,
@@ -414,10 +414,10 @@
         "ci95_high": 1.03
       },
       "n_priority_alerts": {
-        "mean": 8.95,
-        "std": 1.684,
-        "ci95_low": 8.62,
-        "ci95_high": 9.28
+        "mean": 18.72,
+        "std": 2.474,
+        "ci95_low": 18.235,
+        "ci95_high": 19.205
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -438,10 +438,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 260.705,
-        "std": 53.14,
-        "ci95_low": 250.29,
-        "ci95_high": 271.12
+        "mean": 507.665,
+        "std": 72.653,
+        "ci95_low": 493.425,
+        "ci95_high": 521.905
       },
       "energy_wh": {
         "mean": 5.5,
@@ -470,10 +470,10 @@
         "ci95_high": 1.171
       },
       "n_priority_alerts": {
-        "mean": 8.98,
-        "std": 1.682,
-        "ci95_low": 8.65,
-        "ci95_high": 9.31
+        "mean": 18.9,
+        "std": 2.456,
+        "ci95_low": 18.419,
+        "ci95_high": 19.381
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -494,10 +494,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 263.571,
-        "std": 53.744,
-        "ci95_low": 253.037,
-        "ci95_high": 274.105
+        "mean": 514.116,
+        "std": 73.397,
+        "ci95_low": 499.73,
+        "ci95_high": 528.502
       },
       "energy_wh": {
         "mean": 5.5,
@@ -526,10 +526,10 @@
         "ci95_high": 1.305
       },
       "n_priority_alerts": {
-        "mean": 9.02,
-        "std": 1.711,
-        "ci95_low": 8.685,
-        "ci95_high": 9.355
+        "mean": 19.0,
+        "std": 2.437,
+        "ci95_low": 18.522,
+        "ci95_high": 19.478
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -550,10 +550,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 266.421,
-        "std": 54.048,
-        "ci95_low": 255.827,
-        "ci95_high": 277.014
+        "mean": 520.376,
+        "std": 74.143,
+        "ci95_low": 505.844,
+        "ci95_high": 534.908
       },
       "energy_wh": {
         "mean": 5.5,
@@ -582,10 +582,10 @@
         "ci95_high": 1.485
       },
       "n_priority_alerts": {
-        "mean": 9.05,
-        "std": 1.684,
-        "ci95_low": 8.72,
-        "ci95_high": 9.38
+        "mean": 19.13,
+        "std": 2.419,
+        "ci95_low": 18.656,
+        "ci95_high": 19.604
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -606,10 +606,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 269.071,
-        "std": 54.413,
-        "ci95_low": 258.406,
-        "ci95_high": 279.736
+        "mean": 526.712,
+        "std": 74.801,
+        "ci95_low": 512.051,
+        "ci95_high": 541.373
       },
       "energy_wh": {
         "mean": 5.5,
@@ -638,10 +638,10 @@
         "ci95_high": 1.576
       },
       "n_priority_alerts": {
-        "mean": 9.05,
-        "std": 1.684,
-        "ci95_low": 8.72,
-        "ci95_high": 9.38
+        "mean": 19.19,
+        "std": 2.444,
+        "ci95_low": 18.711,
+        "ci95_high": 19.669
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -662,10 +662,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 270.259,
-        "std": 54.463,
-        "ci95_low": 259.584,
-        "ci95_high": 280.934
+        "mean": 529.529,
+        "std": 74.931,
+        "ci95_low": 514.842,
+        "ci95_high": 544.215
       },
       "energy_wh": {
         "mean": 5.5,
@@ -694,10 +694,10 @@
         "ci95_high": 1.732
       },
       "n_priority_alerts": {
-        "mean": 9.06,
-        "std": 1.699,
-        "ci95_low": 8.727,
-        "ci95_high": 9.393
+        "mean": 19.22,
+        "std": 2.456,
+        "ci95_low": 18.739,
+        "ci95_high": 19.701
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -718,10 +718,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 271.826,
-        "std": 54.95,
-        "ci95_low": 261.056,
-        "ci95_high": 282.597
+        "mean": 533.115,
+        "std": 75.339,
+        "ci95_low": 518.348,
+        "ci95_high": 547.881
       },
       "energy_wh": {
         "mean": 5.5,
@@ -750,10 +750,10 @@
         "ci95_high": 1.925
       },
       "n_priority_alerts": {
-        "mean": 9.09,
-        "std": 1.747,
-        "ci95_low": 8.748,
-        "ci95_high": 9.432
+        "mean": 19.27,
+        "std": 2.498,
+        "ci95_low": 18.78,
+        "ci95_high": 19.76
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -774,10 +774,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 273.343,
-        "std": 55.207,
-        "ci95_low": 262.522,
-        "ci95_high": 284.163
+        "mean": 536.596,
+        "std": 76.012,
+        "ci95_low": 521.697,
+        "ci95_high": 551.494
       },
       "energy_wh": {
         "mean": 5.5,
@@ -806,10 +806,10 @@
         "ci95_high": 2.267
       },
       "n_priority_alerts": {
-        "mean": 9.1,
-        "std": 1.726,
-        "ci95_low": 8.762,
-        "ci95_high": 9.438
+        "mean": 19.31,
+        "std": 2.465,
+        "ci95_low": 18.827,
+        "ci95_high": 19.793
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -830,10 +830,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 275.018,
-        "std": 55.281,
-        "ci95_low": 264.183,
-        "ci95_high": 285.853
+        "mean": 540.795,
+        "std": 76.291,
+        "ci95_low": 525.842,
+        "ci95_high": 555.748
       },
       "energy_wh": {
         "mean": 5.5,
@@ -862,10 +862,10 @@
         "ci95_high": 2.313
       },
       "n_priority_alerts": {
-        "mean": 9.1,
-        "std": 1.726,
-        "ci95_low": 8.762,
-        "ci95_high": 9.438
+        "mean": 19.31,
+        "std": 2.465,
+        "ci95_low": 18.827,
+        "ci95_high": 19.793
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -886,10 +886,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 275.234,
-        "std": 55.398,
-        "ci95_low": 264.376,
-        "ci95_high": 286.092
+        "mean": 541.317,
+        "std": 76.369,
+        "ci95_low": 526.349,
+        "ci95_high": 556.286
       },
       "energy_wh": {
         "mean": 5.5,
@@ -918,10 +918,10 @@
         "ci95_high": 2.365
       },
       "n_priority_alerts": {
-        "mean": 9.1,
-        "std": 1.726,
-        "ci95_low": 8.762,
-        "ci95_high": 9.438
+        "mean": 19.31,
+        "std": 2.465,
+        "ci95_low": 18.827,
+        "ci95_high": 19.793
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -942,10 +942,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 275.432,
-        "std": 55.365,
-        "ci95_low": 264.58,
-        "ci95_high": 286.284
+        "mean": 541.857,
+        "std": 76.399,
+        "ci95_low": 526.883,
+        "ci95_high": 556.832
       },
       "energy_wh": {
         "mean": 5.5,
@@ -974,10 +974,10 @@
         "ci95_high": 2.417
       },
       "n_priority_alerts": {
-        "mean": 9.1,
-        "std": 1.726,
-        "ci95_low": 8.762,
-        "ci95_high": 9.438
+        "mean": 19.31,
+        "std": 2.465,
+        "ci95_low": 18.827,
+        "ci95_high": 19.793
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -998,10 +998,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 275.594,
-        "std": 55.381,
-        "ci95_low": 264.739,
-        "ci95_high": 286.449
+        "mean": 542.415,
+        "std": 76.441,
+        "ci95_low": 527.433,
+        "ci95_high": 557.398
       },
       "energy_wh": {
         "mean": 5.5,
@@ -1030,10 +1030,10 @@
         "ci95_high": 2.461
       },
       "n_priority_alerts": {
-        "mean": 9.1,
-        "std": 1.726,
-        "ci95_low": 8.762,
-        "ci95_high": 9.438
+        "mean": 19.31,
+        "std": 2.465,
+        "ci95_low": 18.827,
+        "ci95_high": 19.793
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -1054,10 +1054,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 275.684,
-        "std": 55.327,
-        "ci95_low": 264.84,
-        "ci95_high": 286.528
+        "mean": 542.793,
+        "std": 76.49,
+        "ci95_low": 527.801,
+        "ci95_high": 557.785
       },
       "energy_wh": {
         "mean": 5.5,
@@ -1086,10 +1086,10 @@
         "ci95_high": 2.511
       },
       "n_priority_alerts": {
-        "mean": 9.11,
-        "std": 1.734,
-        "ci95_low": 8.77,
-        "ci95_high": 9.45
+        "mean": 19.32,
+        "std": 2.474,
+        "ci95_low": 18.835,
+        "ci95_high": 19.805
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -1110,10 +1110,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 275.919,
-        "std": 55.412,
-        "ci95_low": 265.059,
-        "ci95_high": 286.78
+        "mean": 543.263,
+        "std": 76.617,
+        "ci95_low": 528.246,
+        "ci95_high": 558.28
       },
       "energy_wh": {
         "mean": 5.5,
@@ -1142,10 +1142,10 @@
         "ci95_high": 2.868
       },
       "n_priority_alerts": {
-        "mean": 9.13,
-        "std": 1.756,
-        "ci95_low": 8.786,
-        "ci95_high": 9.474
+        "mean": 19.35,
+        "std": 2.484,
+        "ci95_low": 18.863,
+        "ci95_high": 19.837
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -1166,10 +1166,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 277.146,
-        "std": 55.521,
-        "ci95_low": 266.264,
-        "ci95_high": 288.028
+        "mean": 546.471,
+        "std": 76.546,
+        "ci95_low": 531.468,
+        "ci95_high": 561.474
       },
       "energy_wh": {
         "mean": 5.5,
@@ -1198,10 +1198,10 @@
         "ci95_high": 3.951
       },
       "n_priority_alerts": {
-        "mean": 9.14,
-        "std": 1.77,
-        "ci95_low": 8.793,
-        "ci95_high": 9.487
+        "mean": 19.39,
+        "std": 2.486,
+        "ci95_low": 18.903,
+        "ci95_high": 19.877
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -1222,10 +1222,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 280.586,
-        "std": 56.313,
-        "ci95_low": 269.548,
-        "ci95_high": 291.623
+        "mean": 554.163,
+        "std": 77.99,
+        "ci95_low": 538.876,
+        "ci95_high": 569.449
       },
       "energy_wh": {
         "mean": 5.5,
@@ -1254,10 +1254,10 @@
         "ci95_high": 5.844
       },
       "n_priority_alerts": {
-        "mean": 9.16,
-        "std": 1.774,
-        "ci95_low": 8.812,
-        "ci95_high": 9.508
+        "mean": 19.43,
+        "std": 2.459,
+        "ci95_low": 18.948,
+        "ci95_high": 19.912
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -1278,10 +1278,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 286.366,
-        "std": 57.57,
-        "ci95_low": 275.083,
-        "ci95_high": 297.65
+        "mean": 566.444,
+        "std": 79.602,
+        "ci95_low": 550.842,
+        "ci95_high": 582.046
       },
       "energy_wh": {
         "mean": 5.5,
@@ -1310,10 +1310,10 @@
         "ci95_high": 9.031
       },
       "n_priority_alerts": {
-        "mean": 9.17,
-        "std": 1.781,
-        "ci95_low": 8.821,
-        "ci95_high": 9.519
+        "mean": 19.5,
+        "std": 2.439,
+        "ci95_low": 19.022,
+        "ci95_high": 19.978
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -1334,10 +1334,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 297.06,
-        "std": 60.387,
-        "ci95_low": 285.224,
-        "ci95_high": 308.896
+        "mean": 588.18,
+        "std": 82.529,
+        "ci95_low": 572.004,
+        "ci95_high": 604.356
       },
       "energy_wh": {
         "mean": 5.5,
@@ -1366,10 +1366,10 @@
         "ci95_high": 14.01
       },
       "n_priority_alerts": {
-        "mean": 9.18,
-        "std": 1.806,
-        "ci95_low": 8.826,
-        "ci95_high": 9.534
+        "mean": 19.57,
+        "std": 2.495,
+        "ci95_low": 19.081,
+        "ci95_high": 20.059
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -1390,10 +1390,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 314.161,
-        "std": 64.898,
-        "ci95_low": 301.441,
-        "ci95_high": 326.881
+        "mean": 623.398,
+        "std": 88.621,
+        "ci95_low": 606.028,
+        "ci95_high": 640.767
       },
       "energy_wh": {
         "mean": 5.5,
@@ -1422,10 +1422,10 @@
         "ci95_high": 21.064
       },
       "n_priority_alerts": {
-        "mean": 9.22,
-        "std": 1.84,
-        "ci95_low": 8.859,
-        "ci95_high": 9.581
+        "mean": 19.66,
+        "std": 2.515,
+        "ci95_low": 19.167,
+        "ci95_high": 20.153
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -1446,10 +1446,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 341.941,
-        "std": 70.659,
-        "ci95_low": 328.092,
-        "ci95_high": 355.79
+        "mean": 681.028,
+        "std": 97.007,
+        "ci95_low": 662.015,
+        "ci95_high": 700.042
       },
       "energy_wh": {
         "mean": 5.5,
@@ -1478,10 +1478,10 @@
         "ci95_high": 67.229
       },
       "n_priority_alerts": {
-        "mean": 9.33,
-        "std": 1.864,
-        "ci95_low": 8.965,
-        "ci95_high": 9.695
+        "mean": 20.04,
+        "std": 2.51,
+        "ci95_low": 19.548,
+        "ci95_high": 20.532
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -1502,10 +1502,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 846.334,
-        "std": 210.795,
-        "ci95_low": 805.018,
-        "ci95_high": 887.65
+        "mean": 1697.128,
+        "std": 279.476,
+        "ci95_low": 1642.35,
+        "ci95_high": 1751.905
       },
       "energy_wh": {
         "mean": 5.5,
@@ -1534,10 +1534,10 @@
         "ci95_high": 87.696
       },
       "n_priority_alerts": {
-        "mean": 10.48,
-        "std": 2.062,
-        "ci95_low": 10.076,
-        "ci95_high": 10.884
+        "mean": 22.78,
+        "std": 2.894,
+        "ci95_low": 22.213,
+        "ci95_high": 23.347
       },
       "min_battery_soc": {
         "mean": 0.861,
@@ -1558,10 +1558,10 @@
         "ci95_high": 39.167
       },
       "data_mb": {
-        "mean": 2300.175,
-        "std": 599.198,
-        "ci95_low": 2182.732,
-        "ci95_high": 2417.618
+        "mean": 4604.565,
+        "std": 801.893,
+        "ci95_low": 4447.394,
+        "ci95_high": 4761.736
       },
       "energy_wh": {
         "mean": 5.5,

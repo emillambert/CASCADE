@@ -150,6 +150,13 @@ def test_priority_downlink_and_ablation_policy_gate_on_expected_signals() -> Non
         make_state(alpha=np.array([2.0]), beta=np.array([1.0]), downlink=False),
         np.array([0.60], dtype="float32"),
     )
+    # Symmetric Beta with high pseudo-evidence but mean/tail near 0.5: CSC branch.
+    sym = make_state(
+        alpha=np.array([4.0], dtype="float32"),
+        beta=np.array([4.0], dtype="float32"),
+        downlink=True,
+    )
+    assert policy.should_priority_downlink(sym, np.array([0.60], dtype="float32"))
 
     ablation = AblateNoBeliefPolicy()
     assert ablation.act(make_state(evi_anom=np.array([0.19], dtype="float32"))) == "FUSE"

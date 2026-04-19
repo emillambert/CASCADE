@@ -8,35 +8,19 @@
 
 \bibitem{gold-webinar1}
 Katie~M. Gold.
-\newblock Spectral early detection of crop pathogens for regenerative
-  agriculture applications.
+\newblock Spectral early detection of crop pathogens for regenerative agriculture applications.
 \newblock NASA Space-to-Soil Challenge Informational Webinar 1, 2026.
-\newblock Cornell University Plant Disease Diagnostics Laboratory, February 12,
-  2026.
+\newblock Cornell University Plant Disease Diagnostics Laboratory, February 12, 2026.
 
 \bibitem{mod13a1}
 {NASA EOSDIS Land Processes DAAC}.
-\newblock {MOD13A1 MODIS/Terra Vegetation Indices 16-Day L3 Global 500 m SIN
-  Grid V061}.
+\newblock {MOD13A1 MODIS/Terra Vegetation Indices 16-Day L3 Global 500 m SIN Grid V061}.
 \newblock \url{https://doi.org/10.5067/MODIS/MOD13A1.061}, 2021.
 
 \bibitem{mod11a1}
 {NASA EOSDIS Land Processes DAAC}.
-\newblock {MOD11A1 MODIS/Terra Land Surface Temperature/Emissivity Daily L3
-  Global 1 km SIN Grid V061}.
+\newblock {MOD11A1 MODIS/Terra Land Surface Temperature/Emissivity Daily L3 Global 1 km SIN Grid V061}.
 \newblock \url{https://doi.org/10.5067/MODIS/MOD11A1.061}, 2021.
-
-\bibitem{eo1-autonomy}
-Rob Sherwood, Steve Chien, et~al.
-\newblock Intelligent systems in space: The eo-1 autonomous sciencecraft.
-\newblock \url{https://ntrs.nasa.gov/citations/20060044325}, 2005.
-
-\bibitem{dynamic-targeting}
-Alberto Candela, Jason Swope, and Steve Chien.
-\newblock Dynamic targeting to improve earth science missions.
-\newblock {\em Journal of Aerospace Information Systems}, 20(11):679--689,
-  2023.
-\newblock doi:10.2514/1.I011233.
 
 \bibitem{mod09a1}
 E.~Vermote.
@@ -47,46 +31,45 @@ E.~Vermote.
 \bibitem{mod09-guide}
 {MODIS Land Surface Reflectance Science Computing Facility}.
 \newblock {MODIS Surface Reflectance User's Guide, Collection 6}.
-\newblock
-  \url{https://www.earthdata.nasa.gov/s3fs-public/2025-04/MOD09_User_Guide_V61.pdf},
-  2020.
+\newblock \url{https://www.earthdata.nasa.gov/s3fs-public/2025-04/MOD09_User_Guide_V61.pdf}, 2020.
 
 \bibitem{aspen-spaceops}
-Steve Chien et~al.
-\newblock Aspen---automated planning and scheduling for space mission
-  operation.
+S.~Chien, G.~Rabideau, R.~Knight, R.~Sherwood, B.~Engelhardt, and D.~Mutz.
+\newblock Aspen---automated planning and scheduling for space mission operation.
 \newblock \url{https://ntrs.nasa.gov/citations/20060040446}, 2000.
 \newblock Conference paper, NASA NTRS.
 
-\bibitem{eo1-planner-lessons}
-Daniel Tran et~al.
-\newblock Flight software issues in onboard automated planning: Lessons learned
-  on eo-1.
-\newblock \url{https://ntrs.nasa.gov/citations/20060043041}, 2004.
-\newblock International Workshop on Planning and Scheduling for Space, NASA
-  NTRS.
+\bibitem{eo1-casper-autonomous-science}
+Steve Chien, Robert Sherwood, Daniel Tran, Rebecca Castano, Benjamin Cichy, Ashley Davies, Gregg Rabideau, Nicole Tang, Michael Burl, and Daniel Mandl.
+\newblock Autonomous science on the eo-1 mission.
+\newblock \url{https://ntrs.nasa.gov/citations/20060028845}, 2003.
+\newblock NASA NTRS.
+
+\bibitem{eo1-autonomy}
+Robert~L. Sherwood, Steve Chien, Daniel Tran, Benjamin Cichy, Rebecca Castano, Ashley Davies, and Gregg Rabideau.
+\newblock Intelligent systems in space: The eo-1 autonomous sciencecraft.
+\newblock \url{https://ntrs.nasa.gov/citations/20060044325}, 2005.
+
+\bibitem{dynamic-targeting}
+Alberto Candela, Jason Swope, and Steve Chien.
+\newblock Dynamic targeting to improve earth science missions.
+\newblock {\em Journal of Aerospace Information Systems}, 20(11):679--689, 2023.
+\newblock doi:10.2514/1.I011233.
 
 \bibitem{amd-xqr}
 {AMD}.
 \newblock Kintex ultrascale xqr radiation-tolerant fpga family.
-\newblock
-  \url{https://www.amd.com/en/products/adaptive-socs-and-fpgas/fpga/kintex-ultrascale-xqr.html},
-  2026.
+\newblock \url{https://www.amd.com/en/products/adaptive-socs-and-fpgas/fpga/kintex-ultrascale-xqr.html}, 2026.
 
 \bibitem{esa-cwicom}
 {European Space Agency}.
 \newblock Ccsds image data compression asic.
-\newblock
-  \url{https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Onboard_Data_Processing/CCSDS_Image_Data_Compression_ASIC},
-  2026.
+\newblock \url{https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Onboard_Data_Processing/CCSDS_Image_Data_Compression_ASIC}, 2026.
 
 \bibitem{uc-tomato-cost}
 {University of California Agriculture and Natural Resources}.
-\newblock Sample costs to produce processing tomatoes, sub-surface, drip
-  irrigated (sdi) in the sacramento valley and northern delta, 2023.
-\newblock
-  \url{https://coststudyfiles.ucdavis.edu/uploads/pub/2023/08/21/amended_82123_2023processtomatosacramentovalleysdifinal.pdf},
-  2023.
+\newblock Sample costs to produce processing tomatoes, sub-surface, drip irrigated (sdi) in the sacramento valley and northern delta, 2023.
+\newblock \url{https://coststudyfiles.ucdavis.edu/uploads/pub/2023/08/21/amended_82123_2023processtomatosacramentovalleysdifinal.pdf}, 2023.
 
 \bibitem{wisconsin-lateblight}
 {University of Wisconsin Horticulture}.
@@ -101,16 +84,12 @@ Daniel Tran et~al.
 \bibitem{usda-2022}
 {USDA National Agricultural Statistics Service}.
 \newblock 2022 census of agriculture: United states summary and state data.
-\newblock
-  \url{https://www.nass.usda.gov/Publications/AgCensus/2022/Full_Report/Volume_1%2C_Chapter_1_US/usv1.pdf},
-  2024.
+\newblock \url{https://www.nass.usda.gov/Publications/AgCensus/2022/Full_Report/Volume_1%2C_Chapter_1_US/usv1.pdf}, 2024.
 
 \bibitem{eurostat-farms}
 {Eurostat}.
 \newblock Farms and farmland in the european union.
-\newblock
-  \url{https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Farms_and_farmland_in_the_European_Union},
-  2025.
+\newblock \url{https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Farms_and_farmland_in_the_European_Union}, 2025.
 \newblock Statistics Explained.
 
 \bibitem{ana-atlas}
@@ -121,21 +100,12 @@ Daniel Tran et~al.
 \bibitem{fao-aquastat}
 {FAO AQUASTAT}.
 \newblock Irrigated areas and water use: Conclusions.
-\newblock
-  \url{https://www.fao.org/aquastat/en/data-analysis/irrig-water-use/conclusions/},
-  2025.
-
-\bibitem{climate-pricing}
-{Climate FieldView}.
-\newblock Fieldview pricing.
-\newblock \url{https://climate.com/pricing}, 2026.
+\newblock \url{https://www.fao.org/aquastat/en/data-analysis/irrig-water-use/conclusions/}, 2025.
 
 \bibitem{verra-vm0042}
 {Verra}.
 \newblock Vm0042 methodology for improved agricultural land management.
-\newblock
-  \url{https://verra.org/methodologies/vm0042-methodology-for-improved-agricultural-land-management-v2-0/},
-  2025.
+\newblock \url{https://verra.org/methodologies/vm0042-methodology-for-improved-agricultural-land-management-v2-0/}, 2025.
 
 \bibitem{nasa-aist}
 {NASA Earth Science Technology Office}.
@@ -144,23 +114,18 @@ Daniel Tran et~al.
 
 \bibitem{nasa-sbir}
 {NASA}.
-\newblock Small business innovation research / small business technology
-  transfer.
+\newblock Small business innovation research / small business technology transfer.
 \newblock \url{https://www.nasa.gov/sbir_sttr/}, 2026.
 
 \bibitem{fire-detection-market}
 {Grand View Research}.
 \newblock Global fire detection market size \& outlook, 2030.
-\newblock
-  \url{https://www.grandviewresearch.com/horizon/outlook/fire-detection-market-size/global},
-  2026.
+\newblock \url{https://www.grandviewresearch.com/horizon/outlook/fire-detection-market-size/global}, 2026.
 
 \bibitem{chemura-africa}
 Onisimo Mutanga, Timothy Dube, and Omer Galal.
-\newblock Remote sensing of crop health for food security in africa: Potentials
-  and constraints.
-\newblock {\em Remote Sensing Applications: Society and Environment},
-  8:231--239, 2017.
+\newblock Remote sensing of crop health for food security in africa: Potentials and constraints.
+\newblock {\em Remote Sensing Applications: Society and Environment}, 8:231--239, 2017.
 \newblock doi:10.1016/j.rsase.2017.10.004.
 
 \end{thebibliography}

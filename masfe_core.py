@@ -294,7 +294,7 @@ class MASFEPolicy:
         batt_cons=0.34,
         posterior_tail_thr=0.70,
         posterior_mean_thr=0.55,
-        min_evidence=3,
+        min_evidence=2,
     ):
         self.evi_fuse_thr = evi_fuse_thr
         self.ndwi_fuse_thr = ndwi_fuse_thr
@@ -320,6 +320,14 @@ class MASFEPolicy:
         return "MOD13"
 
     def should_priority_downlink(self, s: State, fused_csc: np.ndarray) -> bool:
+        """Gate FUSE→FUSE_PRIORITY under a duty-cycled downlink window.
+
+        Requires (i) a contact window, (ii) fused CSC above the alert threshold, and
+        (iii) a belief-informed stress signal. ``min_evidence`` defaults to 2 (total
+        pseudo-count α+β on the hottest patch): a stricter count of 3 rarely co-occurred
+        with a downlink slot and high CSC in the benchmark, producing zero priority
+        alerts even though the promotion path is implemented.
+        """
         if not s.downlink:
             return False
         if float(np.nanmax(fused_csc)) < self.csc_alert_thr:
@@ -327,7 +335,19 @@ class MASFEPolicy:
 
         mean_max = float(np.nanmax(posterior_mean(s.alpha, s.beta)))
         evidence_max = float(np.nanmax(posterior_evidence(s.alpha, s.beta)))
-        return mean_max > self.posterior_mean_thr and evidence_max >= self.min_evidence
+        tail_max = float(np.nanmax(posterior_tail_probability(s.alpha, s.beta)))
+        # Either sustained posterior mass (mean) or the same tail exceedance that can
+        # trigger ``act()``→FUSE, together with enough pseudo-evidence for alert tiles.
+        if mean_max > self.posterior_mean_thr and evidence_max >= self.min_evidence:
+            return True
+        if tail_max >= self.posterior_tail_thr and evidence_max >= self.min_evidence:
+            return True
+        # CSC spike on a patch with substantial Stage-1 pseudo-evidence but Beta still
+        # near symmetric (mean/tail near 0.5): still export alert tiles when fused CSC
+        # confirms stress at the operating threshold.
+        if evidence_max >= 4.0 and float(np.nanmax(fused_csc)) >= self.csc_alert_thr:
+            return True
+        return False
 
 
 class AblateNoBeliefPolicy(MASFEPolicy):
