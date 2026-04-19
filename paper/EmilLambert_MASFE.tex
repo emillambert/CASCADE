@@ -306,16 +306,16 @@ Dr.\ Katie Gold's disease-detection work emphasizes that spectral stress often a
 
 In a 100-seed Monte Carlo benchmark, MASFE was tested over 120 passes, 500 field patches, 21 disease events, and 9 benign confounders per seed, with 36.7 cloud-obscured passes per seed on average. Across that benchmark, the belief gate routes $\sim$81\% of passes to Stage-1 screening only, $\sim$17\% to FUSE confirmation, and $\sim$2\% to FUSE\_PRIORITY alert export.
 
-Across that benchmark, 95\% confidence intervals were 98.92--98.97\% for downlink reduction versus raw, 38.17--38.34\% for energy saving versus raw, 100.0--100.0\% for disease-event recall, and 1.34--1.78\% for false-positive rate. The downlink-reduction interval is tight because the raw baseline is fixed and MASFE's total byte count is dominated by stable Stage-1 screening traffic, so seed-to-seed variability mainly changes alert counts rather than total data volume. The operating point is tunable: sweeping $csc\_alert\_thr$ from 0.40 to 0.65 preserved 100.0\% recall while moving false-positive rate from 2.23\% to 1.26\%; at the sweep endpoint 0.70 recall falls to $\sim$98.5\% as the policy hits battery-driven conserve behavior, and a $\pm30\%$ CSC-parameter sweep kept recall at 100.0\% with false-positive rate in the 1.0--2.3\% band; detailed curves and cases are included in the code submission.
+95\% confidence intervals for those runs were 98.92--98.97\% for downlink reduction versus raw, 38.17--38.34\% for energy saving versus raw, 100.0--100.0\% for disease-event recall, and 1.34--1.78\% for false-positive rate. The downlink-reduction interval is tight because the raw baseline is fixed and MASFE's total byte count is dominated by stable Stage-1 screening traffic, so seed-to-seed variability mainly changes alert counts rather than total data volume. The operating point is tunable: sweeping $csc\_alert\_thr$ from 0.40 to 0.65 preserved 100.0\% recall while moving false-positive rate from 2.23\% to 1.26\%; at the sweep endpoint 0.70 recall falls to $\sim$98.5\% as the policy hits battery-driven conserve behavior, and a $\pm30\%$ CSC-parameter sweep kept recall at 100.0\% with false-positive rate in the 1.0--2.3\% band; detailed curves and cases are included in the code submission.
 
 \input{../outputs/baselines_comparison_table.tex}
 
 \begin{figure}[!htbp]
 \centering
-\IfFileExists{../outputs/additional_ablation_curves.png}{%
+\IfFileExists{../outputs/additional_ablation_curves.pdf}{%
   \includegraphics[width=\linewidth]{../outputs/additional_ablation_curves.pdf}%
 }{%
-  \fcolorbox{gray!40}{gray!6}{\parbox[c][0.22\textheight][c]{0.98\linewidth}{\centering\small Missing figure asset:\\\texttt{outputs/additional\_ablation\_curves.png}}}%
+  \fcolorbox{gray!40}{gray!6}{\parbox[c][0.22\textheight][c]{0.98\linewidth}{\centering\small Missing figure asset:\\\texttt{outputs/additional\_ablation\_curves.pdf}}}%
 }%
 \caption{Additional ablations and curves (95\% CI bands where applicable). Left: operating-point sweep comparing baseline CSC to an NDWI-removed fallback over the relevant FP band; more permissive thresholds eventually drive recall collapse through battery-driven CONSERVE mode. Middle: sparse Stage~1 cadence, where recall stays near ceiling while \emph{seasonal-average compute} (right axis) shows the cost of under-sampling. Right: $\pm30\%$ CSC weight/saturation grid ($w$=weight scale, $s$=saturation scale); recall stays within 99--100\% while \emph{FP rate} (right axis) varies across calibration corners.}
 \label{fig:additional-ablations}
