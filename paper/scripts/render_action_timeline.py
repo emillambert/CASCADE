@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 import sys
 
@@ -12,11 +13,10 @@ SRC_DIR = Path(__file__).resolve().parents[2] / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from cascade.paths import ARTIFACTS_REPLAY_DIR, PAPER_FIGURES_DIR
+from cascade.paths import ARTIFACTS_REPLAY_DIR, BUILD_REPLAY_DIR, PAPER_FIGURES_DIR
 
 
 def configure_style() -> None:
-    # Match the report’s print-like feel (Times + restrained grays).
     mpl.rcParams.update(
         {
             "font.family": "serif",
@@ -36,7 +36,7 @@ def configure_style() -> None:
     )
 
 
-def render(csv_path: Path, out_path: Path) -> None:
+def render(csv_path: Path, out_path: Path, title: str = "") -> None:
     df = pd.read_csv(csv_path)
     if "date" not in df.columns or "action" not in df.columns:
         raise SystemExit(f"Unexpected CSV schema in {csv_path}")
@@ -56,7 +56,6 @@ def render(csv_path: Path, out_path: Path) -> None:
         "FUSE_PRIORITY": "#b00020",
     }
 
-    # Keep it short (paper figure), but readable.
     fig, ax = plt.subplots(figsize=(8.2, 2.35))
     ax.set_axisbelow(True)
     ax.grid(True, axis="both")
@@ -75,19 +74,39 @@ def render(csv_path: Path, out_path: Path) -> None:
             zorder=3,
         )
 
-    # Label the priority event (if any) without shouting.
     pri = df[df["action"] == "FUSE_PRIORITY"].sort_values("date")
+    fuse_only = df[df["action"] == "FUSE"]
+
     if not pri.empty:
-        first = pri.iloc[0]
-        ax.annotate(
-            f"FUSE_PRIORITY ({first['date'].date().isoformat()})",
-            xy=(first["date"], first["y"]),
-            xytext=(8, 6),
-            textcoords="offset points",
-            fontsize=9.5,
-            color=colors["FUSE_PRIORITY"],
-        )
-    elif "csc_max" in df.columns and not df.empty:
+        if "csc_max" in df.columns:
+            peak_row = pri.loc[pri["csc_max"].idxmax()]
+        else:
+            peak_row = pri.iloc[0]
+        n_pri = len(pri)
+        n_active = len(df[df["action"] != "BASELINE"])
+        if n_pri > 1:
+            # All-PRIORITY case: annotate below the dots to avoid title collision.
+            label = f"Peak CSC {peak_row['csc_max']:.3f} — {n_pri}/{n_active} windows FUSE_PRIORITY"
+            ax.annotate(
+                label,
+                xy=(peak_row["date"], peak_row["y"]),
+                xytext=(0, -28),
+                textcoords="offset points",
+                fontsize=9.0,
+                color=colors["FUSE_PRIORITY"],
+                ha="center",
+                arrowprops=dict(arrowstyle="-", color=colors["FUSE_PRIORITY"], lw=0.8),
+            )
+        else:
+            ax.annotate(
+                f"FUSE_PRIORITY ({peak_row['date'].date().isoformat()})",
+                xy=(peak_row["date"], peak_row["y"]),
+                xytext=(8, 6),
+                textcoords="offset points",
+                fontsize=9.0,
+                color=colors["FUSE_PRIORITY"],
+            )
+    elif not fuse_only.empty and "csc_max" in df.columns:
         peak = df.loc[df["csc_max"].idxmax()]
         ax.annotate(
             "Peak CSC 0.412;\npromotes at csc_alert_thr = 0.40",
@@ -102,6 +121,8 @@ def render(csv_path: Path, out_path: Path) -> None:
     ax.set_yticks([y_map[name] for name in y_order], labels=y_tick_labels)
     ax.set_ylabel("Action")
     ax.set_xlabel("Composite date")
+    if title:
+        ax.set_title(title, fontsize=10.5, pad=4)
 
     ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
@@ -109,31 +130,61 @@ def render(csv_path: Path, out_path: Path) -> None:
         tick.set_rotation(18)
         tick.set_ha("right")
 
-    # Reduce “boxy” feel while keeping print clarity.
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_color("#777777")
     ax.spines["bottom"].set_color("#777777")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    # Tight margins so the figure fits under a caption nicely.
-    # Extra left margin prevents y-label clipping once framed in LaTeX.
     fig.subplots_adjust(left=0.14, right=0.995, top=0.90, bottom=0.32)
     fig.savefig(out_path, dpi=300)
-    # Vector versions for the report.
     fig.savefig(out_path.with_suffix(".svg"), format="svg")
     fig.savefig(out_path.with_suffix(".pdf"), format="pdf")
     plt.close(fig)
+    print(f"Saved {out_path.with_suffix('.pdf')}")
 
 
 def main() -> None:
-    configure_style()
-    csv_path = (
-        ARTIFACTS_REPLAY_DIR
-        / "westlands_ca_2024-06-01_2024-10-31"
-        / "action_timeline.csv"
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--year",
+        choices=["2014", "2024", "both"],
+        default="both",
+        help="Which replay year to render (default: both)",
     )
-    render(csv_path, PAPER_FIGURES_DIR / "action_timeline_2024.png")
+    args = parser.parse_args()
+
+    configure_style()
+
+    if args.year in ("2014", "both"):
+        csv_2014 = (
+            BUILD_REPLAY_DIR
+            / "westlands_ca_2014-06-01_2014-10-31"
+            / "action_timeline.csv"
+        )
+        if not csv_2014.exists():
+            print(f"WARNING: 2014 CSV not found at {csv_2014} — skipping")
+        else:
+            render(
+                csv_2014,
+                PAPER_FIGURES_DIR / "action_timeline_2014.png",
+                title="Westlands 2014 replay — D4 Exceptional Drought (csc_alert_thr = 0.615, unmodified)",
+            )
+
+    if args.year in ("2024", "both"):
+        csv_2024 = (
+            ARTIFACTS_REPLAY_DIR
+            / "westlands_ca_2024-06-01_2024-10-31"
+            / "action_timeline.csv"
+        )
+        if not csv_2024.exists():
+            print(f"WARNING: 2024 CSV not found at {csv_2024} — skipping")
+        else:
+            render(
+                csv_2024,
+                PAPER_FIGURES_DIR / "action_timeline_2024.png",
+                title="Westlands 2024 replay — quiet season (csc_alert_thr = 0.615, unmodified)",
+            )
 
 
 if __name__ == "__main__":

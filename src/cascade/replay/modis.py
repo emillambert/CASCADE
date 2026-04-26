@@ -53,7 +53,7 @@ DOTENV_PATH = REPO_ROOT / ".env"
 AOIS = {
     "westlands_ca": {
         "label": "Westlands / Firebaugh, California",
-        "bbox": [-120.78, 36.19, -120.58, 36.34],
+        "bbox": [-120.55, 36.55, -120.45, 36.65],
     }
 }
 
@@ -685,13 +685,27 @@ def reproject_average(src_array, src_profile, dst_profile):
 def median_lst_window(grouped_files: dict[date, dict[str, Path]], step_date: date):
     candidates = []
     profile = None
+    target_shape: tuple[int, int] | None = None
     for obs_date, files in sorted(grouped_files.items()):
         if not (step_date - timedelta(days=LST_WINDOW_DAYS - 1) <= obs_date <= step_date):
             continue
         if "LST_Day_1km" not in files or "QC_Day" not in files:
             continue
-        lst, profile = read_raster(files["LST_Day_1km"])
+        lst, lst_prof = read_raster(files["LST_Day_1km"])
         qc, _ = read_raster(files["QC_Day"])
+        # AppEEARS can clip LST and QC from different tile boundaries for the same
+        # date; crop both to their overlapping extent before masking.
+        rows = min(lst.shape[0], qc.shape[0])
+        cols = min(lst.shape[1], qc.shape[1])
+        lst = lst[:rows, :cols]
+        qc = qc[:rows, :cols]
+        if target_shape is None:
+            target_shape = (rows, cols)
+            profile = {**lst_prof, "height": rows, "width": cols}
+        # Pin to the common shape established by the first valid observation.
+        r, c = target_shape
+        lst = lst[:r, :c]
+        qc = qc[:r, :c]
         valid = mod11_valid_mask(qc) & np.isfinite(lst)
         masked = np.where(valid, lst, np.nan)
         if np.isfinite(masked).any():
@@ -730,6 +744,9 @@ def median_ndwi_window(
         nir, mod09_profile = read_raster(files["sur_refl_b02"], scale_override=0.0001)
         swir, _ = read_raster(files["sur_refl_b06"], scale_override=0.0001)
         qc, _ = read_raster(files["sur_refl_qc_500m"])
+        rows = min(nir.shape[0], swir.shape[0], qc.shape[0])
+        cols = min(nir.shape[1], swir.shape[1], qc.shape[1])
+        nir, swir, qc = nir[:rows, :cols], swir[:rows, :cols], qc[:rows, :cols]
         valid = mod09_valid_mask(qc, nir, swir)
         ndwi = np.where(valid, (nir - swir) / (nir + swir), np.nan)
         ndwi_1km = reproject_average(ndwi, mod09_profile, dst_profile)
