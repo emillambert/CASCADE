@@ -3,12 +3,14 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from masfe_core import (
+from cascade.core import (
     ACTION_GSD_M,
     ACTION_TILE_DENSITY_MB_PER_KM2,
     AblateNoBeliefPolicy,
+    CSC_DEFAULTS,
+    CSC_SIGMAS,
     Config,
-    MASFEPolicy,
+    CASCADEPolicy,
     State,
     _normalized_weights,
     action_gsd_m,
@@ -100,7 +102,11 @@ def test_compute_csc_preserves_fallback_weights_and_clips_outputs() -> None:
         ndwi_t=ndwi_base,
         ndwi_base=ndwi_base,
     )
-    assert full.tolist() == pytest.approx([0.40], abs=1e-6)
+    expected_full = CSC_DEFAULTS.evi_weight * min(
+        (0.60 - 0.39) / (CSC_DEFAULTS.evi_saturation * CSC_SIGMAS["evi"]),
+        1.0,
+    )
+    assert full.tolist() == pytest.approx([expected_full], abs=1e-6)
 
     clipped = compute_csc(
         evi_t=np.array([0.10], dtype="float32"),
@@ -110,7 +116,13 @@ def test_compute_csc_preserves_fallback_weights_and_clips_outputs() -> None:
         ndwi_t=np.array([0.00], dtype="float32"),
         ndwi_base=ndwi_base,
     )
-    assert clipped.tolist() == pytest.approx([1.0], abs=1e-6)
+    expected_clipped = (
+        CSC_DEFAULTS.evi_weight * 1.0
+        + CSC_DEFAULTS.lst_weight * 1.0
+        + CSC_DEFAULTS.ndwi_weight
+        * min((0.20 - 0.00) / (CSC_DEFAULTS.ndwi_saturation * CSC_SIGMAS["ndwi"]), 1.0)
+    )
+    assert clipped.tolist() == pytest.approx([expected_clipped], abs=1e-6)
 
 
 def test_update_stress_belief_uses_inclusive_thresholds_and_caps_evidence() -> None:
@@ -126,8 +138,8 @@ def test_update_stress_belief_uses_inclusive_thresholds_and_caps_evidence() -> N
     assert np.all(alpha_new + beta_new <= 8.0)
 
 
-def test_masfe_policy_action_order_matches_battery_tail_and_exploration_rules() -> None:
-    policy = MASFEPolicy()
+def test_cascade_policy_action_order_matches_battery_tail_and_exploration_rules() -> None:
+    policy = CASCADEPolicy()
 
     assert policy.act(make_state(soc=0.10)) == "SKIP"
     assert policy.act(make_state(soc=0.20)) == "MOD13"
@@ -137,18 +149,20 @@ def test_masfe_policy_action_order_matches_battery_tail_and_exploration_rules() 
 
 
 def test_priority_downlink_and_ablation_policy_gate_on_expected_signals() -> None:
-    policy = MASFEPolicy()
+    policy = CASCADEPolicy()
     strong_state = make_state(alpha=np.array([2.0]), beta=np.array([1.0]))
+    above_threshold = np.array([policy.csc_alert_thr + 0.05], dtype="float32")
+    below_threshold = np.array([max(policy.csc_alert_thr - 0.05, 0.0)], dtype="float32")
 
-    assert policy.should_priority_downlink(strong_state, np.array([0.60], dtype="float32"))
-    assert not policy.should_priority_downlink(strong_state, np.array([0.50], dtype="float32"))
+    assert policy.should_priority_downlink(strong_state, above_threshold)
+    assert not policy.should_priority_downlink(strong_state, below_threshold)
     assert not policy.should_priority_downlink(
         make_state(alpha=np.array([1.0]), beta=np.array([1.0])),
-        np.array([0.60], dtype="float32"),
+        above_threshold,
     )
     assert not policy.should_priority_downlink(
         make_state(alpha=np.array([2.0]), beta=np.array([1.0]), downlink=False),
-        np.array([0.60], dtype="float32"),
+        above_threshold,
     )
     # Symmetric Beta with high pseudo-evidence but mean/tail near 0.5: CSC branch.
     sym = make_state(
@@ -156,7 +170,7 @@ def test_priority_downlink_and_ablation_policy_gate_on_expected_signals() -> Non
         beta=np.array([4.0], dtype="float32"),
         downlink=True,
     )
-    assert policy.should_priority_downlink(sym, np.array([0.60], dtype="float32"))
+    assert policy.should_priority_downlink(sym, above_threshold)
 
     ablation = AblateNoBeliefPolicy()
     assert ablation.act(make_state(evi_anom=np.array([0.19], dtype="float32"))) == "FUSE"

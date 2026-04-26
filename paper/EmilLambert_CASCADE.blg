@@ -1,46 +1,46 @@
 This is BibTeX, Version 0.99d (TeX Live 2025)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
-The top-level auxiliary file: EmilLambert_MASFE.aux
+The top-level auxiliary file: EmilLambert_CASCADE.aux
 The style file: unsrt.bst
 Database file #1: references.bib
-You've used 24 entries,
+You've used 23 entries,
             1791 wiz_defined-function locations,
-            562 strings with 8182 characters,
-and the built_in function-call counts, 3708 in all, are:
-= -- 309
-> -- 173
+            554 strings with 8073 characters,
+and the built_in function-call counts, 3451 in all, are:
+= -- 283
+> -- 162
 < -- 0
-+ -- 72
-- -- 48
-* -- 108
-:= -- 607
-add.period$ -- 80
-call.type$ -- 24
-change.case$ -- 24
++ -- 68
+- -- 45
+* -- 89
+:= -- 565
+add.period$ -- 76
+call.type$ -- 23
+change.case$ -- 23
 chr.to.int$ -- 0
-cite$ -- 24
-duplicate$ -- 128
-empty$ -- 444
-format.name$ -- 48
-if$ -- 852
+cite$ -- 23
+duplicate$ -- 119
+empty$ -- 421
+format.name$ -- 45
+if$ -- 797
 int.to.chr$ -- 0
-int.to.str$ -- 24
-missing$ -- 2
-newline$ -- 131
-num.names$ -- 24
+int.to.str$ -- 23
+missing$ -- 1
+newline$ -- 125
+num.names$ -- 23
 pop$ -- 132
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 65
+skip$ -- 62
 stack$ -- 0
-substring$ -- 50
-swap$ -- 24
+substring$ -- 25
+swap$ -- 23
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 0
-while$ -- 28
-width$ -- 26
-write$ -- 260
+while$ -- 25
+width$ -- 25
+write$ -- 247

@@ -1,0 +1,282 @@
+{
+  "selected_candidate": {
+    "parameters": {
+      "evi_weight": 0.577777,
+      "lst_weight": 0.246039,
+      "ndwi_weight": 0.176184,
+      "evi_saturation": 7.0,
+      "lst_saturation": 4.956382,
+      "ndwi_saturation": 6.0,
+      "csc_alert_thr": 0.615018
+    },
+    "metrics_by_split": {
+      "train": {
+        "science_retention_pct": {
+          "mean": 100.0,
+          "std": 0.0,
+          "ci95_low": 100.0,
+          "ci95_high": 100.0
+        },
+        "alert_precision_pct": {
+          "mean": 99.303,
+          "std": 0.909,
+          "ci95_low": 99.073,
+          "ci95_high": 99.534
+        },
+        "false_positive_rate_pct": {
+          "mean": 0.697,
+          "std": 0.909,
+          "ci95_low": 0.466,
+          "ci95_high": 0.927
+        },
+        "n_priority_alerts": {
+          "mean": 1.867,
+          "std": 0.623,
+          "ci95_low": 1.709,
+          "ci95_high": 2.024
+        },
+        "min_battery_soc": {
+          "mean": 0.86,
+          "std": 0.0,
+          "ci95_low": 0.86,
+          "ci95_high": 0.86
+        },
+        "cloud_obscured_passes": {
+          "mean": 36.95,
+          "std": 4.681,
+          "ci95_low": 35.766,
+          "ci95_high": 38.134
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "mean": 49.189,
+          "std": 1.19,
+          "ci95_low": 48.888,
+          "ci95_high": 49.49
+        },
+        "data_mb": {
+          "mean": 136.353,
+          "std": 15.718,
+          "ci95_low": 132.375,
+          "ci95_high": 140.33
+        },
+        "energy_wh": {
+          "mean": 5.926,
+          "std": 0.045,
+          "ci95_low": 5.914,
+          "ci95_high": 5.937
+        }
+      },
+      "validation": {
+        "science_retention_pct": {
+          "mean": 100.0,
+          "std": 0.0,
+          "ci95_low": 100.0,
+          "ci95_high": 100.0
+        },
+        "alert_precision_pct": {
+          "mean": 99.225,
+          "std": 0.979,
+          "ci95_low": 98.796,
+          "ci95_high": 99.654
+        },
+        "false_positive_rate_pct": {
+          "mean": 0.775,
+          "std": 0.979,
+          "ci95_low": 0.346,
+          "ci95_high": 1.204
+        },
+        "n_priority_alerts": {
+          "mean": 1.8,
+          "std": 0.523,
+          "ci95_low": 1.571,
+          "ci95_high": 2.029
+        },
+        "min_battery_soc": {
+          "mean": 0.86,
+          "std": 0.0,
+          "ci95_low": 0.86,
+          "ci95_high": 0.861
+        },
+        "cloud_obscured_passes": {
+          "mean": 35.5,
+          "std": 4.123,
+          "ci95_low": 33.693,
+          "ci95_high": 37.307
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "mean": 49.056,
+          "std": 0.788,
+          "ci95_low": 48.71,
+          "ci95_high": 49.401
+        },
+        "data_mb": {
+          "mean": 135.53,
+          "std": 12.229,
+          "ci95_low": 130.17,
+          "ci95_high": 140.89
+        },
+        "energy_wh": {
+          "mean": 5.919,
+          "std": 0.029,
+          "ci95_low": 5.907,
+          "ci95_high": 5.932
+        }
+      },
+      "test": {
+        "science_retention_pct": {
+          "mean": 100.0,
+          "std": 0.0,
+          "ci95_low": 100.0,
+          "ci95_high": 100.0
+        },
+        "alert_precision_pct": {
+          "mean": 99.503,
+          "std": 0.893,
+          "ci95_low": 99.111,
+          "ci95_high": 99.894
+        },
+        "false_positive_rate_pct": {
+          "mean": 0.497,
+          "std": 0.893,
+          "ci95_low": 0.106,
+          "ci95_high": 0.889
+        },
+        "n_priority_alerts": {
+          "mean": 1.8,
+          "std": 0.616,
+          "ci95_low": 1.53,
+          "ci95_high": 2.07
+        },
+        "min_battery_soc": {
+          "mean": 0.86,
+          "std": 0.0,
+          "ci95_low": 0.86,
+          "ci95_high": 0.86
+        },
+        "cloud_obscured_passes": {
+          "mean": 37.3,
+          "std": 5.459,
+          "ci95_low": 34.908,
+          "ci95_high": 39.692
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "mean": 49.389,
+          "std": 1.24,
+          "ci95_low": 48.845,
+          "ci95_high": 49.933
+        },
+        "data_mb": {
+          "mean": 139.732,
+          "std": 11.89,
+          "ci95_low": 134.521,
+          "ci95_high": 144.943
+        },
+        "energy_wh": {
+          "mean": 5.933,
+          "std": 0.044,
+          "ci95_low": 5.913,
+          "ci95_high": 5.952
+        }
+      }
+    },
+    "distance_from_defaults": 1.711376,
+    "source_stage": "local",
+    "candidate_index": 14,
+    "parent_rank": 17,
+    "parent_parameters": {
+      "evi_weight": 0.545473,
+      "lst_weight": 0.241689,
+      "ndwi_weight": 0.212838,
+      "evi_saturation": 6.957215,
+      "lst_saturation": 4.058344,
+      "ndwi_saturation": 4.854577,
+      "csc_alert_thr": 0.609972
+    },
+    "validation_fp_improvement_pct_points": 1.304,
+    "validation_guardrails": {
+      "data_mb": {
+        "baseline": 152.74,
+        "candidate": 135.53,
+        "limit": 160.377,
+        "passes": true
+      },
+      "seasonal_average_compute_utilisation_pct": {
+        "baseline": 49.056,
+        "candidate": 49.056,
+        "limit": 51.5088,
+        "passes": true
+      },
+      "energy_wh": {
+        "baseline": 5.928,
+        "candidate": 5.919,
+        "limit": 6.2244,
+        "passes": true
+      }
+    },
+    "train_recall_gate_passes": true,
+    "validation_recall_gate_passes": true,
+    "validation_guardrails_pass": true,
+    "feasible": true,
+    "ranking_key": [
+      0.775,
+      135.53,
+      49.056,
+      5.919,
+      1.711376
+    ],
+    "promotion_status": {
+      "promoted": true,
+      "validation_fp_improvement_pct_points": 1.304,
+      "test_recall_pct": 100.0,
+      "test_guardrails": {
+        "data_mb": {
+          "baseline": 152.692,
+          "candidate": 139.732,
+          "limit": 160.3266,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.389,
+          "candidate": 49.389,
+          "limit": 51.85845,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.94,
+          "candidate": 5.933,
+          "limit": 6.237,
+          "passes": true
+        }
+      },
+      "test_guardrails_pass": true,
+      "reason": "selected candidate cleared promotion gates"
+    }
+  },
+  "promotion_status": {
+    "promoted": true,
+    "validation_fp_improvement_pct_points": 1.304,
+    "test_recall_pct": 100.0,
+    "test_guardrails": {
+      "data_mb": {
+        "baseline": 152.692,
+        "candidate": 139.732,
+        "limit": 160.3266,
+        "passes": true
+      },
+      "seasonal_average_compute_utilisation_pct": {
+        "baseline": 49.389,
+        "candidate": 49.389,
+        "limit": 51.85845,
+        "passes": true
+      },
+      "energy_wh": {
+        "baseline": 5.94,
+        "candidate": 5.933,
+        "limit": 6.237,
+        "passes": true
+      }
+    },
+    "test_guardrails_pass": true,
+    "reason": "selected candidate cleared promotion gates"
+  }
+}

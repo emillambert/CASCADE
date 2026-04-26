@@ -1,0 +1,711 @@
+{
+  "ndwi_removed": {
+    "roc_baseline": {
+      "thresholds": [
+        {
+          "threshold": 0.3,
+          "false_positive_rate_pct": 2.134,
+          "false_positive_rate_ci95_low": 1.896,
+          "false_positive_rate_ci95_high": 2.372,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.321,
+          "false_positive_rate_pct": 2.034,
+          "false_positive_rate_ci95_low": 1.798,
+          "false_positive_rate_ci95_high": 2.27,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.342,
+          "false_positive_rate_pct": 1.872,
+          "false_positive_rate_ci95_low": 1.645,
+          "false_positive_rate_ci95_high": 2.099,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.362,
+          "false_positive_rate_pct": 1.77,
+          "false_positive_rate_ci95_low": 1.547,
+          "false_positive_rate_ci95_high": 1.992,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.383,
+          "false_positive_rate_pct": 1.741,
+          "false_positive_rate_ci95_low": 1.518,
+          "false_positive_rate_ci95_high": 1.963,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.404,
+          "false_positive_rate_pct": 1.599,
+          "false_positive_rate_ci95_low": 1.387,
+          "false_positive_rate_ci95_high": 1.81,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.425,
+          "false_positive_rate_pct": 1.472,
+          "false_positive_rate_ci95_low": 1.256,
+          "false_positive_rate_ci95_high": 1.688,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.446,
+          "false_positive_rate_pct": 1.32,
+          "false_positive_rate_ci95_low": 1.113,
+          "false_positive_rate_ci95_high": 1.528,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.467,
+          "false_positive_rate_pct": 1.175,
+          "false_positive_rate_ci95_low": 0.97,
+          "false_positive_rate_ci95_high": 1.379,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.487,
+          "false_positive_rate_pct": 1.069,
+          "false_positive_rate_ci95_low": 0.862,
+          "false_positive_rate_ci95_high": 1.277,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.508,
+          "false_positive_rate_pct": 0.963,
+          "false_positive_rate_ci95_low": 0.762,
+          "false_positive_rate_ci95_high": 1.164,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.529,
+          "false_positive_rate_pct": 0.783,
+          "false_positive_rate_ci95_low": 0.604,
+          "false_positive_rate_ci95_high": 0.961,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.55,
+          "false_positive_rate_pct": 0.718,
+          "false_positive_rate_ci95_low": 0.552,
+          "false_positive_rate_ci95_high": 0.884,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.571,
+          "false_positive_rate_pct": 0.662,
+          "false_positive_rate_ci95_low": 0.494,
+          "false_positive_rate_ci95_high": 0.83,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.592,
+          "false_positive_rate_pct": 0.535,
+          "false_positive_rate_ci95_low": 0.37,
+          "false_positive_rate_ci95_high": 0.7,
+          "science_retention_pct": 99.952,
+          "science_retention_ci95_low": 99.859,
+          "science_retention_ci95_high": 100.046
+        },
+        {
+          "threshold": 0.613,
+          "false_positive_rate_pct": 0.484,
+          "false_positive_rate_ci95_low": 0.326,
+          "false_positive_rate_ci95_high": 0.642,
+          "science_retention_pct": 99.952,
+          "science_retention_ci95_low": 99.859,
+          "science_retention_ci95_high": 100.046
+        },
+        {
+          "threshold": 0.633,
+          "false_positive_rate_pct": 0.461,
+          "false_positive_rate_ci95_low": 0.297,
+          "false_positive_rate_ci95_high": 0.625,
+          "science_retention_pct": 99.857,
+          "science_retention_ci95_low": 99.697,
+          "science_retention_ci95_high": 100.017
+        },
+        {
+          "threshold": 0.654,
+          "false_positive_rate_pct": 0.455,
+          "false_positive_rate_ci95_low": 0.275,
+          "false_positive_rate_ci95_high": 0.634,
+          "science_retention_pct": 99.048,
+          "science_retention_ci95_low": 98.628,
+          "science_retention_ci95_high": 99.467
+        },
+        {
+          "threshold": 0.675,
+          "false_positive_rate_pct": 0.349,
+          "false_positive_rate_ci95_low": 0.148,
+          "false_positive_rate_ci95_high": 0.549,
+          "science_retention_pct": 95.524,
+          "science_retention_ci95_low": 94.587,
+          "science_retention_ci95_high": 96.46
+        },
+        {
+          "threshold": 0.696,
+          "false_positive_rate_pct": 0.274,
+          "false_positive_rate_ci95_low": 0.061,
+          "false_positive_rate_ci95_high": 0.486,
+          "science_retention_pct": 87.476,
+          "science_retention_ci95_low": 86.165,
+          "science_retention_ci95_high": 88.787
+        },
+        {
+          "threshold": 0.717,
+          "false_positive_rate_pct": 0.187,
+          "false_positive_rate_ci95_low": -0.042,
+          "false_positive_rate_ci95_high": 0.416,
+          "science_retention_pct": 70.19,
+          "science_retention_ci95_low": 68.159,
+          "science_retention_ci95_high": 72.222
+        },
+        {
+          "threshold": 0.738,
+          "false_positive_rate_pct": 0.189,
+          "false_positive_rate_ci95_low": -0.093,
+          "false_positive_rate_ci95_high": 0.471,
+          "science_retention_pct": 47.429,
+          "science_retention_ci95_low": 45.249,
+          "science_retention_ci95_high": 49.608
+        },
+        {
+          "threshold": 0.758,
+          "false_positive_rate_pct": 0.1,
+          "false_positive_rate_ci95_low": -0.096,
+          "false_positive_rate_ci95_high": 0.296,
+          "science_retention_pct": 24.667,
+          "science_retention_ci95_low": 22.794,
+          "science_retention_ci95_high": 26.54
+        },
+        {
+          "threshold": 0.779,
+          "false_positive_rate_pct": 0.0,
+          "false_positive_rate_ci95_low": 0.0,
+          "false_positive_rate_ci95_high": 0.0,
+          "science_retention_pct": 9.238,
+          "science_retention_ci95_low": 8.045,
+          "science_retention_ci95_high": 10.431
+        },
+        {
+          "threshold": 0.8,
+          "false_positive_rate_pct": 0.0,
+          "false_positive_rate_ci95_low": 0.0,
+          "false_positive_rate_ci95_high": 0.0,
+          "science_retention_pct": 2.619,
+          "science_retention_ci95_low": 1.888,
+          "science_retention_ci95_high": 3.35
+        }
+      ],
+      "operating_point_threshold": 0.615018
+    },
+    "roc_ndwi_removed": {
+      "thresholds": [
+        {
+          "threshold": 0.3,
+          "false_positive_rate_pct": 21.303,
+          "false_positive_rate_ci95_low": 20.725,
+          "false_positive_rate_ci95_high": 21.881,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.321,
+          "false_positive_rate_pct": 12.555,
+          "false_positive_rate_ci95_low": 12.022,
+          "false_positive_rate_ci95_high": 13.087,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.342,
+          "false_positive_rate_pct": 7.412,
+          "false_positive_rate_ci95_low": 6.958,
+          "false_positive_rate_ci95_high": 7.865,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.362,
+          "false_positive_rate_pct": 4.42,
+          "false_positive_rate_ci95_low": 4.066,
+          "false_positive_rate_ci95_high": 4.774,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.383,
+          "false_positive_rate_pct": 3.096,
+          "false_positive_rate_ci95_low": 2.769,
+          "false_positive_rate_ci95_high": 3.422,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.404,
+          "false_positive_rate_pct": 2.287,
+          "false_positive_rate_ci95_low": 2.009,
+          "false_positive_rate_ci95_high": 2.564,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.425,
+          "false_positive_rate_pct": 1.991,
+          "false_positive_rate_ci95_low": 1.736,
+          "false_positive_rate_ci95_high": 2.245,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.446,
+          "false_positive_rate_pct": 1.812,
+          "false_positive_rate_ci95_low": 1.579,
+          "false_positive_rate_ci95_high": 2.045,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.467,
+          "false_positive_rate_pct": 1.73,
+          "false_positive_rate_ci95_low": 1.506,
+          "false_positive_rate_ci95_high": 1.954,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.487,
+          "false_positive_rate_pct": 1.654,
+          "false_positive_rate_ci95_low": 1.446,
+          "false_positive_rate_ci95_high": 1.862,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.508,
+          "false_positive_rate_pct": 1.578,
+          "false_positive_rate_ci95_low": 1.373,
+          "false_positive_rate_ci95_high": 1.782,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.529,
+          "false_positive_rate_pct": 1.505,
+          "false_positive_rate_ci95_low": 1.305,
+          "false_positive_rate_ci95_high": 1.704,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.55,
+          "false_positive_rate_pct": 1.397,
+          "false_positive_rate_ci95_low": 1.191,
+          "false_positive_rate_ci95_high": 1.603,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.571,
+          "false_positive_rate_pct": 1.316,
+          "false_positive_rate_ci95_low": 1.117,
+          "false_positive_rate_ci95_high": 1.515,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.592,
+          "false_positive_rate_pct": 1.286,
+          "false_positive_rate_ci95_low": 1.085,
+          "false_positive_rate_ci95_high": 1.486,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.613,
+          "false_positive_rate_pct": 1.206,
+          "false_positive_rate_ci95_low": 1.023,
+          "false_positive_rate_ci95_high": 1.389,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.633,
+          "false_positive_rate_pct": 1.069,
+          "false_positive_rate_ci95_low": 0.894,
+          "false_positive_rate_ci95_high": 1.243,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.654,
+          "false_positive_rate_pct": 0.963,
+          "false_positive_rate_ci95_low": 0.792,
+          "false_positive_rate_ci95_high": 1.134,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.675,
+          "false_positive_rate_pct": 0.898,
+          "false_positive_rate_ci95_low": 0.723,
+          "false_positive_rate_ci95_high": 1.072,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.696,
+          "false_positive_rate_pct": 0.827,
+          "false_positive_rate_ci95_low": 0.65,
+          "false_positive_rate_ci95_high": 1.004,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.717,
+          "false_positive_rate_pct": 0.755,
+          "false_positive_rate_ci95_low": 0.579,
+          "false_positive_rate_ci95_high": 0.931,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.738,
+          "false_positive_rate_pct": 0.679,
+          "false_positive_rate_ci95_low": 0.514,
+          "false_positive_rate_ci95_high": 0.843,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.758,
+          "false_positive_rate_pct": 0.597,
+          "false_positive_rate_ci95_low": 0.448,
+          "false_positive_rate_ci95_high": 0.746,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.779,
+          "false_positive_rate_pct": 0.539,
+          "false_positive_rate_ci95_low": 0.393,
+          "false_positive_rate_ci95_high": 0.684,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        },
+        {
+          "threshold": 0.8,
+          "false_positive_rate_pct": 0.461,
+          "false_positive_rate_ci95_low": 0.323,
+          "false_positive_rate_ci95_high": 0.598,
+          "science_retention_pct": 100.0,
+          "science_retention_ci95_low": 100.0,
+          "science_retention_ci95_high": 100.0
+        }
+      ],
+      "operating_point_threshold": 0.615018
+    }
+  },
+  "stage1_stride_sweep": [
+    {
+      "stage1_stride": 1.0,
+      "science_retention_pct": 99.952,
+      "science_retention_ci95_low": 99.859,
+      "science_retention_ci95_high": 100.046,
+      "false_positive_rate_pct": 0.492,
+      "false_positive_rate_ci95_low": 0.332,
+      "false_positive_rate_ci95_high": 0.652,
+      "seasonal_average_compute_utilisation_pct": 49.589
+    },
+    {
+      "stage1_stride": 1.5,
+      "science_retention_pct": 99.905,
+      "science_retention_ci95_low": 99.773,
+      "science_retention_ci95_high": 100.036,
+      "false_positive_rate_pct": 0.34,
+      "false_positive_rate_ci95_low": 0.208,
+      "false_positive_rate_ci95_high": 0.471,
+      "seasonal_average_compute_utilisation_pct": 39.319
+    },
+    {
+      "stage1_stride": 2.0,
+      "science_retention_pct": 99.905,
+      "science_retention_ci95_low": 99.773,
+      "science_retention_ci95_high": 100.036,
+      "false_positive_rate_pct": 0.523,
+      "false_positive_rate_ci95_low": 0.351,
+      "false_positive_rate_ci95_high": 0.694,
+      "seasonal_average_compute_utilisation_pct": 33.611
+    },
+    {
+      "stage1_stride": 2.5,
+      "science_retention_pct": 99.952,
+      "science_retention_ci95_low": 99.859,
+      "science_retention_ci95_high": 100.046,
+      "false_positive_rate_pct": 0.386,
+      "false_positive_rate_ci95_low": 0.258,
+      "false_positive_rate_ci95_high": 0.514,
+      "seasonal_average_compute_utilisation_pct": 32.353
+    },
+    {
+      "stage1_stride": 3.0,
+      "science_retention_pct": 99.762,
+      "science_retention_ci95_low": 99.557,
+      "science_retention_ci95_high": 99.966,
+      "false_positive_rate_pct": 0.485,
+      "false_positive_rate_ci95_low": 0.331,
+      "false_positive_rate_ci95_high": 0.638,
+      "seasonal_average_compute_utilisation_pct": 30.158
+    },
+    {
+      "stage1_stride": 3.5,
+      "science_retention_pct": 99.762,
+      "science_retention_ci95_low": 99.518,
+      "science_retention_ci95_high": 100.006,
+      "false_positive_rate_pct": 0.456,
+      "false_positive_rate_ci95_low": 0.338,
+      "false_positive_rate_ci95_high": 0.574,
+      "seasonal_average_compute_utilisation_pct": 30.153
+    },
+    {
+      "stage1_stride": 4.0,
+      "science_retention_pct": 99.857,
+      "science_retention_ci95_low": 99.649,
+      "science_retention_ci95_high": 100.065,
+      "false_positive_rate_pct": 0.407,
+      "false_positive_rate_ci95_low": 0.297,
+      "false_positive_rate_ci95_high": 0.518,
+      "seasonal_average_compute_utilisation_pct": 28.818
+    },
+    {
+      "stage1_stride": 5.0,
+      "science_retention_pct": 99.952,
+      "science_retention_ci95_low": 99.859,
+      "science_retention_ci95_high": 100.046,
+      "false_positive_rate_pct": 0.586,
+      "false_positive_rate_ci95_low": 0.459,
+      "false_positive_rate_ci95_high": 0.714,
+      "seasonal_average_compute_utilisation_pct": 25.647
+    },
+    {
+      "stage1_stride": 6.0,
+      "science_retention_pct": 99.619,
+      "science_retention_ci95_low": 99.303,
+      "science_retention_ci95_high": 99.935,
+      "false_positive_rate_pct": 0.422,
+      "false_positive_rate_ci95_low": 0.309,
+      "false_positive_rate_ci95_high": 0.534,
+      "seasonal_average_compute_utilisation_pct": 22.953
+    },
+    {
+      "stage1_stride": 7.0,
+      "science_retention_pct": 99.714,
+      "science_retention_ci95_low": 99.492,
+      "science_retention_ci95_high": 99.937,
+      "false_positive_rate_pct": 0.443,
+      "false_positive_rate_ci95_low": 0.301,
+      "false_positive_rate_ci95_high": 0.585,
+      "seasonal_average_compute_utilisation_pct": 21.542
+    }
+  ],
+  "cloud_pass_prob_sweep": [
+    {
+      "cloud_pass_prob": 0.05,
+      "science_retention_pct": 99.857,
+      "science_retention_ci95_low": 99.697,
+      "science_retention_ci95_high": 100.017,
+      "false_positive_rate_pct": 0.465,
+      "false_positive_rate_ci95_low": 0.31,
+      "false_positive_rate_ci95_high": 0.619,
+      "cloud_obscured_passes": 5.95
+    },
+    {
+      "cloud_pass_prob": 0.1,
+      "science_retention_pct": 99.952,
+      "science_retention_ci95_low": 99.859,
+      "science_retention_ci95_high": 100.046,
+      "false_positive_rate_pct": 0.362,
+      "false_positive_rate_ci95_low": 0.227,
+      "false_positive_rate_ci95_high": 0.498,
+      "cloud_obscured_passes": 12.74
+    },
+    {
+      "cloud_pass_prob": 0.16,
+      "science_retention_pct": 99.905,
+      "science_retention_ci95_low": 99.773,
+      "science_retention_ci95_high": 100.036,
+      "false_positive_rate_pct": 0.427,
+      "false_positive_rate_ci95_low": 0.294,
+      "false_positive_rate_ci95_high": 0.56,
+      "cloud_obscured_passes": 19.27
+    },
+    {
+      "cloud_pass_prob": 0.21,
+      "science_retention_pct": 99.952,
+      "science_retention_ci95_low": 99.859,
+      "science_retention_ci95_high": 100.046,
+      "false_positive_rate_pct": 0.434,
+      "false_positive_rate_ci95_low": 0.278,
+      "false_positive_rate_ci95_high": 0.591,
+      "cloud_obscured_passes": 26.33
+    },
+    {
+      "cloud_pass_prob": 0.27,
+      "science_retention_pct": 100.0,
+      "science_retention_ci95_low": 100.0,
+      "science_retention_ci95_high": 100.0,
+      "false_positive_rate_pct": 0.44,
+      "false_positive_rate_ci95_low": 0.296,
+      "false_positive_rate_ci95_high": 0.585,
+      "cloud_obscured_passes": 32.76
+    },
+    {
+      "cloud_pass_prob": 0.32,
+      "science_retention_pct": 99.952,
+      "science_retention_ci95_low": 99.859,
+      "science_retention_ci95_high": 100.046,
+      "false_positive_rate_pct": 0.431,
+      "false_positive_rate_ci95_low": 0.276,
+      "false_positive_rate_ci95_high": 0.586,
+      "cloud_obscured_passes": 39.48
+    },
+    {
+      "cloud_pass_prob": 0.37,
+      "science_retention_pct": 100.0,
+      "science_retention_ci95_low": 100.0,
+      "science_retention_ci95_high": 100.0,
+      "false_positive_rate_pct": 0.311,
+      "false_positive_rate_ci95_low": 0.195,
+      "false_positive_rate_ci95_high": 0.426,
+      "cloud_obscured_passes": 45.68
+    },
+    {
+      "cloud_pass_prob": 0.43,
+      "science_retention_pct": 99.905,
+      "science_retention_ci95_low": 99.773,
+      "science_retention_ci95_high": 100.036,
+      "false_positive_rate_pct": 0.345,
+      "false_positive_rate_ci95_low": 0.211,
+      "false_positive_rate_ci95_high": 0.478,
+      "cloud_obscured_passes": 52.23
+    },
+    {
+      "cloud_pass_prob": 0.48,
+      "science_retention_pct": 99.952,
+      "science_retention_ci95_low": 99.859,
+      "science_retention_ci95_high": 100.046,
+      "false_positive_rate_pct": 0.345,
+      "false_positive_rate_ci95_low": 0.213,
+      "false_positive_rate_ci95_high": 0.477,
+      "cloud_obscured_passes": 58.77
+    },
+    {
+      "cloud_pass_prob": 0.53,
+      "science_retention_pct": 100.0,
+      "science_retention_ci95_low": 100.0,
+      "science_retention_ci95_high": 100.0,
+      "false_positive_rate_pct": 0.32,
+      "false_positive_rate_ci95_low": 0.185,
+      "false_positive_rate_ci95_high": 0.456,
+      "cloud_obscured_passes": 65.1
+    },
+    {
+      "cloud_pass_prob": 0.59,
+      "science_retention_pct": 99.905,
+      "science_retention_ci95_low": 99.773,
+      "science_retention_ci95_high": 100.036,
+      "false_positive_rate_pct": 0.484,
+      "false_positive_rate_ci95_low": 0.314,
+      "false_positive_rate_ci95_high": 0.655,
+      "cloud_obscured_passes": 70.62
+    },
+    {
+      "cloud_pass_prob": 0.64,
+      "science_retention_pct": 99.905,
+      "science_retention_ci95_low": 99.773,
+      "science_retention_ci95_high": 100.036,
+      "false_positive_rate_pct": 0.394,
+      "false_positive_rate_ci95_low": 0.237,
+      "false_positive_rate_ci95_high": 0.55,
+      "cloud_obscured_passes": 77.1
+    },
+    {
+      "cloud_pass_prob": 0.7,
+      "science_retention_pct": 99.81,
+      "science_retention_ci95_low": 99.626,
+      "science_retention_ci95_high": 99.993,
+      "false_positive_rate_pct": 0.359,
+      "false_positive_rate_ci95_low": 0.221,
+      "false_positive_rate_ci95_high": 0.498,
+      "cloud_obscured_passes": 83.08
+    },
+    {
+      "cloud_pass_prob": 0.75,
+      "science_retention_pct": 99.762,
+      "science_retention_ci95_low": 99.557,
+      "science_retention_ci95_high": 99.966,
+      "false_positive_rate_pct": 0.463,
+      "false_positive_rate_ci95_low": 0.319,
+      "false_positive_rate_ci95_high": 0.607,
+      "cloud_obscured_passes": 89.37
+    }
+  ],
+  "artifacts": {
+    "curves_png": "outputs/additional_ablation_curves.png"
+  }
+}

@@ -6,8 +6,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from masfe_core import Config, MASFEPolicy
-from masfe_simulation import (
+from cascade.core import CSC_ALERT_THRESHOLD_DEFAULT, Config, CASCADEPolicy
+from cascade.simulation import (
     ALERT_THRESH_SWEEP,
     build_datasets,
     make_data,
@@ -38,16 +38,16 @@ def test_simulate_small_seeded_case_remains_finite_and_more_efficient_than_raw()
     data = make_data(n_patches=32, n_t=40, n_dis=4, n_benign=2, seed=11, cloud_pass_prob=0.15)
 
     raw = simulate("RAW_DUMP", None, data, cfg, outer_seed=11)
-    masfe = simulate("MASFE_MDP", MASFEPolicy(), data, cfg, outer_seed=11)
+    cascade = simulate("CASCADE_MDP", CASCADEPolicy(), data, cfg, outer_seed=11)
 
     assert sum(raw["action_dist"].values()) == data["n_t"]
-    assert sum(masfe["action_dist"].values()) == data["n_t"]
+    assert sum(cascade["action_dist"].values()) == data["n_t"]
     assert np.isfinite(raw["energy"])
-    assert np.isfinite(masfe["data_mb"])
-    assert np.isfinite(masfe["min_batt"])
-    assert np.isfinite(masfe["seasonal_average_compute_pct"])
-    assert masfe["energy"] < raw["energy"]
-    assert masfe["data_mb"] < raw["data_mb"]
+    assert np.isfinite(cascade["data_mb"])
+    assert np.isfinite(cascade["min_batt"])
+    assert np.isfinite(cascade["seasonal_average_compute_pct"])
+    assert cascade["energy"] < raw["energy"]
+    assert cascade["data_mb"] < raw["data_mb"]
 
 
 def test_reduced_monte_carlo_and_roc_runs_keep_expected_schema_and_direction() -> None:
@@ -74,16 +74,20 @@ def test_reduced_monte_carlo_and_roc_runs_keep_expected_schema_and_direction() -
 
     assert metrics["monte_carlo"]["n_seeds"] == 4
     assert metrics["resolution_pyramid"]["screen_gsd_m"] == 30.0
-    assert metrics["monte_carlo"]["policy_summary"]["MASFE_MDP"]["seasonal_average_compute_pct_mean"] < metrics[
+    assert metrics["monte_carlo"]["policy_summary"]["CASCADE_MDP"]["seasonal_average_compute_pct_mean"] < metrics[
         "monte_carlo"
     ]["policy_summary"]["FIXED_ONBOARD"]["seasonal_average_compute_pct_mean"]
     assert metrics["downlink_reduction_vs_raw_pct"] > 0.0
 
     thresholds = {point["threshold"]: point for point in roc_metrics["thresholds"]}
-    assert roc_metrics["operating_point_threshold"] == 0.55
+    assert roc_metrics["operating_point_threshold"] == pytest.approx(CSC_ALERT_THRESHOLD_DEFAULT)
     assert [point["threshold"] for point in roc_metrics["thresholds"]] == ALERT_THRESH_SWEEP
-    assert thresholds[0.40]["false_positive_rate_pct"] >= thresholds[0.55]["false_positive_rate_pct"]
-    assert thresholds[0.55]["science_retention_pct"] >= thresholds[0.70]["science_retention_pct"]
+    assert thresholds[0.40]["false_positive_rate_pct"] >= thresholds[round(CSC_ALERT_THRESHOLD_DEFAULT, 3)][
+        "false_positive_rate_pct"
+    ]
+    assert thresholds[round(CSC_ALERT_THRESHOLD_DEFAULT, 3)]["science_retention_pct"] >= thresholds[
+        max(ALERT_THRESH_SWEEP)
+    ]["science_retention_pct"]
 
 
 @pytest.mark.slow
@@ -94,7 +98,11 @@ def test_plot_writers_create_png_files_when_matplotlib_is_available(tmp_path: Pa
     roc_metrics = {
         "thresholds": [
             {"threshold": 0.40, "science_retention_pct": 99.0, "false_positive_rate_pct": 2.0},
-            {"threshold": 0.55, "science_retention_pct": 100.0, "false_positive_rate_pct": 1.5},
+            {
+                "threshold": round(CSC_ALERT_THRESHOLD_DEFAULT, 3),
+                "science_retention_pct": 100.0,
+                "false_positive_rate_pct": 1.5,
+            },
         ]
     }
 

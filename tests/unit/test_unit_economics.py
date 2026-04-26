@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from unit_economics import (
+from cascade.economics import (
     MILESTONES,
     carbon_mrv_musd,
     contribution_margin_per_ha,

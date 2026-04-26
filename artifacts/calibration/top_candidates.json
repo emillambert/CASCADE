@@ -1,0 +1,4464 @@
+{
+  "top_candidates": [
+    {
+      "parameters": {
+        "evi_weight": 0.4,
+        "lst_weight": 0.35,
+        "ndwi_weight": 0.25,
+        "evi_saturation": 5.0,
+        "lst_saturation": 4.0,
+        "ndwi_saturation": 4.0,
+        "csc_alert_thr": 0.55
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 98.42,
+            "std": 1.084,
+            "ci95_low": 98.146,
+            "ci95_high": 98.694
+          },
+          "false_positive_rate_pct": {
+            "mean": 1.58,
+            "std": 1.084,
+            "ci95_low": 1.306,
+            "ci95_high": 1.854
+          },
+          "n_priority_alerts": {
+            "mean": 2.05,
+            "std": 0.723,
+            "ci95_low": 1.867,
+            "ci95_high": 2.233
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 151.996,
+            "std": 20.773,
+            "ci95_low": 146.74,
+            "ci95_high": 157.252
+          },
+          "energy_wh": {
+            "mean": 5.929,
+            "std": 0.047,
+            "ci95_low": 5.917,
+            "ci95_high": 5.941
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 97.921,
+            "std": 1.216,
+            "ci95_low": 97.388,
+            "ci95_high": 98.454
+          },
+          "false_positive_rate_pct": {
+            "mean": 2.079,
+            "std": 1.216,
+            "ci95_low": 1.546,
+            "ci95_high": 2.612
+          },
+          "n_priority_alerts": {
+            "mean": 2.3,
+            "std": 0.733,
+            "ci95_low": 1.979,
+            "ci95_high": 2.621
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 152.74,
+            "std": 16.707,
+            "ci95_low": 145.418,
+            "ci95_high": 160.062
+          },
+          "energy_wh": {
+            "mean": 5.928,
+            "std": 0.032,
+            "ci95_low": 5.914,
+            "ci95_high": 5.942
+          }
+        },
+        "test": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 98.479,
+            "std": 1.153,
+            "ci95_low": 97.974,
+            "ci95_high": 98.985
+          },
+          "false_positive_rate_pct": {
+            "mean": 1.521,
+            "std": 1.153,
+            "ci95_low": 1.015,
+            "ci95_high": 2.026
+          },
+          "n_priority_alerts": {
+            "mean": 2.25,
+            "std": 0.716,
+            "ci95_low": 1.936,
+            "ci95_high": 2.564
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 37.3,
+            "std": 5.459,
+            "ci95_low": 34.908,
+            "ci95_high": 39.692
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.389,
+            "std": 1.24,
+            "ci95_low": 48.845,
+            "ci95_high": 49.933
+          },
+          "data_mb": {
+            "mean": 152.692,
+            "std": 17.138,
+            "ci95_low": 145.181,
+            "ci95_high": 160.203
+          },
+          "energy_wh": {
+            "mean": 5.94,
+            "std": 0.047,
+            "ci95_low": 5.919,
+            "ci95_high": 5.961
+          }
+        }
+      },
+      "distance_from_defaults": 0.0,
+      "source_stage": "baseline",
+      "validation_fp_improvement_pct_points": 0.0,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 152.74,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.928,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        2.079,
+        152.74,
+        49.056,
+        5.928,
+        0.0
+      ],
+      "promotion_status": {
+        "promoted": false,
+        "reason": "current live defaults are the baseline reference candidate"
+      }
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.577777,
+        "lst_weight": 0.246039,
+        "ndwi_weight": 0.176184,
+        "evi_saturation": 7.0,
+        "lst_saturation": 4.956382,
+        "ndwi_saturation": 6.0,
+        "csc_alert_thr": 0.615018
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.303,
+            "std": 0.909,
+            "ci95_low": 99.073,
+            "ci95_high": 99.534
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.697,
+            "std": 0.909,
+            "ci95_low": 0.466,
+            "ci95_high": 0.927
+          },
+          "n_priority_alerts": {
+            "mean": 1.867,
+            "std": 0.623,
+            "ci95_low": 1.709,
+            "ci95_high": 2.024
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 136.353,
+            "std": 15.718,
+            "ci95_low": 132.375,
+            "ci95_high": 140.33
+          },
+          "energy_wh": {
+            "mean": 5.926,
+            "std": 0.045,
+            "ci95_low": 5.914,
+            "ci95_high": 5.937
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.225,
+            "std": 0.979,
+            "ci95_low": 98.796,
+            "ci95_high": 99.654
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.775,
+            "std": 0.979,
+            "ci95_low": 0.346,
+            "ci95_high": 1.204
+          },
+          "n_priority_alerts": {
+            "mean": 1.8,
+            "std": 0.523,
+            "ci95_low": 1.571,
+            "ci95_high": 2.029
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 135.53,
+            "std": 12.229,
+            "ci95_low": 130.17,
+            "ci95_high": 140.89
+          },
+          "energy_wh": {
+            "mean": 5.919,
+            "std": 0.029,
+            "ci95_low": 5.907,
+            "ci95_high": 5.932
+          }
+        }
+      },
+      "distance_from_defaults": 1.711377,
+      "source_stage": "local",
+      "candidate_index": 14,
+      "parent_rank": 17,
+      "parent_parameters": {
+        "evi_weight": 0.545473,
+        "lst_weight": 0.241689,
+        "ndwi_weight": 0.212838,
+        "evi_saturation": 6.957215,
+        "lst_saturation": 4.058344,
+        "ndwi_saturation": 4.854577,
+        "csc_alert_thr": 0.609972
+      },
+      "validation_fp_improvement_pct_points": 1.304,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 135.53,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.919,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.775,
+        135.53,
+        49.056,
+        5.919,
+        1.711377
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.526476,
+        "lst_weight": 0.335158,
+        "ndwi_weight": 0.138367,
+        "evi_saturation": 6.303721,
+        "lst_saturation": 4.017809,
+        "ndwi_saturation": 5.478241,
+        "csc_alert_thr": 0.69697
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.393,
+            "std": 0.807,
+            "ci95_low": 99.189,
+            "ci95_high": 99.597
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.607,
+            "std": 0.807,
+            "ci95_low": 0.403,
+            "ci95_high": 0.811
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 140.969,
+            "std": 17.519,
+            "ci95_low": 136.536,
+            "ci95_high": 145.402
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.213,
+            "std": 0.907,
+            "ci95_low": 98.815,
+            "ci95_high": 99.61
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.787,
+            "std": 0.907,
+            "ci95_low": 0.39,
+            "ci95_high": 1.185
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 140.95,
+            "std": 12.792,
+            "ci95_low": 135.344,
+            "ci95_high": 146.556
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.37761,
+      "source_stage": "local",
+      "candidate_index": 14,
+      "parent_rank": 12,
+      "parent_parameters": {
+        "evi_weight": 0.534556,
+        "lst_weight": 0.3015,
+        "ndwi_weight": 0.163944,
+        "evi_saturation": 5.225972,
+        "lst_saturation": 3.81653,
+        "ndwi_saturation": 4.469001,
+        "csc_alert_thr": 0.681837
+      },
+      "validation_fp_improvement_pct_points": 1.292,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 140.95,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.787,
+        140.95,
+        49.056,
+        5.92,
+        1.37761
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.608271,
+        "lst_weight": 0.231757,
+        "ndwi_weight": 0.159972,
+        "evi_saturation": 6.132115,
+        "lst_saturation": 5.644804,
+        "ndwi_saturation": 2.516109,
+        "csc_alert_thr": 0.681838
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.15,
+            "std": 0.963,
+            "ci95_low": 98.906,
+            "ci95_high": 99.394
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.85,
+            "std": 0.963,
+            "ci95_low": 0.606,
+            "ci95_high": 1.094
+          },
+          "n_priority_alerts": {
+            "mean": 1.867,
+            "std": 0.623,
+            "ci95_low": 1.709,
+            "ci95_high": 2.024
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 138.573,
+            "std": 15.839,
+            "ci95_low": 134.565,
+            "ci95_high": 142.581
+          },
+          "energy_wh": {
+            "mean": 5.926,
+            "std": 0.045,
+            "ci95_low": 5.914,
+            "ci95_high": 5.937
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.182,
+            "std": 0.936,
+            "ci95_low": 98.772,
+            "ci95_high": 99.592
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.818,
+            "std": 0.936,
+            "ci95_low": 0.408,
+            "ci95_high": 1.228
+          },
+          "n_priority_alerts": {
+            "mean": 1.8,
+            "std": 0.523,
+            "ci95_low": 1.571,
+            "ci95_high": 2.029
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 138.32,
+            "std": 12.713,
+            "ci95_low": 132.748,
+            "ci95_high": 143.892
+          },
+          "energy_wh": {
+            "mean": 5.919,
+            "std": 0.029,
+            "ci95_low": 5.907,
+            "ci95_high": 5.932
+          }
+        }
+      },
+      "distance_from_defaults": 1.864597,
+      "source_stage": "local",
+      "candidate_index": 0,
+      "parent_rank": 8,
+      "parent_parameters": {
+        "evi_weight": 0.539772,
+        "lst_weight": 0.274802,
+        "ndwi_weight": 0.185426,
+        "evi_saturation": 5.480612,
+        "lst_saturation": 5.951147,
+        "ndwi_saturation": 2.826186,
+        "csc_alert_thr": 0.688058
+      },
+      "validation_fp_improvement_pct_points": 1.261,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 138.32,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.919,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.818,
+        138.32,
+        49.056,
+        5.919,
+        1.864597
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.562808,
+        "lst_weight": 0.263795,
+        "ndwi_weight": 0.173397,
+        "evi_saturation": 5.828713,
+        "lst_saturation": 5.388412,
+        "ndwi_saturation": 4.28652,
+        "csc_alert_thr": 0.686731
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.148,
+            "std": 0.974,
+            "ci95_low": 98.902,
+            "ci95_high": 99.395
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.852,
+            "std": 0.974,
+            "ci95_low": 0.605,
+            "ci95_high": 1.098
+          },
+          "n_priority_alerts": {
+            "mean": 1.867,
+            "std": 0.623,
+            "ci95_low": 1.709,
+            "ci95_high": 2.024
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 137.223,
+            "std": 15.706,
+            "ci95_low": 133.248,
+            "ci95_high": 141.197
+          },
+          "energy_wh": {
+            "mean": 5.926,
+            "std": 0.045,
+            "ci95_low": 5.914,
+            "ci95_high": 5.937
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.16,
+            "std": 0.966,
+            "ci95_low": 98.737,
+            "ci95_high": 99.584
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.84,
+            "std": 0.966,
+            "ci95_low": 0.416,
+            "ci95_high": 1.263
+          },
+          "n_priority_alerts": {
+            "mean": 1.8,
+            "std": 0.523,
+            "ci95_low": 1.571,
+            "ci95_high": 2.029
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 136.88,
+            "std": 12.023,
+            "ci95_low": 131.611,
+            "ci95_high": 142.149
+          },
+          "energy_wh": {
+            "mean": 5.919,
+            "std": 0.029,
+            "ci95_low": 5.907,
+            "ci95_high": 5.932
+          }
+        }
+      },
+      "distance_from_defaults": 1.36586,
+      "source_stage": "local",
+      "candidate_index": 11,
+      "parent_rank": 2,
+      "parent_parameters": {
+        "evi_weight": 0.527672,
+        "lst_weight": 0.289561,
+        "ndwi_weight": 0.182767,
+        "evi_saturation": 5.722348,
+        "lst_saturation": 5.821718,
+        "ndwi_saturation": 4.382698,
+        "csc_alert_thr": 0.628077
+      },
+      "validation_fp_improvement_pct_points": 1.239,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 136.88,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.919,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.84,
+        136.88,
+        49.056,
+        5.919,
+        1.36586
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.592227,
+        "lst_weight": 0.246212,
+        "ndwi_weight": 0.16156,
+        "evi_saturation": 5.766826,
+        "lst_saturation": 5.945789,
+        "ndwi_saturation": 3.21339,
+        "csc_alert_thr": 0.7
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.125,
+            "std": 0.992,
+            "ci95_low": 98.874,
+            "ci95_high": 99.376
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.875,
+            "std": 0.992,
+            "ci95_low": 0.624,
+            "ci95_high": 1.126
+          },
+          "n_priority_alerts": {
+            "mean": 1.867,
+            "std": 0.623,
+            "ci95_low": 1.709,
+            "ci95_high": 2.024
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 137.223,
+            "std": 15.594,
+            "ci95_low": 133.277,
+            "ci95_high": 141.169
+          },
+          "energy_wh": {
+            "mean": 5.926,
+            "std": 0.045,
+            "ci95_low": 5.914,
+            "ci95_high": 5.937
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.158,
+            "std": 0.964,
+            "ci95_low": 98.736,
+            "ci95_high": 99.581
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.842,
+            "std": 0.964,
+            "ci95_low": 0.419,
+            "ci95_high": 1.264
+          },
+          "n_priority_alerts": {
+            "mean": 1.8,
+            "std": 0.523,
+            "ci95_low": 1.571,
+            "ci95_high": 2.029
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 136.7,
+            "std": 12.0,
+            "ci95_low": 131.441,
+            "ci95_high": 141.959
+          },
+          "energy_wh": {
+            "mean": 5.919,
+            "std": 0.029,
+            "ci95_low": 5.907,
+            "ci95_high": 5.932
+          }
+        }
+      },
+      "distance_from_defaults": 1.72092,
+      "source_stage": "local",
+      "candidate_index": 8,
+      "parent_rank": 8,
+      "parent_parameters": {
+        "evi_weight": 0.539772,
+        "lst_weight": 0.274802,
+        "ndwi_weight": 0.185426,
+        "evi_saturation": 5.480612,
+        "lst_saturation": 5.951147,
+        "ndwi_saturation": 2.826186,
+        "csc_alert_thr": 0.688058
+      },
+      "validation_fp_improvement_pct_points": 1.237,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 136.7,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.919,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.842,
+        136.7,
+        49.056,
+        5.919,
+        1.72092
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.55724,
+        "lst_weight": 0.33339,
+        "ndwi_weight": 0.10937,
+        "evi_saturation": 6.79946,
+        "lst_saturation": 4.197001,
+        "ndwi_saturation": 4.244934,
+        "csc_alert_thr": 0.666155
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.317,
+            "std": 0.837,
+            "ci95_low": 99.105,
+            "ci95_high": 99.529
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.683,
+            "std": 0.837,
+            "ci95_low": 0.471,
+            "ci95_high": 0.895
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 142.769,
+            "std": 17.99,
+            "ci95_low": 138.217,
+            "ci95_high": 147.321
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.158,
+            "std": 0.884,
+            "ci95_low": 98.771,
+            "ci95_high": 99.546
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.842,
+            "std": 0.884,
+            "ci95_low": 0.454,
+            "ci95_high": 1.229
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 142.39,
+            "std": 13.815,
+            "ci95_low": 136.335,
+            "ci95_high": 148.445
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.172039,
+      "source_stage": "local",
+      "candidate_index": 7,
+      "parent_rank": 14,
+      "parent_parameters": {
+        "evi_weight": 0.529187,
+        "lst_weight": 0.355236,
+        "ndwi_weight": 0.115577,
+        "evi_saturation": 6.569501,
+        "lst_saturation": 3.82464,
+        "ndwi_saturation": 3.961267,
+        "csc_alert_thr": 0.628391
+      },
+      "validation_fp_improvement_pct_points": 1.237,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 142.39,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.842,
+        142.39,
+        49.056,
+        5.92,
+        1.172039
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.55437,
+        "lst_weight": 0.247166,
+        "ndwi_weight": 0.198464,
+        "evi_saturation": 5.634373,
+        "lst_saturation": 5.669351,
+        "ndwi_saturation": 5.171654,
+        "csc_alert_thr": 0.673893
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.144,
+            "std": 0.986,
+            "ci95_low": 98.895,
+            "ci95_high": 99.393
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.856,
+            "std": 0.986,
+            "ci95_low": 0.607,
+            "ci95_high": 1.105
+          },
+          "n_priority_alerts": {
+            "mean": 1.867,
+            "std": 0.623,
+            "ci95_low": 1.709,
+            "ci95_high": 2.024
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 137.463,
+            "std": 15.673,
+            "ci95_low": 133.497,
+            "ci95_high": 141.429
+          },
+          "energy_wh": {
+            "mean": 5.926,
+            "std": 0.045,
+            "ci95_low": 5.914,
+            "ci95_high": 5.937
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 99.762,
+            "std": 1.065,
+            "ci95_low": 99.295,
+            "ci95_high": 100.229
+          },
+          "alert_precision_pct": {
+            "mean": 99.157,
+            "std": 0.97,
+            "ci95_low": 98.732,
+            "ci95_high": 99.582
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.843,
+            "std": 0.97,
+            "ci95_low": 0.418,
+            "ci95_high": 1.268
+          },
+          "n_priority_alerts": {
+            "mean": 1.8,
+            "std": 0.523,
+            "ci95_low": 1.571,
+            "ci95_high": 2.029
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 137.33,
+            "std": 12.199,
+            "ci95_low": 131.983,
+            "ci95_high": 142.677
+          },
+          "energy_wh": {
+            "mean": 5.919,
+            "std": 0.029,
+            "ci95_low": 5.907,
+            "ci95_high": 5.932
+          }
+        }
+      },
+      "distance_from_defaults": 1.558843,
+      "source_stage": "local",
+      "candidate_index": 14,
+      "parent_rank": 3,
+      "parent_parameters": {
+        "evi_weight": 0.528073,
+        "lst_weight": 0.275127,
+        "ndwi_weight": 0.1968,
+        "evi_saturation": 5.709425,
+        "lst_saturation": 5.019338,
+        "ndwi_saturation": 5.397644,
+        "csc_alert_thr": 0.670759
+      },
+      "validation_fp_improvement_pct_points": 1.236,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 137.33,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.919,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.843,
+        137.33,
+        49.056,
+        5.919,
+        1.558843
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.651848,
+        "lst_weight": 0.171909,
+        "ndwi_weight": 0.176243,
+        "evi_saturation": 7.0,
+        "lst_saturation": 6.0,
+        "ndwi_saturation": 5.515825,
+        "csc_alert_thr": 0.574745
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.175,
+            "std": 0.903,
+            "ci95_low": 98.947,
+            "ci95_high": 99.404
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.825,
+            "std": 0.903,
+            "ci95_low": 0.596,
+            "ci95_high": 1.053
+          },
+          "n_priority_alerts": {
+            "mean": 1.867,
+            "std": 0.623,
+            "ci95_low": 1.709,
+            "ci95_high": 2.024
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 142.143,
+            "std": 17.052,
+            "ci95_low": 137.828,
+            "ci95_high": 146.457
+          },
+          "energy_wh": {
+            "mean": 5.926,
+            "std": 0.045,
+            "ci95_low": 5.914,
+            "ci95_high": 5.937
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.157,
+            "std": 0.882,
+            "ci95_low": 98.77,
+            "ci95_high": 99.543
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.843,
+            "std": 0.882,
+            "ci95_low": 0.457,
+            "ci95_high": 1.23
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 142.463,
+            "std": 13.367,
+            "ci95_low": 136.605,
+            "ci95_high": 148.321
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.029,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.865136,
+      "source_stage": "local",
+      "candidate_index": 7,
+      "parent_rank": 5,
+      "parent_parameters": {
+        "evi_weight": 0.561642,
+        "lst_weight": 0.227755,
+        "ndwi_weight": 0.210603,
+        "evi_saturation": 6.820949,
+        "lst_saturation": 4.820522,
+        "ndwi_saturation": 5.477756,
+        "csc_alert_thr": 0.563575
+      },
+      "validation_fp_improvement_pct_points": 1.236,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 142.463,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.843,
+        142.463,
+        49.056,
+        5.92,
+        1.865136
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.525053,
+        "lst_weight": 0.370158,
+        "ndwi_weight": 0.104789,
+        "evi_saturation": 6.690761,
+        "lst_saturation": 3.979689,
+        "ndwi_saturation": 4.173675,
+        "csc_alert_thr": 0.7
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.409,
+            "std": 0.811,
+            "ci95_low": 99.203,
+            "ci95_high": 99.614
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.591,
+            "std": 0.811,
+            "ci95_low": 0.386,
+            "ci95_high": 0.797
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 140.609,
+            "std": 17.552,
+            "ci95_low": 136.168,
+            "ci95_high": 145.051
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.142,
+            "std": 0.899,
+            "ci95_low": 98.748,
+            "ci95_high": 99.536
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.858,
+            "std": 0.899,
+            "ci95_low": 0.464,
+            "ci95_high": 1.252
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 140.86,
+            "std": 12.798,
+            "ci95_low": 135.251,
+            "ci95_high": 146.469
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.17707,
+      "source_stage": "local",
+      "candidate_index": 8,
+      "parent_rank": 14,
+      "parent_parameters": {
+        "evi_weight": 0.529187,
+        "lst_weight": 0.355236,
+        "ndwi_weight": 0.115577,
+        "evi_saturation": 6.569501,
+        "lst_saturation": 3.82464,
+        "ndwi_saturation": 3.961267,
+        "csc_alert_thr": 0.628391
+      },
+      "validation_fp_improvement_pct_points": 1.221,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 140.86,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.858,
+        140.86,
+        49.056,
+        5.92,
+        1.17707
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.499582,
+        "lst_weight": 0.293726,
+        "ndwi_weight": 0.206692,
+        "evi_saturation": 5.883944,
+        "lst_saturation": 4.387054,
+        "ndwi_saturation": 6.0,
+        "csc_alert_thr": 0.68183
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.214,
+            "std": 0.934,
+            "ci95_low": 98.978,
+            "ci95_high": 99.45
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.786,
+            "std": 0.934,
+            "ci95_low": 0.55,
+            "ci95_high": 1.022
+          },
+          "n_priority_alerts": {
+            "mean": 1.883,
+            "std": 0.64,
+            "ci95_low": 1.721,
+            "ci95_high": 2.045
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 135.669,
+            "std": 15.198,
+            "ci95_low": 131.824,
+            "ci95_high": 139.515
+          },
+          "energy_wh": {
+            "mean": 5.926,
+            "std": 0.045,
+            "ci95_low": 5.915,
+            "ci95_high": 5.937
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 99.762,
+            "std": 1.065,
+            "ci95_low": 99.295,
+            "ci95_high": 100.229
+          },
+          "alert_precision_pct": {
+            "mean": 99.14,
+            "std": 0.977,
+            "ci95_low": 98.711,
+            "ci95_high": 99.568
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.86,
+            "std": 0.977,
+            "ci95_low": 0.432,
+            "ci95_high": 1.289
+          },
+          "n_priority_alerts": {
+            "mean": 1.8,
+            "std": 0.523,
+            "ci95_low": 1.571,
+            "ci95_high": 2.029
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 135.71,
+            "std": 11.371,
+            "ci95_low": 130.727,
+            "ci95_high": 140.693
+          },
+          "energy_wh": {
+            "mean": 5.919,
+            "std": 0.029,
+            "ci95_low": 5.907,
+            "ci95_high": 5.932
+          }
+        }
+      },
+      "distance_from_defaults": 1.412148,
+      "source_stage": "local",
+      "candidate_index": 9,
+      "parent_rank": 1,
+      "parent_parameters": {
+        "evi_weight": 0.49748,
+        "lst_weight": 0.310131,
+        "ndwi_weight": 0.192389,
+        "evi_saturation": 6.428243,
+        "lst_saturation": 4.416604,
+        "ndwi_saturation": 5.732697,
+        "csc_alert_thr": 0.648902
+      },
+      "validation_fp_improvement_pct_points": 1.219,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 135.71,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.919,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.86,
+        135.71,
+        49.056,
+        5.919,
+        1.412148
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.570881,
+        "lst_weight": 0.251954,
+        "ndwi_weight": 0.177165,
+        "evi_saturation": 5.232325,
+        "lst_saturation": 4.612193,
+        "ndwi_saturation": 5.43603,
+        "csc_alert_thr": 0.691942
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.204,
+            "std": 0.878,
+            "ci95_low": 98.981,
+            "ci95_high": 99.426
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.796,
+            "std": 0.878,
+            "ci95_low": 0.574,
+            "ci95_high": 1.019
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 146.879,
+            "std": 20.005,
+            "ci95_low": 141.817,
+            "ci95_high": 151.941
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.137,
+            "std": 0.829,
+            "ci95_low": 98.774,
+            "ci95_high": 99.5
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.863,
+            "std": 0.829,
+            "ci95_low": 0.5,
+            "ci95_high": 1.226
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 147.61,
+            "std": 15.56,
+            "ci95_low": 140.791,
+            "ci95_high": 154.429
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.373424,
+      "source_stage": "local",
+      "candidate_index": 8,
+      "parent_rank": 12,
+      "parent_parameters": {
+        "evi_weight": 0.534556,
+        "lst_weight": 0.3015,
+        "ndwi_weight": 0.163944,
+        "evi_saturation": 5.225972,
+        "lst_saturation": 3.81653,
+        "ndwi_saturation": 4.469001,
+        "csc_alert_thr": 0.681837
+      },
+      "validation_fp_improvement_pct_points": 1.216,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 147.61,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.863,
+        147.61,
+        49.056,
+        5.92,
+        1.373424
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.553267,
+        "lst_weight": 0.334046,
+        "ndwi_weight": 0.112686,
+        "evi_saturation": 7.0,
+        "lst_saturation": 4.156184,
+        "ndwi_saturation": 4.429993,
+        "csc_alert_thr": 0.63978
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.276,
+            "std": 0.88,
+            "ci95_low": 99.054,
+            "ci95_high": 99.499
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.724,
+            "std": 0.88,
+            "ci95_low": 0.501,
+            "ci95_high": 0.946
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 144.629,
+            "std": 18.721,
+            "ci95_low": 139.892,
+            "ci95_high": 149.366
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.116,
+            "std": 0.839,
+            "ci95_low": 98.748,
+            "ci95_high": 99.484
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.884,
+            "std": 0.839,
+            "ci95_low": 0.516,
+            "ci95_high": 1.252
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 145.09,
+            "std": 14.691,
+            "ci95_low": 138.652,
+            "ci95_high": 151.528
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.152344,
+      "source_stage": "local",
+      "candidate_index": 14,
+      "parent_rank": 14,
+      "parent_parameters": {
+        "evi_weight": 0.529187,
+        "lst_weight": 0.355236,
+        "ndwi_weight": 0.115577,
+        "evi_saturation": 6.569501,
+        "lst_saturation": 3.82464,
+        "ndwi_saturation": 3.961267,
+        "csc_alert_thr": 0.628391
+      },
+      "validation_fp_improvement_pct_points": 1.195,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 145.09,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.884,
+        145.09,
+        49.056,
+        5.92,
+        1.152344
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.453011,
+        "lst_weight": 0.394215,
+        "ndwi_weight": 0.152774,
+        "evi_saturation": 7.0,
+        "lst_saturation": 3.946688,
+        "ndwi_saturation": 6.0,
+        "csc_alert_thr": 0.658686
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.408,
+            "std": 0.841,
+            "ci95_low": 99.195,
+            "ci95_high": 99.62
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.592,
+            "std": 0.841,
+            "ci95_low": 0.38,
+            "ci95_high": 0.805
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 138.359,
+            "std": 16.741,
+            "ci95_low": 134.123,
+            "ci95_high": 142.595
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 99.762,
+            "std": 1.065,
+            "ci95_low": 99.295,
+            "ci95_high": 100.229
+          },
+          "alert_precision_pct": {
+            "mean": 99.112,
+            "std": 0.926,
+            "ci95_low": 98.706,
+            "ci95_high": 99.518
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.888,
+            "std": 0.926,
+            "ci95_low": 0.482,
+            "ci95_high": 1.294
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 138.34,
+            "std": 12.468,
+            "ci95_low": 132.875,
+            "ci95_high": 143.805
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.470067,
+      "source_stage": "local",
+      "candidate_index": 4,
+      "parent_rank": 15,
+      "parent_parameters": {
+        "evi_weight": 0.43816,
+        "lst_weight": 0.398347,
+        "ndwi_weight": 0.163493,
+        "evi_saturation": 5.585454,
+        "lst_saturation": 4.031011,
+        "ndwi_saturation": 5.781127,
+        "csc_alert_thr": 0.634396
+      },
+      "validation_fp_improvement_pct_points": 1.191,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 138.34,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.888,
+        138.34,
+        49.056,
+        5.92,
+        1.470067
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.54945,
+        "lst_weight": 0.287797,
+        "ndwi_weight": 0.162753,
+        "evi_saturation": 5.583001,
+        "lst_saturation": 4.494023,
+        "ndwi_saturation": 4.503108,
+        "csc_alert_thr": 0.696521
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.187,
+            "std": 0.899,
+            "ci95_low": 98.96,
+            "ci95_high": 99.415
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.813,
+            "std": 0.899,
+            "ci95_low": 0.585,
+            "ci95_high": 1.04
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 144.149,
+            "std": 18.618,
+            "ci95_low": 139.438,
+            "ci95_high": 148.86
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.11,
+            "std": 0.849,
+            "ci95_low": 98.738,
+            "ci95_high": 99.482
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.89,
+            "std": 0.849,
+            "ci95_low": 0.518,
+            "ci95_high": 1.262
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 144.28,
+            "std": 13.951,
+            "ci95_low": 138.166,
+            "ci95_high": 150.394
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.153187,
+      "source_stage": "local",
+      "candidate_index": 6,
+      "parent_rank": 12,
+      "parent_parameters": {
+        "evi_weight": 0.534556,
+        "lst_weight": 0.3015,
+        "ndwi_weight": 0.163944,
+        "evi_saturation": 5.225972,
+        "lst_saturation": 3.81653,
+        "ndwi_saturation": 4.469001,
+        "csc_alert_thr": 0.681837
+      },
+      "validation_fp_improvement_pct_points": 1.189,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 144.28,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.89,
+        144.28,
+        49.056,
+        5.92,
+        1.153187
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.580235,
+        "lst_weight": 0.319765,
+        "ndwi_weight": 0.1,
+        "evi_saturation": 7.0,
+        "lst_saturation": 3.13431,
+        "ndwi_saturation": 4.657651,
+        "csc_alert_thr": 0.674125
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.217,
+            "std": 0.811,
+            "ci95_low": 99.012,
+            "ci95_high": 99.422
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.783,
+            "std": 0.811,
+            "ci95_low": 0.578,
+            "ci95_high": 0.988
+          },
+          "n_priority_alerts": {
+            "mean": 1.967,
+            "std": 0.637,
+            "ci95_low": 1.806,
+            "ci95_high": 2.128
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 147.673,
+            "std": 20.354,
+            "ci95_low": 142.522,
+            "ci95_high": 152.823
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.916,
+            "ci95_high": 5.939
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.105,
+            "std": 0.856,
+            "ci95_low": 98.73,
+            "ci95_high": 99.48
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.895,
+            "std": 0.856,
+            "ci95_low": 0.52,
+            "ci95_high": 1.27
+          },
+          "n_priority_alerts": {
+            "mean": 1.9,
+            "std": 0.553,
+            "ci95_low": 1.658,
+            "ci95_high": 2.142
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 148.89,
+            "std": 15.864,
+            "ci95_low": 141.937,
+            "ci95_high": 155.843
+          },
+          "energy_wh": {
+            "mean": 5.921,
+            "std": 0.03,
+            "ci95_low": 5.908,
+            "ci95_high": 5.934
+          }
+        }
+      },
+      "distance_from_defaults": 1.555056,
+      "source_stage": "local",
+      "candidate_index": 4,
+      "parent_rank": 14,
+      "parent_parameters": {
+        "evi_weight": 0.529187,
+        "lst_weight": 0.355236,
+        "ndwi_weight": 0.115577,
+        "evi_saturation": 6.569501,
+        "lst_saturation": 3.82464,
+        "ndwi_saturation": 3.961267,
+        "csc_alert_thr": 0.628391
+      },
+      "validation_fp_improvement_pct_points": 1.184,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 148.89,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.921,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.895,
+        148.89,
+        49.056,
+        5.921,
+        1.555056
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.560839,
+        "lst_weight": 0.252988,
+        "ndwi_weight": 0.186174,
+        "evi_saturation": 4.906564,
+        "lst_saturation": 4.784319,
+        "ndwi_saturation": 5.457012,
+        "csc_alert_thr": 0.686745
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.195,
+            "std": 0.861,
+            "ci95_low": 98.977,
+            "ci95_high": 99.412
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.805,
+            "std": 0.861,
+            "ci95_low": 0.588,
+            "ci95_high": 1.023
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 147.749,
+            "std": 20.232,
+            "ci95_low": 142.63,
+            "ci95_high": 152.869
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.105,
+            "std": 0.86,
+            "ci95_low": 98.728,
+            "ci95_high": 99.482
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.895,
+            "std": 0.86,
+            "ci95_low": 0.518,
+            "ci95_high": 1.272
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 149.05,
+            "std": 16.024,
+            "ci95_low": 142.027,
+            "ci95_high": 156.073
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.356515,
+      "source_stage": "local",
+      "candidate_index": 1,
+      "parent_rank": 3,
+      "parent_parameters": {
+        "evi_weight": 0.528073,
+        "lst_weight": 0.275127,
+        "ndwi_weight": 0.1968,
+        "evi_saturation": 5.709425,
+        "lst_saturation": 5.019338,
+        "ndwi_saturation": 5.397644,
+        "csc_alert_thr": 0.670759
+      },
+      "validation_fp_improvement_pct_points": 1.184,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 149.05,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.895,
+        149.05,
+        49.056,
+        5.92,
+        1.356515
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.54154,
+        "lst_weight": 0.287692,
+        "ndwi_weight": 0.170768,
+        "evi_saturation": 5.748989,
+        "lst_saturation": 4.579132,
+        "ndwi_saturation": 5.239725,
+        "csc_alert_thr": 0.675149
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.227,
+            "std": 0.884,
+            "ci95_low": 99.004,
+            "ci95_high": 99.451
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.773,
+            "std": 0.884,
+            "ci95_low": 0.549,
+            "ci95_high": 0.996
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 143.639,
+            "std": 18.095,
+            "ci95_low": 139.061,
+            "ci95_high": 148.218
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.102,
+            "std": 0.855,
+            "ci95_low": 98.727,
+            "ci95_high": 99.477
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.898,
+            "std": 0.855,
+            "ci95_low": 0.523,
+            "ci95_high": 1.273
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 143.92,
+            "std": 13.786,
+            "ci95_low": 137.878,
+            "ci95_high": 149.962
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.304755,
+      "source_stage": "local",
+      "candidate_index": 7,
+      "parent_rank": 3,
+      "parent_parameters": {
+        "evi_weight": 0.528073,
+        "lst_weight": 0.275127,
+        "ndwi_weight": 0.1968,
+        "evi_saturation": 5.709425,
+        "lst_saturation": 5.019338,
+        "ndwi_saturation": 5.397644,
+        "csc_alert_thr": 0.670759
+      },
+      "validation_fp_improvement_pct_points": 1.181,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 143.92,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.898,
+        143.92,
+        49.056,
+        5.92,
+        1.304755
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.49748,
+        "lst_weight": 0.310131,
+        "ndwi_weight": 0.192389,
+        "evi_saturation": 6.428243,
+        "lst_saturation": 4.416604,
+        "ndwi_saturation": 5.732697,
+        "csc_alert_thr": 0.648902
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.237,
+            "std": 0.907,
+            "ci95_low": 99.008,
+            "ci95_high": 99.467
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.763,
+            "std": 0.907,
+            "ci95_low": 0.533,
+            "ci95_high": 0.992
+          },
+          "n_priority_alerts": {
+            "mean": 1.917,
+            "std": 0.619,
+            "ci95_low": 1.76,
+            "ci95_high": 2.073
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 137.153,
+            "std": 15.986,
+            "ci95_low": 133.108,
+            "ci95_high": 141.198
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.045,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 99.762,
+            "std": 1.065,
+            "ci95_low": 99.295,
+            "ci95_high": 100.229
+          },
+          "alert_precision_pct": {
+            "mean": 99.101,
+            "std": 0.935,
+            "ci95_low": 98.692,
+            "ci95_high": 99.511
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.899,
+            "std": 0.935,
+            "ci95_low": 0.489,
+            "ci95_high": 1.308
+          },
+          "n_priority_alerts": {
+            "mean": 1.8,
+            "std": 0.523,
+            "ci95_low": 1.571,
+            "ci95_high": 2.029
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 137.15,
+            "std": 11.594,
+            "ci95_low": 132.069,
+            "ci95_high": 142.231
+          },
+          "energy_wh": {
+            "mean": 5.919,
+            "std": 0.029,
+            "ci95_low": 5.907,
+            "ci95_high": 5.932
+          }
+        }
+      },
+      "distance_from_defaults": 1.347606,
+      "source_stage": "random",
+      "candidate_index": 292,
+      "validation_fp_improvement_pct_points": 1.18,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 137.15,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.919,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.899,
+        137.15,
+        49.056,
+        5.919,
+        1.347606
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.526635,
+        "lst_weight": 0.269347,
+        "ndwi_weight": 0.204017,
+        "evi_saturation": 5.114654,
+        "lst_saturation": 4.472487,
+        "ndwi_saturation": 6.0,
+        "csc_alert_thr": 0.66506
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.171,
+            "std": 0.886,
+            "ci95_low": 98.947,
+            "ci95_high": 99.396
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.829,
+            "std": 0.886,
+            "ci95_low": 0.604,
+            "ci95_high": 1.053
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 147.509,
+            "std": 20.498,
+            "ci95_low": 142.323,
+            "ci95_high": 152.696
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.1,
+            "std": 0.865,
+            "ci95_low": 98.721,
+            "ci95_high": 99.479
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.9,
+            "std": 0.865,
+            "ci95_low": 0.521,
+            "ci95_high": 1.279
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 148.69,
+            "std": 15.571,
+            "ci95_low": 141.866,
+            "ci95_high": 155.514
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.277857,
+      "source_stage": "local",
+      "candidate_index": 0,
+      "parent_rank": 1,
+      "parent_parameters": {
+        "evi_weight": 0.49748,
+        "lst_weight": 0.310131,
+        "ndwi_weight": 0.192389,
+        "evi_saturation": 6.428243,
+        "lst_saturation": 4.416604,
+        "ndwi_saturation": 5.732697,
+        "csc_alert_thr": 0.648902
+      },
+      "validation_fp_improvement_pct_points": 1.179,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 148.69,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.9,
+        148.69,
+        49.056,
+        5.92,
+        1.277857
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.518806,
+        "lst_weight": 0.353934,
+        "ndwi_weight": 0.12726,
+        "evi_saturation": 6.421345,
+        "lst_saturation": 3.603336,
+        "ndwi_saturation": 4.503408,
+        "csc_alert_thr": 0.672903
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.15,
+            "std": 0.833,
+            "ci95_low": 98.939,
+            "ci95_high": 99.361
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.85,
+            "std": 0.833,
+            "ci95_low": 0.639,
+            "ci95_high": 1.061
+          },
+          "n_priority_alerts": {
+            "mean": 1.967,
+            "std": 0.61,
+            "ci95_low": 1.812,
+            "ci95_high": 2.121
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 146.953,
+            "std": 20.098,
+            "ci95_low": 141.867,
+            "ci95_high": 152.038
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.916,
+            "ci95_high": 5.939
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.095,
+            "std": 0.865,
+            "ci95_low": 98.716,
+            "ci95_high": 99.474
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.905,
+            "std": 0.865,
+            "ci95_low": 0.526,
+            "ci95_high": 1.284
+          },
+          "n_priority_alerts": {
+            "mean": 1.9,
+            "std": 0.553,
+            "ci95_low": 1.658,
+            "ci95_high": 2.142
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 147.18,
+            "std": 14.961,
+            "ci95_low": 140.623,
+            "ci95_high": 153.737
+          },
+          "energy_wh": {
+            "mean": 5.921,
+            "std": 0.03,
+            "ci95_low": 5.908,
+            "ci95_high": 5.934
+          }
+        }
+      },
+      "distance_from_defaults": 1.164444,
+      "source_stage": "local",
+      "candidate_index": 1,
+      "parent_rank": 14,
+      "parent_parameters": {
+        "evi_weight": 0.529187,
+        "lst_weight": 0.355236,
+        "ndwi_weight": 0.115577,
+        "evi_saturation": 6.569501,
+        "lst_saturation": 3.82464,
+        "ndwi_saturation": 3.961267,
+        "csc_alert_thr": 0.628391
+      },
+      "validation_fp_improvement_pct_points": 1.174,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 147.18,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.921,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.905,
+        147.18,
+        49.056,
+        5.921,
+        1.164444
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.556559,
+        "lst_weight": 0.268328,
+        "ndwi_weight": 0.175114,
+        "evi_saturation": 5.018456,
+        "lst_saturation": 4.835238,
+        "ndwi_saturation": 5.3832,
+        "csc_alert_thr": 0.690112
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.185,
+            "std": 0.871,
+            "ci95_low": 98.965,
+            "ci95_high": 99.406
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.815,
+            "std": 0.871,
+            "ci95_low": 0.594,
+            "ci95_high": 1.035
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 147.239,
+            "std": 20.253,
+            "ci95_low": 142.115,
+            "ci95_high": 152.364
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.095,
+            "std": 0.868,
+            "ci95_low": 98.715,
+            "ci95_high": 99.475
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.905,
+            "std": 0.868,
+            "ci95_low": 0.525,
+            "ci95_high": 1.285
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 148.51,
+            "std": 15.59,
+            "ci95_low": 141.677,
+            "ci95_high": 155.343
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.338459,
+      "source_stage": "local",
+      "candidate_index": 13,
+      "parent_rank": 3,
+      "parent_parameters": {
+        "evi_weight": 0.528073,
+        "lst_weight": 0.275127,
+        "ndwi_weight": 0.1968,
+        "evi_saturation": 5.709425,
+        "lst_saturation": 5.019338,
+        "ndwi_saturation": 5.397644,
+        "csc_alert_thr": 0.670759
+      },
+      "validation_fp_improvement_pct_points": 1.174,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 148.51,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.905,
+        148.51,
+        49.056,
+        5.92,
+        1.338459
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.4889,
+        "lst_weight": 0.33103,
+        "ndwi_weight": 0.180071,
+        "evi_saturation": 5.518697,
+        "lst_saturation": 3.722536,
+        "ndwi_saturation": 5.89524,
+        "csc_alert_thr": 0.685674
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.166,
+            "std": 0.842,
+            "ci95_low": 98.953,
+            "ci95_high": 99.379
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.834,
+            "std": 0.842,
+            "ci95_low": 0.621,
+            "ci95_high": 1.047
+          },
+          "n_priority_alerts": {
+            "mean": 1.95,
+            "std": 0.622,
+            "ci95_low": 1.793,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 146.736,
+            "std": 20.125,
+            "ci95_low": 141.644,
+            "ci95_high": 151.828
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.045,
+            "ci95_low": 5.916,
+            "ci95_high": 5.939
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.093,
+            "std": 0.868,
+            "ci95_low": 98.713,
+            "ci95_high": 99.473
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.907,
+            "std": 0.868,
+            "ci95_low": 0.527,
+            "ci95_high": 1.287
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 147.52,
+            "std": 15.407,
+            "ci95_low": 140.767,
+            "ci95_high": 154.273
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.276963,
+      "source_stage": "local",
+      "candidate_index": 5,
+      "parent_rank": 4,
+      "parent_parameters": {
+        "evi_weight": 0.426412,
+        "lst_weight": 0.353087,
+        "ndwi_weight": 0.220501,
+        "evi_saturation": 5.553615,
+        "lst_saturation": 3.799877,
+        "ndwi_saturation": 5.944583,
+        "csc_alert_thr": 0.67937
+      },
+      "validation_fp_improvement_pct_points": 1.172,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 147.52,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.907,
+        147.52,
+        49.056,
+        5.92,
+        1.276963
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.454964,
+        "lst_weight": 0.371215,
+        "ndwi_weight": 0.17382,
+        "evi_saturation": 5.291293,
+        "lst_saturation": 4.234124,
+        "ndwi_saturation": 5.771631,
+        "csc_alert_thr": 0.66443
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.142,
+            "std": 0.869,
+            "ci95_low": 98.922,
+            "ci95_high": 99.362
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.858,
+            "std": 0.869,
+            "ci95_low": 0.638,
+            "ci95_high": 1.078
+          },
+          "n_priority_alerts": {
+            "mean": 1.95,
+            "std": 0.622,
+            "ci95_low": 1.793,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 146.646,
+            "std": 20.148,
+            "ci95_low": 141.548,
+            "ci95_high": 151.744
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.045,
+            "ci95_low": 5.916,
+            "ci95_high": 5.939
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.093,
+            "std": 0.866,
+            "ci95_low": 98.713,
+            "ci95_high": 99.472
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.907,
+            "std": 0.866,
+            "ci95_low": 0.528,
+            "ci95_high": 1.287
+          },
+          "n_priority_alerts": {
+            "mean": 1.9,
+            "std": 0.553,
+            "ci95_low": 1.658,
+            "ci95_high": 2.142
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 147.81,
+            "std": 15.291,
+            "ci95_low": 141.108,
+            "ci95_high": 154.512
+          },
+          "energy_wh": {
+            "mean": 5.921,
+            "std": 0.03,
+            "ci95_low": 5.908,
+            "ci95_high": 5.934
+          }
+        }
+      },
+      "distance_from_defaults": 1.093491,
+      "source_stage": "local",
+      "candidate_index": 6,
+      "parent_rank": 15,
+      "parent_parameters": {
+        "evi_weight": 0.43816,
+        "lst_weight": 0.398347,
+        "ndwi_weight": 0.163493,
+        "evi_saturation": 5.585454,
+        "lst_saturation": 4.031011,
+        "ndwi_saturation": 5.781127,
+        "csc_alert_thr": 0.634396
+      },
+      "validation_fp_improvement_pct_points": 1.172,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 147.81,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.921,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.907,
+        147.81,
+        49.056,
+        5.921,
+        1.093491
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.460591,
+        "lst_weight": 0.381618,
+        "ndwi_weight": 0.157791,
+        "evi_saturation": 6.293822,
+        "lst_saturation": 5.581458,
+        "ndwi_saturation": 5.477576,
+        "csc_alert_thr": 0.562395
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.146,
+            "std": 0.857,
+            "ci95_low": 98.929,
+            "ci95_high": 99.363
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.854,
+            "std": 0.857,
+            "ci95_low": 0.637,
+            "ci95_high": 1.071
+          },
+          "n_priority_alerts": {
+            "mean": 1.95,
+            "std": 0.622,
+            "ci95_low": 1.793,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 146.316,
+            "std": 19.677,
+            "ci95_low": 141.337,
+            "ci95_high": 151.295
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.045,
+            "ci95_low": 5.916,
+            "ci95_high": 5.939
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.091,
+            "std": 0.869,
+            "ci95_low": 98.71,
+            "ci95_high": 99.472
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.909,
+            "std": 0.869,
+            "ci95_low": 0.528,
+            "ci95_high": 1.29
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 146.89,
+            "std": 15.361,
+            "ci95_low": 140.158,
+            "ci95_high": 153.622
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.249258,
+      "source_stage": "local",
+      "candidate_index": 12,
+      "parent_rank": 7,
+      "parent_parameters": {
+        "evi_weight": 0.415143,
+        "lst_weight": 0.401705,
+        "ndwi_weight": 0.183152,
+        "evi_saturation": 5.712622,
+        "lst_saturation": 5.946917,
+        "ndwi_saturation": 5.82595,
+        "csc_alert_thr": 0.55238
+      },
+      "validation_fp_improvement_pct_points": 1.17,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 146.89,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.909,
+        146.89,
+        49.056,
+        5.92,
+        1.249258
+      ]
+    },
+    {
+      "parameters": {
+        "evi_weight": 0.553532,
+        "lst_weight": 0.304556,
+        "ndwi_weight": 0.141912,
+        "evi_saturation": 5.698528,
+        "lst_saturation": 4.075546,
+        "ndwi_saturation": 3.35257,
+        "csc_alert_thr": 0.7
+      },
+      "metrics_by_split": {
+        "train": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.166,
+            "std": 0.889,
+            "ci95_low": 98.941,
+            "ci95_high": 99.391
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.834,
+            "std": 0.889,
+            "ci95_low": 0.609,
+            "ci95_high": 1.059
+          },
+          "n_priority_alerts": {
+            "mean": 1.933,
+            "std": 0.607,
+            "ci95_low": 1.78,
+            "ci95_high": 2.087
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.86
+          },
+          "cloud_obscured_passes": {
+            "mean": 36.95,
+            "std": 4.681,
+            "ci95_low": 35.766,
+            "ci95_high": 38.134
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.189,
+            "std": 1.19,
+            "ci95_low": 48.888,
+            "ci95_high": 49.49
+          },
+          "data_mb": {
+            "mean": 146.579,
+            "std": 19.693,
+            "ci95_low": 141.596,
+            "ci95_high": 151.562
+          },
+          "energy_wh": {
+            "mean": 5.927,
+            "std": 0.046,
+            "ci95_low": 5.915,
+            "ci95_high": 5.938
+          }
+        },
+        "validation": {
+          "science_retention_pct": {
+            "mean": 100.0,
+            "std": 0.0,
+            "ci95_low": 100.0,
+            "ci95_high": 100.0
+          },
+          "alert_precision_pct": {
+            "mean": 99.09,
+            "std": 0.868,
+            "ci95_low": 98.71,
+            "ci95_high": 99.471
+          },
+          "false_positive_rate_pct": {
+            "mean": 0.91,
+            "std": 0.868,
+            "ci95_low": 0.529,
+            "ci95_high": 1.29
+          },
+          "n_priority_alerts": {
+            "mean": 1.85,
+            "std": 0.587,
+            "ci95_low": 1.593,
+            "ci95_high": 2.107
+          },
+          "min_battery_soc": {
+            "mean": 0.86,
+            "std": 0.0,
+            "ci95_low": 0.86,
+            "ci95_high": 0.861
+          },
+          "cloud_obscured_passes": {
+            "mean": 35.5,
+            "std": 4.123,
+            "ci95_low": 33.693,
+            "ci95_high": 37.307
+          },
+          "seasonal_average_compute_utilisation_pct": {
+            "mean": 49.056,
+            "std": 0.788,
+            "ci95_low": 48.71,
+            "ci95_high": 49.401
+          },
+          "data_mb": {
+            "mean": 147.52,
+            "std": 15.802,
+            "ci95_low": 140.594,
+            "ci95_high": 154.446
+          },
+          "energy_wh": {
+            "mean": 5.92,
+            "std": 0.03,
+            "ci95_low": 5.907,
+            "ci95_high": 5.933
+          }
+        }
+      },
+      "distance_from_defaults": 1.127513,
+      "source_stage": "local",
+      "candidate_index": 8,
+      "parent_rank": 13,
+      "parent_parameters": {
+        "evi_weight": 0.565008,
+        "lst_weight": 0.273983,
+        "ndwi_weight": 0.161009,
+        "evi_saturation": 5.230872,
+        "lst_saturation": 3.996199,
+        "ndwi_saturation": 3.473519,
+        "csc_alert_thr": 0.699036
+      },
+      "validation_fp_improvement_pct_points": 1.169,
+      "validation_guardrails": {
+        "data_mb": {
+          "baseline": 152.74,
+          "candidate": 147.52,
+          "limit": 160.377,
+          "passes": true
+        },
+        "seasonal_average_compute_utilisation_pct": {
+          "baseline": 49.056,
+          "candidate": 49.056,
+          "limit": 51.5088,
+          "passes": true
+        },
+        "energy_wh": {
+          "baseline": 5.928,
+          "candidate": 5.92,
+          "limit": 6.2244,
+          "passes": true
+        }
+      },
+      "train_recall_gate_passes": true,
+      "validation_recall_gate_passes": true,
+      "validation_guardrails_pass": true,
+      "feasible": true,
+      "ranking_key": [
+        0.91,
+        147.52,
+        49.056,
+        5.92,
+        1.127513
+      ]
+    }
+  ],
+  "count": 26
+}

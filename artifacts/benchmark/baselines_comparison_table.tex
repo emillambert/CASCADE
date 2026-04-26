@@ -1,0 +1,20 @@
+\begin{table}[!htbp]
+\centering
+\caption{Baseline comparisons under the synthetic Monte Carlo benchmark.}
+\label{tab:baselines}
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{lcccc}
+\toprule
+Variant & Downlink\,$\downarrow$ & Recall\,$\uparrow$ & FP\,$\downarrow$ & Compute\,$\downarrow$ \\
+\midrule
+Raw downlink & 0.0\% & 100.0\% & 0.5\% & N/A \\
+Fixed-period onboard & 95.8\% & 100.0\% & 0.5\% & 92.5\% \\
+EVI-only threshold & 96.2\% & 100.0\% & 2.3\% & 39.2\% \\
+No-belief CASCADE & 95.9\% & 100.0\% & 0.5\% & 76.2\% \\
+Full CASCADE & 99.1\% & 100.0\% & 0.6\% & 49.2\% \\
+\bottomrule
+\end{tabular}
+{\footnotesize Raw downlink denotes no onboard triage; recall and false-positive rate apply the same detector after ground-processing the full dataset, so the 0.6\% FP in full CASCADE matches the ground-processing detector floor rather than an onboard precision gain. In the calibrated configuration, no-belief CASCADE reaches 0.5\% matched-recall FP, but at 76.2\% seasonal-average compute versus 49.2\% for full CASCADE and a much larger alert-tile byte budget.}
+\end{table}

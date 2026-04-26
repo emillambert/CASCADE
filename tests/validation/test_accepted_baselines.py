@@ -10,6 +10,7 @@ pytestmark = pytest.mark.validation
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests" / "fixtures" / "accepted"
+ARTIFACTS = ROOT / "artifacts"
 
 
 def read_json(path: Path) -> dict:
@@ -17,28 +18,34 @@ def read_json(path: Path) -> dict:
 
 
 def test_simulation_headline_metrics_match_accepted_baseline() -> None:
-    current = read_json(ROOT / "outputs" / "simulation_metrics.json")
+    current = read_json(ARTIFACTS / "benchmark" / "simulation_metrics.json")
     accepted = read_json(FIXTURES / "simulation_headline_metrics.json")
     subset = {key: current[key] for key in accepted}
     assert subset == accepted
 
 
 def test_roc_operating_point_matches_accepted_baseline() -> None:
-    current = read_json(ROOT / "outputs" / "roc_metrics.json")
+    current = read_json(ARTIFACTS / "benchmark" / "roc_metrics.json")
     accepted = read_json(FIXTURES / "roc_metrics.json")
+    assert current == accepted
+
+
+def test_csc_calibration_summary_matches_accepted_baseline() -> None:
+    current = read_json(ARTIFACTS / "calibration" / "calibration_summary.json")
+    accepted = read_json(FIXTURES / "csc_calibration_summary.json")
     assert current == accepted
 
 
 def test_replay_anchor_matches_accepted_baseline() -> None:
     current = read_json(
-        ROOT / "outputs" / "real_modis" / "westlands_ca_2024-06-01_2024-10-31" / "replay_metrics.json"
+        ARTIFACTS / "replay" / "westlands_ca_2024-06-01_2024-10-31" / "replay_metrics.json"
     )
     accepted = read_json(FIXTURES / "replay_metrics.json")
     assert current == accepted
 
 
 def test_unit_economics_summary_matches_accepted_baseline() -> None:
-    current = read_json(ROOT / "outputs" / "unit_economics" / "unit_economics.json")
+    current = read_json(ARTIFACTS / "economics" / "unit_economics.json")
     accepted = read_json(FIXTURES / "unit_economics_summary.json")
     subset = {key: current[key] for key in accepted}
     assert subset == accepted
