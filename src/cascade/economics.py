@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -33,7 +34,7 @@ MARKET_REFERENCES = {
     "sjv": MarketReference(
         label="California San Joaquin Valley",
         hectares=1_415_000,
-        source="USDA 2022 Census county-level irrigation aggregation for the SJV pilot geography",
+        source="USDA 2022 Census county-level irrigation aggregation for the SJV reference geography",
     ),
     "us": MarketReference(
         label="United States irrigated land",
@@ -74,41 +75,44 @@ class Milestone:
     mrv_enabled: bool
     distribution: str
     rationale: str
+    coverage_label_override: str | None = None
 
 
 MILESTONES = (
     Milestone(
         year="Y1",
-        label="SJV pilot",
-        geography="California SJV",
+        label="Anchor pilot",
+        geography="EU or SJV",
         hectares=50_000,
         coverage_ref="sjv",
         satellite_multiplier=1.0,
         mrv_enabled=False,
-        distribution="Direct enterprise (one irrigation district)",
+        distribution="Validation-geography-dependent anchor customer",
         rationale=(
-            "Anchored to the Westlands real-scene replay and sized as a paid proof-of-value "
-            "pilot over roughly 3.5% of the SJV."
+            "Modeled as a co-funded bridge-to-MVP pilot; the anchor geography can land "
+            "in the EU wedge or the San Joaquin Valley depending on validation access."
         ),
+        coverage_label_override="<=5% region",
     ),
     Milestone(
         year="Y2",
-        label="California scale",
-        geography="California",
+        label="Benelux + CA scale",
+        geography="EU + California",
         hectares=400_000,
         coverage_ref="sjv",
         satellite_multiplier=1.0,
         mrv_enabled=True,
-        distribution="Climate FieldView API + direct enterprise",
+        distribution="Advisor / crop-platform API plus direct enterprise",
         rationale=(
-            "Expands across roughly 28.3% of the SJV while activating a Year 2 soil-carbon "
-            "MRV add-on revenue stream."
+            "Combines the Benelux/EU wedge with California validation-scale coverage while "
+            "activating a Year 2 soil-carbon MRV add-on revenue stream."
         ),
+        coverage_label_override="EU wedge + SJV",
     ),
     Milestone(
         year="Y3",
-        label="US national",
-        geography="U.S. irrigated",
+        label="EU + U.S. national",
+        geography="EU + U.S. irrigated",
         hectares=2_500_000,
         coverage_ref="us",
         satellite_multiplier=1.4,
@@ -121,8 +125,8 @@ MILESTONES = (
     ),
     Milestone(
         year="Y4",
-        label="EU + Brazil entry",
-        geography="EU + Brazil",
+        label="Brazil entry",
+        geography="EU + U.S. + Brazil",
         hectares=6_500_000,
         coverage_ref="eu_brazil",
         satellite_multiplier=1.4,
@@ -163,6 +167,8 @@ def coverage_pct(milestone: Milestone) -> float:
 
 
 def coverage_label(milestone: Milestone) -> str:
+    if milestone.coverage_label_override:
+        return milestone.coverage_label_override
     reference = MARKET_REFERENCES[milestone.coverage_ref]
     ref_name = {
         "sjv": "SJV",
@@ -237,6 +243,18 @@ def first_break_even_milestone(scenario: str) -> dict | None:
     return None
 
 
+def hectares_scale_bar(metrics: dict) -> str:
+    min_log = math.log10(min(m.hectares for m in MILESTONES))
+    max_log = math.log10(max(m.hectares for m in MILESTONES))
+    value = (math.log10(float(metrics["hectares"])) - min_log) / max(max_log - min_log, 1e-9)
+    width_cm = 0.18 + value * 1.14
+    return f"\\makebox[1.35cm][l]{{\\textcolor{{codeblue}}{{\\rule{{{width_cm:.2f}cm}}{{0.7ex}}}}}}"
+
+
+def latex_text(value: str) -> str:
+    return str(value).replace("<=", "$\\leq$").replace("%", "\\%")
+
+
 def latex_rows() -> str:
     rows = []
     for metrics in (row_metrics(m, "low") for m in MILESTONES):
@@ -246,15 +264,13 @@ def latex_rows() -> str:
         else:
             op_margin_cell = f'{metrics["operating_margin_pct"]:.1f}\\%'
 
-        milestone_label = metrics["milestone"]
-        if milestone_label == "US national":
-            milestone_label = "U.S. national"
-
         row = dict(metrics)
-        row["milestone"] = milestone_label
+        for field in ("milestone", "geography", "coverage_label"):
+            row[field] = latex_text(row[field])
         row["op_margin_cell"] = op_margin_cell
+        row["hectares_scale_bar"] = hectares_scale_bar(metrics)
         rows.append(
-            "    {year} & {milestone} & {geography} & {coverage_label} & "
+            "    {year} & {milestone} & {geography} & {coverage_label} & {hectares_scale_bar} & "
             "${total_revenue_musd:.2f}\\,M$ & {op_margin_cell} \\\\".format(**row)
         )
     return "\n".join(rows)
@@ -293,13 +309,14 @@ def write_outputs(output_dir: Path | None = None) -> None:
     latex = (
         "% Auto-generated by unit_economics.py\n"
         "% Paper-facing table uses the low/design-to-cost case.\n"
-        "\\begin{tabular}{llp{2.2cm}lrr}\n"
+        "% Scale is a log-scaled hectares trajectory bar.\n"
+        "\\begin{tabular*}{\\linewidth}{@{\\extracolsep{\\fill}}l>{\\raggedright\\arraybackslash}p{2.75cm}>{\\raggedright\\arraybackslash}p{2.35cm}>{\\raggedright\\arraybackslash}p{2.35cm}c>{\\raggedleft\\arraybackslash}p{1.35cm}>{\\raggedleft\\arraybackslash}p{1.65cm}@{}}\n"
         "\\toprule\n"
-        "Year & Milestone & Geography & Coverage & Revenue & Op. margin \\\\\n"
+        "Year & Milestone & Geography & Coverage & Scale & Revenue & Op. margin \\\\\n"
         "\\midrule\n"
         f"{latex_rows()}\n"
         "\\bottomrule\n"
-        "\\end{tabular}\n"
+        "\\end{tabular*}\n"
     )
     (output_dir / "unit_economics_table.tex").write_text(latex, encoding="utf-8")
 

@@ -1,7 +1,7 @@
 # Conservative compatibility ranges verified against the Python 3.11 reviewer baseline.
 requests>=2.31,<3
-numpy>=1.26,<3
-pandas>=2.2,<3
+numpy>=1.26,<2.0
+pandas>=2.2,<3.0
 matplotlib>=3.8,<4
 rasterio>=1.3,<2
 tqdm>=4.66,<5

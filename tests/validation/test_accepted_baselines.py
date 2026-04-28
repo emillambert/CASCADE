@@ -44,6 +44,14 @@ def test_replay_anchor_matches_accepted_baseline() -> None:
     assert current == accepted
 
 
+def test_2014_replay_anchor_matches_report_claim() -> None:
+    current = read_json(
+        ARTIFACTS / "replay" / "westlands_ca_2014-06-01_2014-10-31" / "replay_metrics.json"
+    )
+    accepted = read_json(FIXTURES / "replay_metrics_2014.json")
+    assert current == accepted
+
+
 def test_unit_economics_summary_matches_accepted_baseline() -> None:
     current = read_json(ARTIFACTS / "economics" / "unit_economics.json")
     accepted = read_json(FIXTURES / "unit_economics_summary.json")

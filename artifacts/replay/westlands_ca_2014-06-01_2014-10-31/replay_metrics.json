@@ -1,0 +1,21 @@
+{
+  "aoi": "westlands_ca",
+  "valid_windows": 6,
+  "cloud_obscured_windows": 0,
+  "baseline_windows": 3,
+  "action_distribution": {
+    "FUSE_PRIORITY": 6
+  },
+  "alert_windows": 6,
+  "first_alert_date": "2014-07-28",
+  "peak_alert_date": "2014-08-13",
+  "peak_csc": 0.869,
+  "mean_valid_fraction": 0.852,
+  "bundle_has_mod09": true,
+  "ndwi_windows": 6,
+  "fallback_windows": 0,
+  "fusion_mode": "ndwi_full",
+  "nominal_soc": 0.84,
+  "csc_alert_thr": 0.615018,
+  "notes": "Real-scene policy replay on official MODIS products; not a labeled anomaly benchmark."
+}

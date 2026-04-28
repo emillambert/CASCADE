@@ -16,5 +16,6 @@
   "fallback_windows": 0,
   "fusion_mode": "ndwi_full",
   "nominal_soc": 0.84,
+  "csc_alert_thr": 0.615018,
   "notes": "Real-scene policy replay on official MODIS products; not a labeled anomaly benchmark."
 }

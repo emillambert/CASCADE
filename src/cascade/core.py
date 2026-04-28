@@ -17,7 +17,7 @@ class Config:
     Hosted-payload configuration anchored to the submission's component choices.
 
     LEON4FT: Cobham Gaisler UT699E-class processor
-    FPGA:    Xilinx Kintex UltraScale+ RT
+    FPGA:    Kintex UltraScale XQR (XQRKU060)
     Battery: Local payload buffer, 40 Wh equivalent
     """
 

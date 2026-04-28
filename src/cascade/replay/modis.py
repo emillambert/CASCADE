@@ -56,6 +56,7 @@ AOIS = {
         "bbox": [-120.55, 36.55, -120.45, 36.65],
     }
 }
+AOI_NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 MOD13_LAYERS = (
     "_500m_16_days_EVI",
@@ -142,10 +143,45 @@ def require_deps():
         ) from exc
 
 
+def validate_aoi_name(value: str) -> str:
+    if not AOI_NAME_RE.match(value):
+        raise argparse.ArgumentTypeError(
+            "AOI names may only contain letters, numbers, underscores, and hyphens."
+        )
+    return value
+
+
+def parse_bbox(value: str) -> tuple[float, float, float, float]:
+    try:
+        parts = [float(part.strip()) for part in value.split(",")]
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "--bbox must be four comma-separated numbers: WEST,SOUTH,EAST,NORTH"
+        ) from exc
+    if len(parts) != 4:
+        raise argparse.ArgumentTypeError("--bbox must contain exactly four values.")
+
+    west, south, east, north = parts
+    if not (-180.0 <= west < east <= 180.0):
+        raise argparse.ArgumentTypeError("bbox longitude bounds must satisfy -180 <= west < east <= 180.")
+    if not (-90.0 <= south < north <= 90.0):
+        raise argparse.ArgumentTypeError("bbox latitude bounds must satisfy -90 <= south < north <= 90.")
+    return west, south, east, north
+
+
 def parse_args() -> argparse.Namespace:
     load_env_file(DOTENV_PATH)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--aoi", default="westlands_ca", choices=sorted(AOIS))
+    parser.add_argument("--aoi", default="westlands_ca", type=validate_aoi_name)
+    parser.add_argument(
+        "--bbox",
+        type=parse_bbox,
+        help="Custom AOI rectangle as WEST,SOUTH,EAST,NORTH decimal degrees.",
+    )
+    parser.add_argument(
+        "--aoi-label",
+        help="Human-readable label for a custom --bbox AOI.",
+    )
     parser.add_argument("--start", default="2024-06-01")
     parser.add_argument("--end", default="2024-09-30")
     parser.add_argument("--cache-dir", default=str(DATA_CACHE_DIR))
@@ -169,6 +205,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--earthdata-password", default=os.environ.get("EARTHDATA_PASSWORD") or os.environ.get("NASA_EARTHDATA_PASSWORD"))
     parser.add_argument("--force-download", action="store_true")
     parser.add_argument(
+        "--download-only",
+        action="store_true",
+        help="Download or reuse the AppEEARS bundle and exit before running replay outputs.",
+    )
+    parser.add_argument(
         "--disable-date-extension",
         dest="disable_date_extension",
         action="store_true",
@@ -188,9 +229,37 @@ def parse_args() -> argparse.Namespace:
             "falling back to EVI/LST-only fusion."
         ),
     )
-    args = parser.parse_args()
+
+    def _normalize_bbox(argv: list[str]) -> list[str]:
+        """Allow `--bbox -120,...` style arguments.
+
+        Some callers (including tests) pass a bbox value starting with `-`,
+        which argparse may treat as a new option token. Normalize to the
+        `--bbox=<value>` form before parsing.
+        """
+        if "--bbox" not in argv:
+            return argv
+        out: list[str] = []
+        i = 0
+        while i < len(argv):
+            token = argv[i]
+            if token == "--bbox" and i + 1 < len(argv):
+                value = argv[i + 1]
+                if value.startswith("-"):
+                    out.append(f"--bbox={value}")
+                    i += 2
+                    continue
+            out.append(token)
+            i += 1
+        return out
+
+    import sys
+
+    args = parser.parse_args(_normalize_bbox(sys.argv[1:]))
     if args.bundle_dir and args.bundle_zip:
         parser.error("Use only one of --bundle-dir or --bundle-zip.")
+    if args.aoi not in AOIS and args.bbox is None:
+        parser.error("Custom --aoi values require --bbox.")
     return args
 
 
@@ -202,8 +271,28 @@ def format_app_date(value: date) -> str:
     return value.strftime("%m-%d-%Y")
 
 
-def aoi_geojson(aoi_name: str) -> dict[str, Any]:
-    west, south, east, north = AOIS[aoi_name]["bbox"]
+def resolve_aoi_bbox(aoi_name: str, bbox: tuple[float, float, float, float] | None = None) -> tuple[float, float, float, float]:
+    if bbox is not None:
+        return bbox
+    if aoi_name not in AOIS:
+        raise KeyError(f"Unknown AOI: {aoi_name}")
+    return tuple(float(value) for value in AOIS[aoi_name]["bbox"])
+
+
+def resolve_aoi_label(aoi_name: str, label: str | None = None) -> str:
+    if label:
+        return label
+    if aoi_name in AOIS:
+        return str(AOIS[aoi_name]["label"])
+    return aoi_name.replace("_", " ")
+
+
+def aoi_geojson(
+    aoi_name: str,
+    bbox: tuple[float, float, float, float] | None = None,
+    label: str | None = None,
+) -> dict[str, Any]:
+    west, south, east, north = resolve_aoi_bbox(aoi_name, bbox)
     coords = [
         [west, south],
         [east, south],
@@ -216,7 +305,7 @@ def aoi_geojson(aoi_name: str) -> dict[str, Any]:
         "features": [
             {
                 "type": "Feature",
-                "properties": {"id": aoi_name, "label": AOIS[aoi_name]["label"]},
+                "properties": {"id": aoi_name, "label": resolve_aoi_label(aoi_name, label)},
                 "geometry": {"type": "Polygon", "coordinates": [coords]},
             }
         ],
@@ -433,7 +522,13 @@ def prepare_local_bundle(
     return extract_dir
 
 
-def task_payload(aoi: str, start: date, end: date) -> dict[str, Any]:
+def task_payload(
+    aoi: str,
+    start: date,
+    end: date,
+    bbox: tuple[float, float, float, float] | None = None,
+    aoi_label: str | None = None,
+) -> dict[str, Any]:
     return {
         "task_type": "area",
         "task_name": f"cascade-{aoi}-{start.isoformat()}-{end.isoformat()}",
@@ -444,7 +539,7 @@ def task_payload(aoi: str, start: date, end: date) -> dict[str, Any]:
                 + [{"product": "MOD11A1.061", "layer": layer} for layer in MOD11_LAYERS]
                 + [{"product": "MOD09A1.061", "layer": layer} for layer in MOD09_LAYERS]
             ),
-            "geo": aoi_geojson(aoi),
+            "geo": aoi_geojson(aoi, bbox=bbox, label=aoi_label),
             "output": {
                 "format": {"type": "geotiff", "filename_date": "calendar"},
                 "projection": "geographic",
@@ -464,7 +559,11 @@ def download_or_reuse_bundle(
     poll_seconds: int,
     max_poll_minutes: int,
     force_download: bool,
+    bbox: tuple[float, float, float, float] | None = None,
+    aoi_label: str | None = None,
 ) -> Path:
+    """Resolve a replay bundle from a local override, cache, or AppEEARS download."""
+
     local_bundle = prepare_local_bundle(
         cache_dir=cache_dir,
         aoi=aoi,
@@ -501,11 +600,13 @@ def download_or_reuse_bundle(
         log(f"Resuming existing AppEEARS task {task_id}")
     else:
         log(f"Submitting AppEEARS area request for {aoi} {start.isoformat()} to {end.isoformat()}")
-        task_id = client.submit_task(task_payload(aoi, start, end))
+        task_id = client.submit_task(task_payload(aoi, start, end, bbox=bbox, aoi_label=aoi_label))
         log(f"Submitted AppEEARS task {task_id}")
         manifest = {
             "task_id": task_id,
             "aoi": aoi,
+            "aoi_label": resolve_aoi_label(aoi, aoi_label),
+            "bbox": list(resolve_aoi_bbox(aoi, bbox)),
             "start": start.isoformat(),
             "end": end.isoformat(),
             "requested_layers": requested_layers,
@@ -522,6 +623,8 @@ def download_or_reuse_bundle(
     manifest = {
         "task_id": task_id,
         "aoi": aoi,
+        "aoi_label": resolve_aoi_label(aoi, aoi_label),
+        "bbox": list(resolve_aoi_bbox(aoi, bbox)),
         "start": start.isoformat(),
         "end": end.isoformat(),
         "requested_layers": requested_layers,
@@ -841,6 +944,8 @@ def replay_output_dir_name(aoi: str, start: date, end: date, csc_alert_thr: floa
 def replay_series(
     series: list[dict[str, Any]], policy: CASCADEPolicy, *, aoi_name: str = "westlands_ca"
 ) -> tuple[list[ReplayStep], dict[str, Any], np.ndarray | None, list[np.ndarray]]:
+    """Apply the CASCADE policy to prepared MODIS windows and summarize replay metrics."""
+
     cfg = Config()
     history_evi: list[np.ndarray] = []
     history_lst: list[np.ndarray] = []
@@ -1195,6 +1300,8 @@ def run_window(args: argparse.Namespace, start: date, end: date):
         poll_seconds=args.poll_seconds,
         max_poll_minutes=args.max_poll_minutes,
         force_download=args.force_download,
+        bbox=args.bbox,
+        aoi_label=args.aoi_label,
     )
     grouped = group_bundle_files(bundle_dir)
     series = build_replay_series(grouped, start, end)
@@ -1228,12 +1335,48 @@ def run_window(args: argparse.Namespace, start: date, end: date):
     return output_dir, metrics
 
 
+def download_only_bundle(args: argparse.Namespace, start: date, end: date) -> Path:
+    cache_dir = Path(args.cache_dir)
+    client = AppEEARSClient(args.earthdata_username, args.earthdata_password)
+    return download_or_reuse_bundle(
+        client=client,
+        aoi=args.aoi,
+        start=start,
+        end=end,
+        cache_dir=cache_dir,
+        bundle_dir_override=args.bundle_dir,
+        bundle_zip=args.bundle_zip,
+        poll_seconds=args.poll_seconds,
+        max_poll_minutes=args.max_poll_minutes,
+        force_download=args.force_download,
+        bbox=args.bbox,
+        aoi_label=args.aoi_label,
+    )
+
+
 def main() -> None:
-    require_deps()
     args = parse_args()
     start = parse_iso_date(args.start)
     end = parse_iso_date(args.end)
 
+    if args.download_only:
+        bundle_dir = download_only_bundle(args, start, end)
+        print(
+            json.dumps(
+                {
+                    "bundle_dir": str(bundle_dir),
+                    "aoi": args.aoi,
+                    "aoi_label": resolve_aoi_label(args.aoi, args.aoi_label),
+                    "bbox": list(resolve_aoi_bbox(args.aoi, args.bbox)),
+                    "start": start.isoformat(),
+                    "end": end.isoformat(),
+                },
+                indent=2,
+            )
+        )
+        return
+
+    require_deps()
     output_dir, metrics = run_window(args, start, end)
     needs_fallback = metrics["valid_windows"] < 6 or metrics["alert_windows"] == 0
     if needs_fallback and not args.disable_date_extension:

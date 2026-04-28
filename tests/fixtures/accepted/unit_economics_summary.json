@@ -12,21 +12,21 @@
     "low": {
       "scenario": "low",
       "year": "Y2",
-      "milestone": "California scale",
+      "milestone": "Benelux + CA scale",
       "hectares": 400000,
       "fixed_cost_musd": 0.95
     },
     "base": {
       "scenario": "base",
       "year": "Y3",
-      "milestone": "US national",
+      "milestone": "EU + U.S. national",
       "hectares": 2500000,
       "fixed_cost_musd": 2.1
     },
     "high": {
       "scenario": "high",
       "year": "Y3",
-      "milestone": "US national",
+      "milestone": "EU + U.S. national",
       "hectares": 2500000,
       "fixed_cost_musd": 3.22
     }

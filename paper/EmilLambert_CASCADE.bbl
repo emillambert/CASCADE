@@ -66,20 +66,20 @@ Alberto Candela, Jason Swope, and Steve Chien.
 \newblock Ccsds image data compression asic.
 \newblock \url{https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Onboard_Data_Processing/CCSDS_Image_Data_Compression_ASIC}, 2026.
 
+\bibitem{drought-monitor-2014}
+{U.S. Drought Monitor}.
+\newblock U.s. drought monitor archive — california 2014.
+\newblock \url{https://droughtmonitor.unl.edu/DmData/TimeSeries.aspx}, 2014.
+
+\bibitem{westlands-zero-alloc}
+{Westlands Water District}.
+\newblock Westlands -- zero allocation for {California} farms.
+\newblock \url{https://www.wwd.ca.gov}, 2014.
+
 \bibitem{uc-tomato-cost}
 {University of California Agriculture and Natural Resources}.
 \newblock Sample costs to produce processing tomatoes, sub-surface, drip irrigated (sdi) in the sacramento valley and northern delta, 2023.
 \newblock \url{https://coststudyfiles.ucdavis.edu/uploads/pub/2023/08/21/amended_82123_2023processtomatosacramentovalleysdifinal.pdf}, 2023.
-
-\bibitem{wisconsin-lateblight}
-{University of Wisconsin Horticulture}.
-\newblock Late blight.
-\newblock \url{https://hort.extension.wisc.edu/articles/late-blight/}, 2024.
-
-\bibitem{faostat-pesticides}
-{Food and Agriculture Organization of the United Nations}.
-\newblock Pesticides use and trade. 1990--2023.
-\newblock \url{https://www.fao.org/faostat/en/#data/RP}, 2025.
 
 \bibitem{usda-2022}
 {USDA National Agricultural Statistics Service}.
@@ -92,11 +92,6 @@ Alberto Candela, Jason Swope, and Steve Chien.
 \newblock \url{https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Farms_and_farmland_in_the_European_Union}, 2025.
 \newblock Statistics Explained.
 
-\bibitem{ana-atlas}
-{Agencia Nacional de Aguas e Saneamento Basico}.
-\newblock Atlas irrigacao.
-\newblock \url{https://www.ana.gov.br/atlasirrigacao/}, 2021.
-
 \bibitem{fao-aquastat}
 {FAO AQUASTAT}.
 \newblock Irrigated areas and water use: Conclusions.
@@ -106,6 +101,11 @@ Alberto Candela, Jason Swope, and Steve Chien.
 {Verra}.
 \newblock Vm0042 methodology for improved agricultural land management.
 \newblock \url{https://verra.org/methodologies/vm0042-methodology-for-improved-agricultural-land-management-v2-0/}, 2025.
+
+\bibitem{ana-atlas}
+{Agencia Nacional de Aguas e Saneamento Basico}.
+\newblock Atlas irrigacao.
+\newblock \url{https://www.ana.gov.br/atlasirrigacao/}, 2021.
 
 \bibitem{nasa-aist}
 {NASA Earth Science Technology Office}.

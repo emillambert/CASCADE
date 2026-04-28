@@ -43,7 +43,10 @@ PAPER_FIGURE_FILES = (
     "additional_ablation_curves.png",
     "additional_ablation_curves.svg",
 )
-REPLAY_WINDOWS = ("westlands_ca_2024-06-01_2024-10-31",)
+REPLAY_WINDOWS = (
+    "westlands_ca_2014-06-01_2014-10-31",
+    "westlands_ca_2024-06-01_2024-10-31",
+)
 
 
 def _copy_file(src, dst) -> None:

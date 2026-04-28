@@ -29,7 +29,7 @@ def test_contribution_margin_and_revenue_helpers_match_expected_assumptions() ->
 
 def test_coverage_helpers_and_fixed_cost_scenarios_are_consistent() -> None:
     assert coverage_pct(MILESTONES[1]) == pytest.approx(28.268551236749117)
-    assert coverage_label(MILESTONES[1]) == "28.3% SJV"
+    assert coverage_label(MILESTONES[1]) == "EU wedge + SJV"
     assert fixed_cost_musd(MILESTONES[2], "low") < fixed_cost_musd(MILESTONES[2], "base")
     assert fixed_cost_musd(MILESTONES[2], "base") < fixed_cost_musd(MILESTONES[2], "high")
 
@@ -55,12 +55,12 @@ def test_break_even_summary_matches_current_rollout_story() -> None:
     assert first_break_even_milestone("low") == {
         "scenario": "low",
         "year": "Y2",
-        "milestone": "California scale",
+        "milestone": "Benelux + CA scale",
         "hectares": 400000,
         "fixed_cost_musd": 0.95,
     }
     assert first_break_even_milestone("base")["year"] == "Y3"
-    assert first_break_even_milestone("high")["milestone"] == "US national"
+    assert first_break_even_milestone("high")["milestone"] == "EU + U.S. national"
 
 
 def test_write_outputs_can_target_a_temporary_directory(tmp_path: Path) -> None:

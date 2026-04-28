@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import argparse
+import json
 import os
+import sys
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -8,18 +11,112 @@ import numpy as np
 import pytest
 
 from cascade.replay.modis import (
+    aoi_geojson,
     classify_fusion_mode,
     group_bundle_files,
     load_env_file,
     mod09_valid_mask,
     mod11_valid_mask,
+    parse_bbox,
     parse_calendar_date,
     parse_layer_name,
     replay_series,
     replay_output_dir_name,
     summarize_fusion_availability,
+    task_payload,
 )
+from cascade.replay import modis
 from cascade.core import CSC_ALERT_THRESHOLD_DEFAULT, CASCADEPolicy
+
+
+def test_bbox_parser_validates_custom_aoi_bounds() -> None:
+    assert parse_bbox("-120.55,36.55,-120.45,36.65") == (-120.55, 36.55, -120.45, 36.65)
+
+    with pytest.raises(argparse.ArgumentTypeError):
+        parse_bbox("-120.45,36.55,-120.55,36.65")
+
+
+def test_custom_aoi_geojson_uses_bbox_and_label() -> None:
+    geo = aoi_geojson(
+        "custom_area",
+        bbox=(-120.55, 36.55, -120.45, 36.65),
+        label="Custom Area",
+    )
+
+    feature = geo["features"][0]
+    assert feature["properties"] == {"id": "custom_area", "label": "Custom Area"}
+    assert feature["geometry"]["coordinates"][0] == [
+        [-120.55, 36.55],
+        [-120.45, 36.55],
+        [-120.45, 36.65],
+        [-120.55, 36.65],
+        [-120.55, 36.55],
+    ]
+
+
+def test_task_payload_accepts_custom_aoi_bbox() -> None:
+    payload = task_payload(
+        "custom_area",
+        date(2024, 6, 1),
+        date(2024, 10, 31),
+        bbox=(-120.55, 36.55, -120.45, 36.65),
+        aoi_label="Custom Area",
+    )
+
+    assert payload["task_name"] == "cascade-custom_area-2024-06-01-2024-10-31"
+    feature = payload["params"]["geo"]["features"][0]
+    assert feature["properties"]["label"] == "Custom Area"
+    assert feature["geometry"]["type"] == "Polygon"
+
+
+def test_download_only_stops_before_replay_outputs(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    bundle_dir = tmp_path / "bundle"
+
+    def fake_download_only_bundle(args, start: date, end: date) -> Path:
+        assert args.download_only
+        assert start == date(2024, 6, 1)
+        assert end == date(2024, 10, 31)
+        bundle_dir.mkdir()
+        return bundle_dir
+
+    def fail_run_window(*_args, **_kwargs):
+        raise AssertionError("download-only should not run replay outputs")
+
+    monkeypatch.setattr(modis, "DOTENV_PATH", tmp_path / ".env")
+    monkeypatch.setattr(
+        modis,
+        "require_deps",
+        lambda: (_ for _ in ()).throw(AssertionError("download-only should not require replay deps")),
+    )
+    monkeypatch.setattr(modis, "download_only_bundle", fake_download_only_bundle)
+    monkeypatch.setattr(modis, "run_window", fail_run_window)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "real_modis_replay.py",
+            "--aoi",
+            "custom_area",
+            "--bbox",
+            "-120.55,36.55,-120.45,36.65",
+            "--start",
+            "2024-06-01",
+            "--end",
+            "2024-10-31",
+            "--download-only",
+        ],
+    )
+
+    modis.main()
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["bundle_dir"] == str(bundle_dir)
+    assert payload["aoi"] == "custom_area"
+    assert payload["bbox"] == [-120.55, 36.55, -120.45, 36.65]
 
 
 def test_parse_and_group_bundle_files_resolve_aliases_and_dates(tmp_path: Path) -> None:

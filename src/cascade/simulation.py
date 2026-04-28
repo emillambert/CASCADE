@@ -310,6 +310,8 @@ def simulate(
     outer_seed: int,
     csc_kwargs: Dict | None = None,
 ) -> Dict:
+    """Evaluate one policy over one synthetic season and return aggregate metrics."""
+
     csc_kwargs = csc_kwargs or {}
     rng = np.random.default_rng(outer_seed * 10_000 + POLICY_SEED_OFFSET[policy_name])
     n_p, n_t = data["n_patches"], data["n_t"]
@@ -1243,6 +1245,7 @@ def write_baselines_comparison_table(
         (
             "Raw downlink",
             0.0,
+            float(raw["data_mb_mean"]),
             recall_from_aggregate(raw),
             fp_rate_from_aggregate(raw),
             r"N/A",
@@ -1250,6 +1253,7 @@ def write_baselines_comparison_table(
         (
             "Fixed-period onboard",
             downlink_reduction_vs_raw(float(fixed["data_mb_mean"])),
+            float(fixed["data_mb_mean"]),
             recall_from_aggregate(fixed),
             fp_rate_from_aggregate(fixed),
             float(fixed["seasonal_average_compute_pct_mean"]),
@@ -1257,6 +1261,7 @@ def write_baselines_comparison_table(
         (
             "EVI-only threshold",
             downlink_reduction_vs_raw(float(evi_stats["data_mb"]["mean"])),
+            float(evi_stats["data_mb"]["mean"]),
             float(evi_stats["science_retention_pct"]["mean"]),
             float(evi_stats["false_positive_rate_pct"]["mean"]),
             float(evi_stats["seasonal_average_compute_utilisation_pct"]["mean"]),
@@ -1264,6 +1269,7 @@ def write_baselines_comparison_table(
         (
             "No-belief CASCADE",
             downlink_reduction_vs_raw(float(ab_stats["data_mb"]["mean"])),
+            float(ab_stats["data_mb"]["mean"]),
             float(ab_stats["science_retention_pct"]["mean"]),
             float(ab_stats["false_positive_rate_pct"]["mean"]),
             float(ab_stats["seasonal_average_compute_utilisation_pct"]["mean"]),
@@ -1271,6 +1277,7 @@ def write_baselines_comparison_table(
         (
             "Full CASCADE",
             downlink_reduction_vs_raw(float(cascade["data_mb_mean"])),
+            float(cascade["data_mb_mean"]),
             recall_from_aggregate(cascade),
             fp_rate_from_aggregate(cascade),
             float(cascade["seasonal_average_compute_pct_mean"]),
@@ -1283,19 +1290,20 @@ def write_baselines_comparison_table(
     lines.append(r"\caption{Baseline comparisons under the synthetic Monte Carlo benchmark.}")
     lines.append(r"\label{tab:baselines}")
     lines.append(r"\small")
-    lines.append(r"\setlength{\tabcolsep}{5pt}")
+    lines.append(r"\setlength{\tabcolsep}{3.5pt}")
     lines.append(r"\renewcommand{\arraystretch}{1.1}")
-    lines.append(r"\begin{tabular}{lcccc}")
+    lines.append(r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{3.15cm}*{5}{>{\centering\arraybackslash}X}@{}}")
     lines.append(r"\toprule")
-    lines.append(r"Variant & Downlink\,$\downarrow$ & Recall\,$\uparrow$ & FP\,$\downarrow$ & Compute\,$\downarrow$ \\")
+    lines.append(r"Variant & Downlink red.\,$\downarrow$ & MB\,$\downarrow$ & Recall\,$\uparrow$ & FP\,$\downarrow$ & Compute\,$\downarrow$ \\")
     lines.append(r"\midrule")
-    for name, downlink_red, recall, fp, compute in table_rows:
+    for name, downlink_red, data_mb, recall, fp, compute in table_rows:
         compute_cell = compute if isinstance(compute, str) else fmt_pct(compute)
+        prefix = r"\rowcolor{green!8} " if name == "Full CASCADE" else ""
         lines.append(
-            f"{name} & {fmt_pct(downlink_red)} & {fmt_pct(recall)} & {fmt_pct(fp)} & {compute_cell} \\\\"
+            f"{prefix}{name} & {fmt_pct(downlink_red)} & {float(data_mb):.1f} & {fmt_pct(recall)} & {fmt_pct(fp)} & {compute_cell} \\\\"
         )
     lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular}")
+    lines.append(r"\end{tabularx}")
     full_fp = fp_rate_from_aggregate(cascade)
     ablation_fp = float(ab_stats["false_positive_rate_pct"]["mean"])
     ablation_compute = float(ab_stats["seasonal_average_compute_utilisation_pct"]["mean"])
@@ -1304,7 +1312,8 @@ def write_baselines_comparison_table(
         "{\\footnotesize Raw downlink denotes no onboard triage; recall and false-positive rate apply the same detector after ground-processing the full dataset, "
         f"so the {fmt_pct(full_fp)} FP in full CASCADE matches the ground-processing detector floor rather than an onboard precision gain. "
         f"In the calibrated configuration, no-belief CASCADE reaches {fmt_pct(ablation_fp)} matched-recall FP, "
-        f"but at {fmt_pct(ablation_compute)} seasonal-average compute versus {fmt_pct(full_compute)} for full CASCADE and a much larger alert-tile byte budget.}}"
+        f"but at {fmt_pct(ablation_compute)} seasonal-average compute and {float(ab_stats['data_mb']['mean']):.1f} MB versus "
+        f"{fmt_pct(full_compute)} and {float(cascade['data_mb_mean']):.1f} MB for full CASCADE.}}"
     )
     lines.append(r"\end{table}")
     lines.append("")
@@ -1904,6 +1913,8 @@ def report(metrics: dict, ablation_metrics: dict, roc_metrics: dict, csc_sensiti
 # ---------------------------------------------------------------------------
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the reproducible benchmark workflow and write build artifacts."""
+
     import argparse
 
     parser = argparse.ArgumentParser(

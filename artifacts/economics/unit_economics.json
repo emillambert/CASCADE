@@ -3,7 +3,7 @@
     "sjv": {
       "label": "California San Joaquin Valley",
       "hectares": 1415000,
-      "source": "USDA 2022 Census county-level irrigation aggregation for the SJV pilot geography"
+      "source": "USDA 2022 Census county-level irrigation aggregation for the SJV reference geography"
     },
     "us": {
       "label": "United States irrigated land",
@@ -43,15 +43,15 @@
   "milestones_low_scenario": [
     {
       "year": "Y1",
-      "milestone": "SJV pilot",
-      "geography": "California SJV",
+      "milestone": "Anchor pilot",
+      "geography": "EU or SJV",
       "hectares": 50000,
       "coverage_pct": 3.5,
-      "coverage_label": "3.5% SJV",
+      "coverage_label": "<=5% region",
       "coverage_reference": "California San Joaquin Valley",
       "coverage_reference_hectares": 1415000,
       "satellite_multiplier": 1.0,
-      "distribution": "Direct enterprise (one irrigation district)",
+      "distribution": "Validation-geography-dependent anchor customer",
       "mrv_enabled": false,
       "gross_arr_musd": 0.2,
       "carbon_mrv_musd": 0.0,
@@ -62,19 +62,19 @@
       "operating_margin_musd": -0.81,
       "operating_margin_pct": -403.7,
       "contribution_margin_per_ha_usd": 2.85,
-      "rationale": "Anchored to the Westlands real-scene replay and sized as a paid proof-of-value pilot over roughly 3.5% of the SJV."
+      "rationale": "Modeled as a co-funded bridge-to-MVP pilot; the anchor geography can land in the EU wedge or the San Joaquin Valley depending on validation access."
     },
     {
       "year": "Y2",
-      "milestone": "California scale",
-      "geography": "California",
+      "milestone": "Benelux + CA scale",
+      "geography": "EU + California",
       "hectares": 400000,
       "coverage_pct": 28.3,
-      "coverage_label": "28.3% SJV",
+      "coverage_label": "EU wedge + SJV",
       "coverage_reference": "California San Joaquin Valley",
       "coverage_reference_hectares": 1415000,
       "satellite_multiplier": 1.0,
-      "distribution": "Climate FieldView API + direct enterprise",
+      "distribution": "Advisor / crop-platform API plus direct enterprise",
       "mrv_enabled": true,
       "gross_arr_musd": 1.6,
       "carbon_mrv_musd": 0.1,
@@ -85,12 +85,12 @@
       "operating_margin_musd": 0.29,
       "operating_margin_pct": 17.1,
       "contribution_margin_per_ha_usd": 3.1,
-      "rationale": "Expands across roughly 28.3% of the SJV while activating a Year 2 soil-carbon MRV add-on revenue stream."
+      "rationale": "Combines the Benelux/EU wedge with California validation-scale coverage while activating a Year 2 soil-carbon MRV add-on revenue stream."
     },
     {
       "year": "Y3",
-      "milestone": "US national",
-      "geography": "U.S. irrigated",
+      "milestone": "EU + U.S. national",
+      "geography": "EU + U.S. irrigated",
       "hectares": 2500000,
       "coverage_pct": 11.0,
       "coverage_label": "11.0% US",
@@ -112,8 +112,8 @@
     },
     {
       "year": "Y4",
-      "milestone": "EU + Brazil entry",
-      "geography": "EU + Brazil",
+      "milestone": "Brazil entry",
+      "geography": "EU + U.S. + Brazil",
       "hectares": 6500000,
       "coverage_pct": 35.1,
       "coverage_label": "35.1% EU+Brazil",
@@ -160,15 +160,15 @@
   "milestones_base_scenario": [
     {
       "year": "Y1",
-      "milestone": "SJV pilot",
-      "geography": "California SJV",
+      "milestone": "Anchor pilot",
+      "geography": "EU or SJV",
       "hectares": 50000,
       "coverage_pct": 3.5,
-      "coverage_label": "3.5% SJV",
+      "coverage_label": "<=5% region",
       "coverage_reference": "California San Joaquin Valley",
       "coverage_reference_hectares": 1415000,
       "satellite_multiplier": 1.0,
-      "distribution": "Direct enterprise (one irrigation district)",
+      "distribution": "Validation-geography-dependent anchor customer",
       "mrv_enabled": false,
       "gross_arr_musd": 0.2,
       "carbon_mrv_musd": 0.0,
@@ -179,19 +179,19 @@
       "operating_margin_musd": -1.36,
       "operating_margin_pct": -678.8,
       "contribution_margin_per_ha_usd": 2.85,
-      "rationale": "Anchored to the Westlands real-scene replay and sized as a paid proof-of-value pilot over roughly 3.5% of the SJV."
+      "rationale": "Modeled as a co-funded bridge-to-MVP pilot; the anchor geography can land in the EU wedge or the San Joaquin Valley depending on validation access."
     },
     {
       "year": "Y2",
-      "milestone": "California scale",
-      "geography": "California",
+      "milestone": "Benelux + CA scale",
+      "geography": "EU + California",
       "hectares": 400000,
       "coverage_pct": 28.3,
-      "coverage_label": "28.3% SJV",
+      "coverage_label": "EU wedge + SJV",
       "coverage_reference": "California San Joaquin Valley",
       "coverage_reference_hectares": 1415000,
       "satellite_multiplier": 1.0,
-      "distribution": "Climate FieldView API + direct enterprise",
+      "distribution": "Advisor / crop-platform API plus direct enterprise",
       "mrv_enabled": true,
       "gross_arr_musd": 1.6,
       "carbon_mrv_musd": 0.1,
@@ -202,12 +202,12 @@
       "operating_margin_musd": -0.26,
       "operating_margin_pct": -15.3,
       "contribution_margin_per_ha_usd": 3.1,
-      "rationale": "Expands across roughly 28.3% of the SJV while activating a Year 2 soil-carbon MRV add-on revenue stream."
+      "rationale": "Combines the Benelux/EU wedge with California validation-scale coverage while activating a Year 2 soil-carbon MRV add-on revenue stream."
     },
     {
       "year": "Y3",
-      "milestone": "US national",
-      "geography": "U.S. irrigated",
+      "milestone": "EU + U.S. national",
+      "geography": "EU + U.S. irrigated",
       "hectares": 2500000,
       "coverage_pct": 11.0,
       "coverage_label": "11.0% US",
@@ -229,8 +229,8 @@
     },
     {
       "year": "Y4",
-      "milestone": "EU + Brazil entry",
-      "geography": "EU + Brazil",
+      "milestone": "Brazil entry",
+      "geography": "EU + U.S. + Brazil",
       "hectares": 6500000,
       "coverage_pct": 35.1,
       "coverage_label": "35.1% EU+Brazil",
@@ -277,15 +277,15 @@
   "milestones_high_scenario": [
     {
       "year": "Y1",
-      "milestone": "SJV pilot",
-      "geography": "California SJV",
+      "milestone": "Anchor pilot",
+      "geography": "EU or SJV",
       "hectares": 50000,
       "coverage_pct": 3.5,
-      "coverage_label": "3.5% SJV",
+      "coverage_label": "<=5% region",
       "coverage_reference": "California San Joaquin Valley",
       "coverage_reference_hectares": 1415000,
       "satellite_multiplier": 1.0,
-      "distribution": "Direct enterprise (one irrigation district)",
+      "distribution": "Validation-geography-dependent anchor customer",
       "mrv_enabled": false,
       "gross_arr_musd": 0.2,
       "carbon_mrv_musd": 0.0,
@@ -296,19 +296,19 @@
       "operating_margin_musd": -2.16,
       "operating_margin_pct": -1078.7,
       "contribution_margin_per_ha_usd": 2.85,
-      "rationale": "Anchored to the Westlands real-scene replay and sized as a paid proof-of-value pilot over roughly 3.5% of the SJV."
+      "rationale": "Modeled as a co-funded bridge-to-MVP pilot; the anchor geography can land in the EU wedge or the San Joaquin Valley depending on validation access."
     },
     {
       "year": "Y2",
-      "milestone": "California scale",
-      "geography": "California",
+      "milestone": "Benelux + CA scale",
+      "geography": "EU + California",
       "hectares": 400000,
       "coverage_pct": 28.3,
-      "coverage_label": "28.3% SJV",
+      "coverage_label": "EU wedge + SJV",
       "coverage_reference": "California San Joaquin Valley",
       "coverage_reference_hectares": 1415000,
       "satellite_multiplier": 1.0,
-      "distribution": "Climate FieldView API + direct enterprise",
+      "distribution": "Advisor / crop-platform API plus direct enterprise",
       "mrv_enabled": true,
       "gross_arr_musd": 1.6,
       "carbon_mrv_musd": 0.1,
@@ -319,12 +319,12 @@
       "operating_margin_musd": -1.06,
       "operating_margin_pct": -62.4,
       "contribution_margin_per_ha_usd": 3.1,
-      "rationale": "Expands across roughly 28.3% of the SJV while activating a Year 2 soil-carbon MRV add-on revenue stream."
+      "rationale": "Combines the Benelux/EU wedge with California validation-scale coverage while activating a Year 2 soil-carbon MRV add-on revenue stream."
     },
     {
       "year": "Y3",
-      "milestone": "US national",
-      "geography": "U.S. irrigated",
+      "milestone": "EU + U.S. national",
+      "geography": "EU + U.S. irrigated",
       "hectares": 2500000,
       "coverage_pct": 11.0,
       "coverage_label": "11.0% US",
@@ -346,8 +346,8 @@
     },
     {
       "year": "Y4",
-      "milestone": "EU + Brazil entry",
-      "geography": "EU + Brazil",
+      "milestone": "Brazil entry",
+      "geography": "EU + U.S. + Brazil",
       "hectares": 6500000,
       "coverage_pct": 35.1,
       "coverage_label": "35.1% EU+Brazil",
@@ -395,21 +395,21 @@
     "low": {
       "scenario": "low",
       "year": "Y2",
-      "milestone": "California scale",
+      "milestone": "Benelux + CA scale",
       "hectares": 400000,
       "fixed_cost_musd": 0.95
     },
     "base": {
       "scenario": "base",
       "year": "Y3",
-      "milestone": "US national",
+      "milestone": "EU + U.S. national",
       "hectares": 2500000,
       "fixed_cost_musd": 2.1
     },
     "high": {
       "scenario": "high",
       "year": "Y3",
-      "milestone": "US national",
+      "milestone": "EU + U.S. national",
       "hectares": 2500000,
       "fixed_cost_musd": 3.22
     }
