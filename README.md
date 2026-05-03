@@ -10,7 +10,7 @@
 - **Real-scene replay anchors** (Westlands/Firebaugh, CA):
   - **2024 quiet season**: peak CSC **`0.412`** vs threshold **`0.615`** → **no** `FUSE_PRIORITY` expected.
   - **2014 D4 drought**: peak CSC **`0.869`**, **`FUSE_PRIORITY` at 6/6 windows** → **`2.1×`** the 2024 peak (**no retuning**).
-- **One-command reproducibility**: `make repro-2014`, `make repro-2024`, `make test`, `make figures`.
+- **One-command reproducibility**: `make repro-2014`, `make repro-2024`, `make test`.
 - **Canonical claims protected by tests**: failing a paper anchor fails CI.
 
 ![Westlands replay summary](artifacts/replay/westlands_ca_2024-06-01_2024-10-31/replay_summary.png)
@@ -21,6 +21,7 @@ CASCADE is a NASA Space-to-Soil submission repository containing:
 
 - **Synthetic benchmark**: a 100-seed Monte Carlo study (ROC sweep + ablations + sensitivity).
 - **Real-scene MODIS replay**: AppEEARS-backed replays over the Westlands AOI.
+- **CSC calibration**: offline parameter search with accepted calibration fixtures.
 - **Economics model**: a rollout model and accepted baseline fixtures.
 - **Paper source**: `paper/EmilLambert_CASCADE.tex` and the compiled PDF.
 
@@ -40,6 +41,13 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt -r requirements-dev.txt
 ```
 
+The source-tree shim supports `python -m cascade.*` directly from a checkout. If
+you want an editable package install as well, run:
+
+```bash
+python -m pip install -e .
+```
+
 ## Usage (fast path)
 
 Run the synthetic benchmark (skips slow “additional ablations” by default):
@@ -48,7 +56,8 @@ Run the synthetic benchmark (skips slow “additional ablations” by default):
 python -m cascade.simulate
 ```
 
-Run the paper-anchor replays:
+Run the paper-anchor replays. These prefer tracked artifacts when present, so
+they work offline and return the same JSON payloads used by tests:
 
 ```bash
 python -m cascade.replay --year 2014
@@ -61,12 +70,24 @@ Run tests:
 python -m pytest -q
 ```
 
+Run only the accepted-artifact validation checks:
+
+```bash
+python -m pytest -m validation
+```
+
 ## Makefile (judge-friendly)
 
 ```bash
 make test
 make repro-2014
 make repro-2024
+```
+
+After reviewing regenerated files under `build/`, promote selected outputs into
+tracked `artifacts/` and `paper/figures/`:
+
+```bash
 make figures
 ```
 
@@ -89,10 +110,27 @@ curl -i -u "$EARTHDATA_USERNAME:$EARTHDATA_PASSWORD" \
   -X POST https://appeears.earthdatacloud.nasa.gov/api/login
 ```
 
-Run the replay workflow directly:
+Run the lower-level live replay workflow directly:
 
 ```bash
 python real_modis_replay.py --help
+```
+
+The offline reviewer replay commands above are preferred for quick evaluation;
+live replay writes fresh outputs to `build/replay/` and may reuse `data/cache/`.
+
+## Additional workflows
+
+Regenerate CSC calibration outputs:
+
+```bash
+python scripts/calibrate_csc.py
+```
+
+Regenerate unit-economics outputs:
+
+```bash
+python scripts/unit_economics.py
 ```
 
 ## Repository map
@@ -100,6 +138,8 @@ python real_modis_replay.py --help
 - **Package code**: `src/cascade/`
 - **Replay**: `src/cascade/replay/modis.py`
 - **Benchmark**: `src/cascade/simulation.py`
+- **Calibration**: `src/cascade/calibration.py`
+- **Economics**: `src/cascade/economics.py`
 - **Tracked outputs**: `artifacts/`
 - **Transient outputs**: `build/`
 - **Paper**: `paper/EmilLambert_CASCADE.tex` (source of truth)
@@ -119,7 +159,8 @@ More detail: [docs/repo_structure.md](docs/repo_structure.md)
 1. Read **Highlights** + the **metrics table** above.
 2. Open `artifacts/benchmark/roc.png`.
 3. Run `make repro-2014` or `make repro-2024` (or `python -m cascade.simulate`).
-4. Open the tracked replay metrics under `artifacts/replay/` or read [docs/replay_anchors.md](docs/replay_anchors.md).
+4. For artifact regression checks, run `python -m pytest -m validation`.
+5. Open the tracked replay metrics under `artifacts/replay/` or read [docs/replay_anchors.md](docs/replay_anchors.md).
 
 ## Citation
 
