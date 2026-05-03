@@ -8,6 +8,65 @@
     "contribution_margin_no_mrv_usd_per_ha": 2.85,
     "contribution_margin_with_mrv_usd_per_ha": 3.1
   },
+  "paper_rollout_rows": [
+    {
+      "year": "Y1",
+      "milestone": "Anchor pilot",
+      "geography": "EU or SJV",
+      "coverage_label": "<=5% region",
+      "hectares": 50000,
+      "total_revenue_musd": 0.2,
+      "operating_margin": "grant-funded"
+    },
+    {
+      "year": "Y2",
+      "milestone": "Benelux + CA scale",
+      "geography": "EU + California",
+      "coverage_label": "EU wedge + SJV",
+      "hectares": 400000,
+      "total_revenue_musd": 1.7,
+      "operating_margin": "17.1%"
+    },
+    {
+      "year": "Y3",
+      "milestone": "EU + U.S. national",
+      "geography": "EU + U.S. irrigated",
+      "coverage_label": "11.0% US",
+      "hectares": 2500000,
+      "total_revenue_musd": 10.62,
+      "operating_margin": "60.4%"
+    },
+    {
+      "year": "Y4",
+      "milestone": "EU expansion + intl. org pilots",
+      "geography": "EU + U.S.",
+      "coverage_label": "19.3% EU+US",
+      "hectares": 6500000,
+      "total_revenue_musd": 27.62,
+      "operating_margin": "68.1%",
+      "footnote": "b"
+    },
+    {
+      "year": "Y5",
+      "milestone": "Global commercial",
+      "geography": "Global (commercial)",
+      "coverage_label": "6.0% global",
+      "hectares": 18000000,
+      "total_revenue_musd": 76.5,
+      "operating_margin": "70.7%"
+    }
+  ],
+  "non_commercial_track": {
+    "label": "International organization pilots",
+    "partners": [
+      "World Bank",
+      "FAO",
+      "CGIAR"
+    ],
+    "funding_model": "grant/donor funded",
+    "commercial_tam_musd": 0.0,
+    "role": "Zero-commercial-TAM coverage, independent validation data, and food-security impact credentials that feed back into the commercial path."
+  },
   "break_even_summary": {
     "low": {
       "scenario": "low",

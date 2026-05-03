@@ -14,6 +14,7 @@ from cascade.economics import (
     first_break_even_milestone,
     fixed_cost_musd,
     gross_arr_musd,
+    paper_rollout_rows,
     row_metrics,
     write_outputs,
 )
@@ -30,6 +31,8 @@ def test_contribution_margin_and_revenue_helpers_match_expected_assumptions() ->
 def test_coverage_helpers_and_fixed_cost_scenarios_are_consistent() -> None:
     assert coverage_pct(MILESTONES[1]) == pytest.approx(28.268551236749117)
     assert coverage_label(MILESTONES[1]) == "EU wedge + SJV"
+    assert coverage_pct(MILESTONES[3]) == pytest.approx(19.287833827893176)
+    assert coverage_label(MILESTONES[3]) == "19.3% EU+US"
     assert fixed_cost_musd(MILESTONES[2], "low") < fixed_cost_musd(MILESTONES[2], "base")
     assert fixed_cost_musd(MILESTONES[2], "base") < fixed_cost_musd(MILESTONES[2], "high")
 
@@ -63,6 +66,23 @@ def test_break_even_summary_matches_current_rollout_story() -> None:
     assert first_break_even_milestone("high")["milestone"] == "EU + U.S. national"
 
 
+def test_paper_rollout_rows_match_current_paper_story() -> None:
+    rows = paper_rollout_rows()
+
+    assert rows[3] == {
+        "year": "Y4",
+        "milestone": "EU expansion + intl. org pilots",
+        "geography": "EU + U.S.",
+        "coverage_label": "19.3% EU+US",
+        "hectares": 6500000,
+        "total_revenue_musd": 27.62,
+        "operating_margin": "68.1%",
+        "footnote": "b",
+    }
+    assert rows[4]["milestone"] == "Global commercial"
+    assert rows[4]["geography"] == "Global (commercial)"
+
+
 def test_write_outputs_can_target_a_temporary_directory(tmp_path: Path) -> None:
     output_dir = tmp_path / "unit_economics"
 
@@ -75,4 +95,7 @@ def test_write_outputs_can_target_a_temporary_directory(tmp_path: Path) -> None:
 
     metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
     assert metrics["break_even_summary"]["low"]["year"] == "Y2"
-    assert "grant-funded" in table_path.read_text(encoding="utf-8")
+    assert metrics["non_commercial_track"]["commercial_tam_musd"] == 0.0
+    table = table_path.read_text(encoding="utf-8")
+    assert "grant-funded" in table
+    assert "EU expansion + intl.\\ org pilots\\textsuperscript{b}" in table

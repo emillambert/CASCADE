@@ -32,11 +32,15 @@ low case:
 | `Y1` | Anchor pilot | `50k` | `$0.20M` | grant-funded bridge |
 | `Y2` | Benelux + CA scale | `400k` | `$1.70M` | `17.1%` |
 | `Y3` | EU + U.S. national | `2.5M` | `$10.62M` | `60.4%` |
-| `Y4` | Brazil entry | `6.5M` | `$27.62M` | `68.1%` |
-| `Y5` | Global platform | `18.0M` | `$76.50M` | `70.7%` |
+| `Y4` | EU expansion + intl. org pilots | `6.5M` | `$27.62M` | `68.1%` |
+| `Y5` | Global commercial | `18.0M` | `$76.50M` | `70.7%` |
 
 Break-even occurs in `Y2` for the low case and `Y3` for both the base and high
 fixed-cost cases, according to `artifacts/economics/unit_economics.json`.
+
+The Y4 international-organization pilots are modeled as grant/donor-funded work
+with zero commercial TAM. They add coverage, validation data, and food-security
+impact evidence, but the revenue table keeps commercial TAM separate.
 
 ## Regenerating outputs
 

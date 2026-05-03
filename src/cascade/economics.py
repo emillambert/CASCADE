@@ -46,15 +46,10 @@ MARKET_REFERENCES = {
         hectares=11_000_000,
         source="Eurostat 2020 agricultural census / integrated farm statistics irrigation baseline",
     ),
-    "brazil": MarketReference(
-        label="Brazil irrigated agriculture",
-        hectares=7_500_000,
-        source="ANA Atlas Irrigacao baseline",
-    ),
-    "eu_brazil": MarketReference(
-        label="EU + Brazil irrigated agriculture",
-        hectares=18_500_000,
-        source="Combined Eurostat and ANA irrigation baselines",
+    "eu_us": MarketReference(
+        label="EU + U.S. irrigated agriculture",
+        hectares=33_700_000,
+        source="Combined Eurostat and USDA irrigation baselines",
     ),
     "global": MarketReference(
         label="Global irrigated agriculture",
@@ -76,6 +71,7 @@ class Milestone:
     distribution: str
     rationale: str
     coverage_label_override: str | None = None
+    footnote: str | None = None
 
 
 MILESTONES = (
@@ -125,22 +121,23 @@ MILESTONES = (
     ),
     Milestone(
         year="Y4",
-        label="Brazil entry",
-        geography="EU + U.S. + Brazil",
+        label="EU expansion + intl. org pilots",
+        geography="EU + U.S.",
         hectares=6_500_000,
-        coverage_ref="eu_brazil",
+        coverage_ref="eu_us",
         satellite_multiplier=1.4,
         mrv_enabled=True,
-        distribution="xarvio + John Deere Brazil",
+        distribution="EU/U.S. commercial channels plus World Bank/FAO/CGIAR pilots",
         rationale=(
-            "Extends the same architecture into EU and Brazilian irrigated markets, reaching "
-            "roughly 35.1% of the combined EU+Brazil irrigation baseline."
+            "Expands commercial EU/U.S. coverage while running grant- or donor-funded "
+            "international-organization pilots outside commercial TAM."
         ),
+        footnote="b",
     ),
     Milestone(
         year="Y5",
-        label="Global platform",
-        geography="Global",
+        label="Global commercial",
+        geography="Global (commercial)",
         hectares=18_000_000,
         coverage_ref="global",
         satellite_multiplier=1.8,
@@ -152,6 +149,17 @@ MILESTONES = (
         ),
     ),
 )
+
+NON_COMMERCIAL_TRACK = {
+    "label": "International organization pilots",
+    "partners": ["World Bank", "FAO", "CGIAR"],
+    "funding_model": "grant/donor funded",
+    "commercial_tam_musd": 0.0,
+    "role": (
+        "Zero-commercial-TAM coverage, independent validation data, and food-security "
+        "impact credentials that feed back into the commercial path."
+    ),
+}
 
 
 def contribution_margin_per_ha(mrv_enabled: bool) -> float:
@@ -173,7 +181,7 @@ def coverage_label(milestone: Milestone) -> str:
     ref_name = {
         "sjv": "SJV",
         "us": "US",
-        "eu_brazil": "EU+Brazil",
+        "eu_us": "EU+US",
         "global": "global",
     }.get(milestone.coverage_ref, reference.label)
     return f"{coverage_pct(milestone):.1f}% {ref_name}"
@@ -252,12 +260,13 @@ def hectares_scale_bar(metrics: dict) -> str:
 
 
 def latex_text(value: str) -> str:
-    return str(value).replace("<=", "$\\leq$").replace("%", "\\%")
+    return str(value).replace("<=", "$\\leq$").replace("%", "\\%").replace("intl. org", "intl.\\ org")
 
 
 def latex_rows() -> str:
     rows = []
-    for metrics in (row_metrics(m, "low") for m in MILESTONES):
+    for milestone in MILESTONES:
+        metrics = row_metrics(milestone, "low")
         # Paper-facing table treats Y1 as grant-funded / bridge-to-MVP rather than quoting a negative margin percent.
         if metrics["year"] == "Y1":
             op_margin_cell = "grant-funded"
@@ -267,6 +276,8 @@ def latex_rows() -> str:
         row = dict(metrics)
         for field in ("milestone", "geography", "coverage_label"):
             row[field] = latex_text(row[field])
+        if milestone.footnote:
+            row["milestone"] = f"{row['milestone']}\\textsuperscript{{{milestone.footnote}}}"
         row["op_margin_cell"] = op_margin_cell
         row["hectares_scale_bar"] = hectares_scale_bar(metrics)
         rows.append(
@@ -274,6 +285,27 @@ def latex_rows() -> str:
             "${total_revenue_musd:.2f}\\,M$ & {op_margin_cell} \\\\".format(**row)
         )
     return "\n".join(rows)
+
+
+def paper_rollout_rows() -> list[dict]:
+    rows = []
+    for milestone in MILESTONES:
+        metrics = row_metrics(milestone, "low")
+        rows.append(
+            {
+                "year": metrics["year"],
+                "milestone": metrics["milestone"],
+                "geography": metrics["geography"],
+                "coverage_label": metrics["coverage_label"],
+                "hectares": metrics["hectares"],
+                "total_revenue_musd": metrics["total_revenue_musd"],
+                "operating_margin": "grant-funded"
+                if metrics["year"] == "Y1"
+                else f"{metrics['operating_margin_pct']:.1f}%",
+                **({"footnote": milestone.footnote} if milestone.footnote else {}),
+            }
+        )
+    return rows
 
 
 def write_outputs(output_dir: Path | None = None) -> None:
@@ -296,6 +328,8 @@ def write_outputs(output_dir: Path | None = None) -> None:
         "milestones_low_scenario": [row_metrics(m, "low") for m in MILESTONES],
         "milestones_base_scenario": [row_metrics(m, "base") for m in MILESTONES],
         "milestones_high_scenario": [row_metrics(m, "high") for m in MILESTONES],
+        "paper_rollout_rows": paper_rollout_rows(),
+        "non_commercial_track": NON_COMMERCIAL_TRACK,
         "break_even_summary": {
             scenario: first_break_even_milestone(scenario)
             for scenario in SCENARIO_FIXED_COST_MUSD

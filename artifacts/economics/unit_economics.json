@@ -15,15 +15,10 @@
       "hectares": 11000000,
       "source": "Eurostat 2020 agricultural census / integrated farm statistics irrigation baseline"
     },
-    "brazil": {
-      "label": "Brazil irrigated agriculture",
-      "hectares": 7500000,
-      "source": "ANA Atlas Irrigacao baseline"
-    },
-    "eu_brazil": {
-      "label": "EU + Brazil irrigated agriculture",
-      "hectares": 18500000,
-      "source": "Combined Eurostat and ANA irrigation baselines"
+    "eu_us": {
+      "label": "EU + U.S. irrigated agriculture",
+      "hectares": 33700000,
+      "source": "Combined Eurostat and USDA irrigation baselines"
     },
     "global": {
       "label": "Global irrigated agriculture",
@@ -112,15 +107,15 @@
     },
     {
       "year": "Y4",
-      "milestone": "Brazil entry",
-      "geography": "EU + U.S. + Brazil",
+      "milestone": "EU expansion + intl. org pilots",
+      "geography": "EU + U.S.",
       "hectares": 6500000,
-      "coverage_pct": 35.1,
-      "coverage_label": "35.1% EU+Brazil",
-      "coverage_reference": "EU + Brazil irrigated agriculture",
-      "coverage_reference_hectares": 18500000,
+      "coverage_pct": 19.3,
+      "coverage_label": "19.3% EU+US",
+      "coverage_reference": "EU + U.S. irrigated agriculture",
+      "coverage_reference_hectares": 33700000,
       "satellite_multiplier": 1.4,
-      "distribution": "xarvio + John Deere Brazil",
+      "distribution": "EU/U.S. commercial channels plus World Bank/FAO/CGIAR pilots",
       "mrv_enabled": true,
       "gross_arr_musd": 26.0,
       "carbon_mrv_musd": 1.62,
@@ -131,12 +126,12 @@
       "operating_margin_musd": 18.82,
       "operating_margin_pct": 68.1,
       "contribution_margin_per_ha_usd": 3.1,
-      "rationale": "Extends the same architecture into EU and Brazilian irrigated markets, reaching roughly 35.1% of the combined EU+Brazil irrigation baseline."
+      "rationale": "Expands commercial EU/U.S. coverage while running grant- or donor-funded international-organization pilots outside commercial TAM."
     },
     {
       "year": "Y5",
-      "milestone": "Global platform",
-      "geography": "Global",
+      "milestone": "Global commercial",
+      "geography": "Global (commercial)",
       "hectares": 18000000,
       "coverage_pct": 6.0,
       "coverage_label": "6.0% global",
@@ -229,15 +224,15 @@
     },
     {
       "year": "Y4",
-      "milestone": "Brazil entry",
-      "geography": "EU + U.S. + Brazil",
+      "milestone": "EU expansion + intl. org pilots",
+      "geography": "EU + U.S.",
       "hectares": 6500000,
-      "coverage_pct": 35.1,
-      "coverage_label": "35.1% EU+Brazil",
-      "coverage_reference": "EU + Brazil irrigated agriculture",
-      "coverage_reference_hectares": 18500000,
+      "coverage_pct": 19.3,
+      "coverage_label": "19.3% EU+US",
+      "coverage_reference": "EU + U.S. irrigated agriculture",
+      "coverage_reference_hectares": 33700000,
       "satellite_multiplier": 1.4,
-      "distribution": "xarvio + John Deere Brazil",
+      "distribution": "EU/U.S. commercial channels plus World Bank/FAO/CGIAR pilots",
       "mrv_enabled": true,
       "gross_arr_musd": 26.0,
       "carbon_mrv_musd": 1.62,
@@ -248,12 +243,12 @@
       "operating_margin_musd": 18.05,
       "operating_margin_pct": 65.3,
       "contribution_margin_per_ha_usd": 3.1,
-      "rationale": "Extends the same architecture into EU and Brazilian irrigated markets, reaching roughly 35.1% of the combined EU+Brazil irrigation baseline."
+      "rationale": "Expands commercial EU/U.S. coverage while running grant- or donor-funded international-organization pilots outside commercial TAM."
     },
     {
       "year": "Y5",
-      "milestone": "Global platform",
-      "geography": "Global",
+      "milestone": "Global commercial",
+      "geography": "Global (commercial)",
       "hectares": 18000000,
       "coverage_pct": 6.0,
       "coverage_label": "6.0% global",
@@ -346,15 +341,15 @@
     },
     {
       "year": "Y4",
-      "milestone": "Brazil entry",
-      "geography": "EU + U.S. + Brazil",
+      "milestone": "EU expansion + intl. org pilots",
+      "geography": "EU + U.S.",
       "hectares": 6500000,
-      "coverage_pct": 35.1,
-      "coverage_label": "35.1% EU+Brazil",
-      "coverage_reference": "EU + Brazil irrigated agriculture",
-      "coverage_reference_hectares": 18500000,
+      "coverage_pct": 19.3,
+      "coverage_label": "19.3% EU+US",
+      "coverage_reference": "EU + U.S. irrigated agriculture",
+      "coverage_reference_hectares": 33700000,
       "satellite_multiplier": 1.4,
-      "distribution": "xarvio + John Deere Brazil",
+      "distribution": "EU/U.S. commercial channels plus World Bank/FAO/CGIAR pilots",
       "mrv_enabled": true,
       "gross_arr_musd": 26.0,
       "carbon_mrv_musd": 1.62,
@@ -365,12 +360,12 @@
       "operating_margin_musd": 16.93,
       "operating_margin_pct": 61.3,
       "contribution_margin_per_ha_usd": 3.1,
-      "rationale": "Extends the same architecture into EU and Brazilian irrigated markets, reaching roughly 35.1% of the combined EU+Brazil irrigation baseline."
+      "rationale": "Expands commercial EU/U.S. coverage while running grant- or donor-funded international-organization pilots outside commercial TAM."
     },
     {
       "year": "Y5",
-      "milestone": "Global platform",
-      "geography": "Global",
+      "milestone": "Global commercial",
+      "geography": "Global (commercial)",
       "hectares": 18000000,
       "coverage_pct": 6.0,
       "coverage_label": "6.0% global",
@@ -391,6 +386,65 @@
       "rationale": "Scales to a multi-platform global offering at roughly 6.0% of worldwide irrigated farmland without changing the onboard architecture."
     }
   ],
+  "paper_rollout_rows": [
+    {
+      "year": "Y1",
+      "milestone": "Anchor pilot",
+      "geography": "EU or SJV",
+      "coverage_label": "<=5% region",
+      "hectares": 50000,
+      "total_revenue_musd": 0.2,
+      "operating_margin": "grant-funded"
+    },
+    {
+      "year": "Y2",
+      "milestone": "Benelux + CA scale",
+      "geography": "EU + California",
+      "coverage_label": "EU wedge + SJV",
+      "hectares": 400000,
+      "total_revenue_musd": 1.7,
+      "operating_margin": "17.1%"
+    },
+    {
+      "year": "Y3",
+      "milestone": "EU + U.S. national",
+      "geography": "EU + U.S. irrigated",
+      "coverage_label": "11.0% US",
+      "hectares": 2500000,
+      "total_revenue_musd": 10.62,
+      "operating_margin": "60.4%"
+    },
+    {
+      "year": "Y4",
+      "milestone": "EU expansion + intl. org pilots",
+      "geography": "EU + U.S.",
+      "coverage_label": "19.3% EU+US",
+      "hectares": 6500000,
+      "total_revenue_musd": 27.62,
+      "operating_margin": "68.1%",
+      "footnote": "b"
+    },
+    {
+      "year": "Y5",
+      "milestone": "Global commercial",
+      "geography": "Global (commercial)",
+      "coverage_label": "6.0% global",
+      "hectares": 18000000,
+      "total_revenue_musd": 76.5,
+      "operating_margin": "70.7%"
+    }
+  ],
+  "non_commercial_track": {
+    "label": "International organization pilots",
+    "partners": [
+      "World Bank",
+      "FAO",
+      "CGIAR"
+    ],
+    "funding_model": "grant/donor funded",
+    "commercial_tam_musd": 0.0,
+    "role": "Zero-commercial-TAM coverage, independent validation data, and food-security impact credentials that feed back into the commercial path."
+  },
   "break_even_summary": {
     "low": {
       "scenario": "low",
