@@ -343,7 +343,7 @@ class CASCADEPolicy:
         csc_alert_thr=CSC_ALERT_THRESHOLD_DEFAULT,
         explore_n=12,
         batt_crit=0.15,
-        batt_cons=0.34,
+        batt_cons=0.35,
         posterior_tail_thr=0.70,
         posterior_mean_thr=0.55,
         min_evidence=2,

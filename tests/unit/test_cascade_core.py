@@ -140,10 +140,14 @@ def test_update_stress_belief_uses_inclusive_thresholds_and_caps_evidence() -> N
 
 def test_cascade_policy_action_order_matches_battery_tail_and_exploration_rules() -> None:
     policy = CASCADEPolicy()
+    strong_belief = dict(alpha=np.array([2.0]), beta=np.array([1.0]))
 
     assert policy.act(make_state(soc=0.10)) == "SKIP"
     assert policy.act(make_state(soc=0.20)) == "MOD13"
-    assert policy.act(make_state(alpha=np.array([2.0]), beta=np.array([1.0]))) == "FUSE"
+    assert policy.batt_cons == pytest.approx(0.35)
+    assert policy.act(make_state(soc=0.34, **strong_belief)) == "MOD13"
+    assert policy.act(make_state(soc=0.35, **strong_belief)) == "FUSE"
+    assert policy.act(make_state(**strong_belief)) == "FUSE"
     assert policy.act(make_state(alpha=np.array([1.0]), beta=np.array([2.0]), steps_since_fuse=12)) == "FUSE"
     assert policy.act(make_state(alpha=np.array([1.0]), beta=np.array([2.0]), steps_since_fuse=0)) == "MOD13"
 

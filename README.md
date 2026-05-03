@@ -13,7 +13,16 @@
 - **One-command reproducibility**: `make repro-2014`, `make repro-2024`, `make test`.
 - **Canonical claims protected by tests**: failing a paper anchor fails CI.
 
-![Westlands replay summary](artifacts/replay/westlands_ca_2024-06-01_2024-10-31/replay_summary.png)
+<iframe
+  src="https://player.vimeo.com/video/1188883695"
+  width="800"
+  height="450"
+  frameborder="0"
+  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+  title="CASCADE replay summary video"
+></iframe>
+
+[Watch the CASCADE replay summary on Vimeo](https://vimeo.com/1188883695?share=copy&fl=sv&fe=ci)
 
 ## Overview
 

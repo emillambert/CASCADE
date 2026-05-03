@@ -86,7 +86,7 @@ def panel_threshold(ax, roc_payload: dict, ablation_payload: dict):
     ax.text(op_thr + 0.006, 89.2, "operating\n0.615", ha="left", va="bottom", fontsize=7.7, color=DARK)
 
     annotation_xytext = {
-        0.40: (0.435, 95.0),
+        0.40: (0.455, 89.4),
         0.65: (0.626, 93.2),
         0.70: (0.655, 88.1),
     }
@@ -131,9 +131,11 @@ def panel_threshold(ax, roc_payload: dict, ablation_payload: dict):
         key=lambda p: p["threshold"],
     )
     dense_x = [x for x in np.linspace(0.40, 0.70, 120)]
+    headline_fp = [_interp(roc_points, x, "false_positive_rate_pct") for x in dense_x]
     base_fp = [_interp(base_dense, x, "false_positive_rate_pct") for x in dense_x]
     no_ndwi_fp = [_interp(no_ndwi_dense, x, "false_positive_rate_pct") for x in dense_x]
-    ax2.fill_between(dense_x, base_fp, no_ndwi_fp, color=RED, alpha=0.10, linewidth=0, label="NDWI removed FP penalty")
+    penalty_fp = [h + max(n - b, 0.0) for h, b, n in zip(headline_fp, base_fp, no_ndwi_fp)]
+    ax2.fill_between(dense_x, headline_fp, penalty_fp, color=RED, alpha=0.10, linewidth=0, label="NDWI removed FP penalty")
 
     lines1, labels1 = ax.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
@@ -212,11 +214,11 @@ def callout_saturation(ax, payload_csc: dict):
     ax.add_patch(
         plt.Rectangle((0.02, 0.05), 0.96, 0.88, facecolor=PANEL_BG, edgecolor="#d5d5d5", linewidth=0.8)
     )
-    ax.text(0.08, 0.84, "Saturation check", ha="left", va="center", fontsize=9.2, weight="bold", color=DARK)
-    ax.text(0.08, 0.70, "Weights: 0.7 / 1.0 / 1.3x", ha="left", va="center", fontsize=7.2, color="#555555")
-    ax.text(0.08, 0.56, f"s=0.70: {loose[1]:.1f}% recall\n{loose[2]:.2f}% FP", ha="left", va="center", fontsize=7.3, color=DARK)
-    ax.text(0.08, 0.37, f"s=1.00: {nominal[1]:.1f}% recall\n{nominal[2]:.2f}% FP", ha="left", va="center", fontsize=7.3, color=DARK)
-    ax.text(0.08, 0.17, f"s=1.30: {tight[1]:.1f}% recall\n{tight[2]:.1f}% FP", ha="left", va="center", fontsize=7.2, color=RED)
+    ax.text(0.08, 0.84, "Saturation check", ha="left", va="center", fontsize=10.4, weight="bold", color=DARK)
+    ax.text(0.08, 0.70, "Scale: 0.7 / 1.0 / 1.3x", ha="left", va="center", fontsize=8.3, color="#555555")
+    ax.text(0.08, 0.56, f"s=0.70: {loose[1]:.1f}% recall\n{loose[2]:.2f}% FP", ha="left", va="center", fontsize=8.6, color=DARK)
+    ax.text(0.08, 0.37, f"s=1.00: {nominal[1]:.1f}% recall\n{nominal[2]:.2f}% FP", ha="left", va="center", fontsize=8.6, color=DARK)
+    ax.text(0.08, 0.17, f"s=1.30: {tight[1]:.1f}% recall\n{tight[2]:.1f}% FP", ha="left", va="center", fontsize=8.5, color=RED)
 
 
 def main() -> None:
@@ -231,10 +233,10 @@ def main() -> None:
     gs = fig.add_gridspec(
         2,
         3,
-        width_ratios=[1.0, 1.0, 0.72],
+        width_ratios=[1.0, 1.0, 0.88],
         height_ratios=[1.0, 1.0],
         hspace=0.52,
-        wspace=0.48,
+        wspace=0.42,
     )
     ax_threshold = fig.add_subplot(gs[0, 0:2])
     ax_callout = fig.add_subplot(gs[0, 2])

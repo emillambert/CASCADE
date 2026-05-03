@@ -86,7 +86,7 @@ def rounded_box(ax, xy, width, height, text, face, edge, fontsize=8.9, weight="b
         xy,
         width,
         height,
-        boxstyle="round,pad=0.014,rounding_size=0.018",
+        boxstyle="round,pad=0.008,rounding_size=0.014",
         linewidth=0.95,
         facecolor=face,
         edgecolor=edge,
@@ -171,8 +171,8 @@ def render_action_mix(ax, mix: dict[str, float]) -> None:
 def render_degradation(ax) -> None:
     x0, y0, width, height = 0.405, 0.342, 0.185, 0.052
     bands = [
-        (">35% SOC", GREEN, 0.45),
-        ("15-35%", ORANGE, 0.35),
+        (">=35% SOC", GREEN, 0.45),
+        ("15-<35%", ORANGE, 0.35),
         ("<15%", RED, 0.20),
     ]
     ax.text(x0, y0 + 0.066, "Graceful degradation", ha="left", va="bottom", fontsize=7.5, color=DARK)
@@ -198,7 +198,7 @@ def main() -> None:
     ax.add_patch(
         FancyBboxPatch(
             (0.025, 0.325),
-            0.675,
+            0.68,
             0.585,
             boxstyle="round,pad=0.012,rounding_size=0.025",
             linewidth=0.95,
@@ -210,34 +210,33 @@ def main() -> None:
     )
     ax.text(0.045, 0.855, "Hosted payload module - Loft Orbital YAM", ha="left", va="center", fontsize=8.6, color=BLUE, style="italic")
 
-    rounded_box(ax, (0.055, 0.60), 0.115, 0.125, "Sensors\nMS + TIR", LIGHT_BLUE, BLUE, fontsize=8.3)
-    rounded_box(ax, (0.205, 0.60), 0.115, 0.125, "FPGA\nKintex RT", LIGHT_BLUE, BLUE, fontsize=8.3)
+    rounded_box(ax, (0.070, 0.610), 0.085, 0.105, "Sensors\nMS + TIR", LIGHT_BLUE, BLUE, fontsize=8.3)
+    rounded_box(ax, (0.210, 0.610), 0.105, 0.105, "FPGA\nKintex RT", LIGHT_BLUE, BLUE, fontsize=8.3)
     rounded_box(
         ax,
-        (0.355, 0.57),
-        0.19,
-        0.185,
+        (0.365, 0.585),
+        0.17,
+        0.155,
         "LEON4FT\nMDP policy\n$\\tau_{max}$ / SOC / $k$",
         LIGHT_BLUE,
         BLUE,
         fontsize=8.1,
         weight="bold",
     )
-    rounded_box(ax, (0.59, 0.60), 0.115, 0.125, "Priority\nX-band", LIGHT_BLUE, BLUE, fontsize=8.3)
-    rounded_box(ax, (0.775, 0.60), 0.11, 0.125, "Loft\nground", LIGHT_GREEN, GREEN, fontsize=8.3)
-    rounded_box(ax, (0.70, 0.38), 0.115, 0.112, "OpenET\nAPI", LIGHT_GREEN, GREEN, fontsize=8.0)
-    rounded_box(ax, (0.86, 0.38), 0.115, 0.112, "Farmer\nplatform", LIGHT_GREEN, GREEN, fontsize=8.0)
+    rounded_box(ax, (0.595, 0.610), 0.105, 0.105, "Priority\nX-band", LIGHT_BLUE, BLUE, fontsize=8.3)
+    rounded_box(ax, (0.780, 0.610), 0.10, 0.105, "Loft\nground", LIGHT_GREEN, GREEN, fontsize=8.3)
+    rounded_box(ax, (0.743, 0.389), 0.08, 0.095, "OpenET\nAPI", LIGHT_GREEN, GREEN, fontsize=8.0)
+    rounded_box(ax, (0.865, 0.389), 0.105, 0.095, "Farmer\nplatform", LIGHT_GREEN, GREEN, fontsize=8.0)
 
-    arrow(ax, (0.17, 0.663), (0.205, 0.663))
-    arrow(ax, (0.32, 0.663), (0.355, 0.663))
-    arrow(ax, (0.545, 0.663), (0.59, 0.663))
-    arrow(ax, (0.705, 0.663), (0.775, 0.663))
-    arrow(ax, (0.83, 0.60), (0.76, 0.492))
-    arrow(ax, (0.815, 0.436), (0.86, 0.436))
+    arrow(ax, (0.155, 0.663), (0.210, 0.663))
+    arrow(ax, (0.315, 0.663), (0.365, 0.663))
+    arrow(ax, (0.535, 0.663), (0.595, 0.663))
+    arrow(ax, (0.700, 0.663), (0.780, 0.663))
+    arrow(ax, (0.83, 0.610), (0.775, 0.484))
+    arrow(ax, (0.823, 0.436), (0.865, 0.436))
 
-    ax.plot([0.745, 0.745], [0.325, 0.89], color="#b5b5b5", linewidth=0.8, linestyle=(0, (4, 3)))
-    ax.text(0.732, 0.855, "SPACE", ha="right", va="center", fontsize=7.4, color="#777777")
-    ax.text(0.758, 0.855, "GROUND", ha="left", va="center", fontsize=7.4, color="#777777")
+    ax.text(0.709, 0.855, "SPACE", ha="right", va="center", fontsize=7.4, color="#777777")
+    ax.text(0.735, 0.855, "GROUND", ha="left", va="center", fontsize=7.4, color="#777777")
 
     render_degradation(ax)
     ax.text(0.405, 0.488, "Promotion gate:\ncontact + CSC > 0.615", ha="left", va="center", fontsize=7.0, color=RED)

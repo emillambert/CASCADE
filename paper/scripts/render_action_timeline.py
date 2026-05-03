@@ -238,11 +238,11 @@ def render_combined(csv_2014: Path, csv_2024: Path, out_path: Path) -> None:
     axes[1][1].annotate(
         f"peak {peak_2024:.3f}\n0 alerts",
         xy=(df_2024.loc[df_2024["csc_max"].idxmax(), "date"], peak_2024),
-        xytext=(14, 18),
-        textcoords="offset points",
+        xytext=(df_2024.loc[df_2024["csc_max"].idxmax(), "date"], ALERT_THR + 0.12),
+        textcoords="data",
         fontsize=7.8,
         color=COLORS["FUSE"],
-        ha="left",
+        ha="center",
         arrowprops=dict(arrowstyle="->", color=COLORS["FUSE"], lw=0.75),
     )
 
@@ -274,6 +274,8 @@ def main() -> None:
     configure_style()
 
     csv_2014 = BUILD_REPLAY_DIR / "westlands_ca_2014-06-01_2014-10-31" / "action_timeline.csv"
+    if not csv_2014.exists():
+        csv_2014 = ARTIFACTS_REPLAY_DIR / "westlands_ca_2014-06-01_2014-10-31" / "action_timeline.csv"
     csv_2024 = ARTIFACTS_REPLAY_DIR / "westlands_ca_2024-06-01_2024-10-31" / "action_timeline.csv"
 
     if args.year in ("2014", "both"):
