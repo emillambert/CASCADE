@@ -13,16 +13,9 @@
 - **One-command reproducibility**: `make repro-2014`, `make repro-2024`, `make test`.
 - **Canonical claims protected by tests**: failing a paper anchor fails CI.
 
-<iframe
-  src="https://player.vimeo.com/video/1188883695"
-  width="800"
-  height="450"
-  frameborder="0"
-  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-  title="CASCADE replay summary video"
-></iframe>
+[![A SmallSat That Flags Drought 16 Days Early - NASA Space-to-Soil 2026](https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F2153258640-feae61727b4da89f0391f5507f22403fde3257dead4d2a5b5ed0f517a6525f44-d_295x166%3Fregion%3Dus&src1=http%3A%2F%2Ff.vimeocdn.com%2Fp%2Fimages%2Fcrawler_play.png)](https://vimeo.com/1188883695?share=copy&fl=sv&fe=ci)
 
-[Watch the CASCADE replay summary on Vimeo](https://vimeo.com/1188883695?share=copy&fl=sv&fe=ci)
+[Watch the CASCADE video on Vimeo](https://vimeo.com/1188883695?share=copy&fl=sv&fe=ci)
 
 ## Overview
 
