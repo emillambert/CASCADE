@@ -19,7 +19,7 @@
 
 ## Overview
 
-CASCADE is a NASA Space-to-Soil submission repository containing:
+CASCADE is a NASA Space to Soil submission repository containing:
 
 - **Synthetic benchmark**: a 100-seed Monte Carlo study (ROC sweep + ablations + sensitivity).
 - **Real-scene MODIS replay**: AppEEARS-backed replays over the Westlands AOI.
