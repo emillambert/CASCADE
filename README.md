@@ -1,5 +1,9 @@
 # CASCADE
 
+> **Note for NASA Space-to-Soil judges:** the frozen submission version is
+> available at the `v1.0.0` release:
+> <https://github.com/emillambert/CASCADE/releases/tag/v1.0.0>
+
 [![CI](https://github.com/emillambert/CASCADE/actions/workflows/ci.yml/badge.svg)](https://github.com/emillambert/CASCADE/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
 
