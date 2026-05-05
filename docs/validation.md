@@ -19,14 +19,27 @@ Routine local check:
 python -m pytest -q
 ```
 
+SoftwareX release check:
+
+```bash
+python -m pytest -q --cov=src/cascade --cov-fail-under=60
+python examples/westlands_replay.py
+```
+
+The coverage threshold is applied to the offline package core. The live
+AppEEARS adapter in `src/cascade/replay/modis.py` is excluded from the coverage
+percentage because it depends on external credentials and service availability;
+its parser, masking, output, and replay-bookkeeping helpers are still exercised
+by integration tests.
+
 Offline baseline check:
 
 ```bash
 python -m pytest -m validation
 ```
 
-CI runs `pytest -q` across Python 3.10, 3.11, and 3.12 using
-`.github/workflows/ci.yml`.
+CI runs `pytest -q --cov=src/cascade --cov-fail-under=60` across Python 3.10,
+3.11, and 3.12 on Linux and macOS using `.github/workflows/ci.yml`.
 
 ## What CI protects
 

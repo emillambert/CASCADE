@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Five-year geography-expansion unit economics for the CASCADE hosted-payload concept."""
 
 from __future__ import annotations

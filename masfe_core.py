@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Deprecated compatibility wrapper for :mod:`cascade.core`.
 
 New code should import from ``cascade.core`` and use ``CASCADEPolicy``. This

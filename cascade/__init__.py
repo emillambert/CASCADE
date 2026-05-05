@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from pathlib import Path
@@ -8,4 +9,3 @@ from pathlib import Path
 _SRC_ROOT = (Path(__file__).resolve().parent.parent / "src" / "cascade").resolve()
 if _SRC_ROOT.is_dir():
     __path__.append(str(_SRC_ROOT))  # type: ignore[name-defined]
-

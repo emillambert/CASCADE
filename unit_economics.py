@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Compatibility wrapper for :mod:`cascade.economics`."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """CASCADE package public surface."""
 
 from cascade.core import (  # noqa: F401
@@ -16,4 +17,3 @@ from cascade.core import (  # noqa: F401
     posterior_tail_probability,
     update_stress_belief,
 )
-

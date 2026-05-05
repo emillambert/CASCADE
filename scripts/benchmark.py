@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Run the CASCADE synthetic benchmark into build outputs."""
 
 from __future__ import annotations

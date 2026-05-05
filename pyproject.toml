@@ -3,14 +3,34 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cascade"
-version = "0.1.0"
+name = "cascade-eo"
+version = "1.0.0"
 description = "CASCADE: An Onboard Crop Anomaly Screening, Confirmation, and Alert Downlink Engine"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
-license = { file = "LICENSE" }
+license = { file = "LICENSE.txt" }
 authors = [
-  { name = "Emil Lambert" },
+  { name = "Emil Wes Lambert", email = "e.w.lambert@student.tudelft.nl" },
+]
+keywords = [
+  "earth-observation",
+  "onboard-autonomy",
+  "remote-sensing",
+  "drought-monitoring",
+  "satellite-scheduling",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: GIS",
+  "Topic :: Scientific/Engineering :: Image Processing",
 ]
 dependencies = [
   "requests>=2.31,<3",
@@ -21,8 +41,26 @@ dependencies = [
   "tqdm>=4.66,<5",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2,<9.0",
+  "pytest-cov>=5.0,<7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/emillambert/CASCADE"
+Repository = "https://github.com/emillambert/CASCADE"
+Documentation = "https://github.com/emillambert/CASCADE/tree/main/docs"
+Issues = "https://github.com/emillambert/CASCADE/issues"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
+license-files = ["LICENSE", "LICENSE.txt"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.coverage.run]
+omit = [
+  "src/cascade/replay/modis.py",
+]

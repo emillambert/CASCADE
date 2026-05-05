@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Generate CASCADE unit-economics build outputs."""
 
 from __future__ import annotations
