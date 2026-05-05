@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Replay CASCADE decisions on real MODIS scenes for one agricultural AOI.
 
 This script uses AppEEARS area requests to fetch subset GeoTIFFs for:

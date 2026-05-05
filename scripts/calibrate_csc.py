@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Run the CASCADE CSC calibration workflow."""
 
 from __future__ import annotations

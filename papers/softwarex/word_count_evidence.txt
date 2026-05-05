@@ -1,0 +1,25 @@
+SoftwareX word-count evidence
+Checked: 2026-05-05
+
+Tool:
+TeXcount version 3.1.1, 2018 Oct 28
+
+Command:
+perl /tmp/cascade-texcount/texcount.pl -inc -sum papers/softwarex/cascade_softwarex.tex
+
+Output:
+File: papers/softwarex/cascade_softwarex.tex
+Encoding: ascii
+Sum count: 1758
+Words in text: 1535
+Words in headers: 57
+Words outside text (captions, etc.): 157
+Number of headers: 16
+Number of floats/tables/figures: 5
+Number of math inlines: 7
+Number of math displayed: 2
+
+SoftwareX gate:
+The 3,000-word limit excludes title, authors, affiliations, references, and
+metadata tables, and includes abstract, running text, captions, and footnotes.
+The conservative texcount sum above is safely below 3,000 words.

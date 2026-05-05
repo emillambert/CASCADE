@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Shared CASCADE policy and hardware primitives.
 
 This module is the single source of truth for the hosted-payload SWAP model,

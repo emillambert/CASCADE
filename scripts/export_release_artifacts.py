@@ -1,9 +1,11 @@
+# SPDX-License-Identifier: MIT
 """Promote build outputs into tracked artifacts and paper figures."""
 
 from __future__ import annotations
 
 import shutil
 import sys
+import runpy
 from pathlib import Path
 
 SRC_DIR = Path(__file__).resolve().parents[1] / "src"
@@ -20,6 +22,8 @@ from cascade.paths import (
     BUILD_ECONOMICS_DIR,
     BUILD_REPLAY_DIR,
     PAPER_FIGURES_DIR,
+    SOFTWAREX_PAPER_DIR,
+    SOFTWAREX_FIGURES_DIR,
     ensure_dir,
 )
 
@@ -47,6 +51,16 @@ REPLAY_WINDOWS = (
     "westlands_ca_2014-06-01_2014-10-31",
     "westlands_ca_2024-06-01_2024-10-31",
 )
+SOFTWAREX_FIGURE_FILES = (
+    (
+        PAPER_FIGURES_DIR / "action_timeline_westlands_split.pdf",
+        SOFTWAREX_FIGURES_DIR / "Figure_2_westlands_replay.pdf",
+    ),
+    (
+        PAPER_FIGURES_DIR / "additional_ablation_curves.pdf",
+        SOFTWAREX_FIGURES_DIR / "Figure_4_ablation_curves.pdf",
+    ),
+)
 
 
 def _copy_file(src, dst) -> None:
@@ -60,12 +74,25 @@ def _copy_tree(src, dst) -> None:
     shutil.copytree(src, dst)
 
 
+def _render_softwarex_peak_alert_figure() -> None:
+    script = SOFTWAREX_PAPER_DIR / "render_peak_alert_figure.py"
+    if script.exists():
+        runpy.run_path(str(script), run_name="__main__")
+
+
+def _render_softwarex_architecture_figure() -> None:
+    script = SOFTWAREX_PAPER_DIR / "render_architecture_figure.py"
+    if script.exists():
+        runpy.run_path(str(script), run_name="__main__")
+
+
 def main() -> None:
     ensure_dir(ARTIFACTS_BENCHMARK_DIR)
     ensure_dir(ARTIFACTS_CALIBRATION_DIR)
     ensure_dir(ARTIFACTS_ECONOMICS_DIR)
     ensure_dir(ARTIFACTS_REPLAY_DIR)
     ensure_dir(PAPER_FIGURES_DIR)
+    ensure_dir(SOFTWAREX_FIGURES_DIR)
 
     for name in BENCHMARK_FILES:
         _copy_file(BUILD_BENCHMARK_DIR / name, ARTIFACTS_BENCHMARK_DIR / name)
@@ -85,6 +112,12 @@ def main() -> None:
             BUILD_REPLAY_DIR / replay_window,
             ARTIFACTS_REPLAY_DIR / replay_window,
         )
+
+    for src, dst in SOFTWAREX_FIGURE_FILES:
+        _copy_file(src, dst)
+
+    _render_softwarex_architecture_figure()
+    _render_softwarex_peak_alert_figure()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,4 @@
+- Bayesian gate reduces full fusion to high-risk passes.
+- Westlands D4 replay triggers alerts without retuning.
+- Offline artifacts reproduce examples without Earthdata credentials.
+- CI protects headline metrics across Linux and macOS.

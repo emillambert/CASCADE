@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 CASCADE: An Onboard Crop Anomaly Screening, Confirmation, and Alert Downlink Engine
 ====================================================

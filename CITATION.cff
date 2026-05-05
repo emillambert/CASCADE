@@ -1,10 +1,12 @@
 cff-version: 1.2.0
 title: "CASCADE: An Onboard Crop Anomaly Screening, Confirmation, and Alert Downlink Engine"
 message: "If you use this repository, please cite the submission paper or repository record."
+version: 1.0.0
 authors:
   - family-names: Lambert
     given-names: Emil Wes
     affiliation: TU Delft
-date-released: 2026-05-03
+date-released: 2026-06-01
 license: MIT
 url: https://github.com/emillambert/CASCADE
+repository-code: https://github.com/emillambert/CASCADE

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Run the CASCADE real-scene MODIS replay workflow."""
 
 from __future__ import annotations

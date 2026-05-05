@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Render the CASCADE paper architecture figure.
 
 The figure is intentionally artifact-backed where possible: the action mix comes
@@ -15,7 +16,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, Rectangle
 
-SRC_DIR = Path(__file__).resolve().parents[2] / "src"
+SRC_DIR = Path(__file__).resolve().parents[3] / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 

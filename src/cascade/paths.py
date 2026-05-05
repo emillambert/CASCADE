@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Centralized repo-relative paths for CASCADE."""
 
 from __future__ import annotations
@@ -21,7 +22,13 @@ BUILD_CALIBRATION_DIR = BUILD_DIR / "calibration"
 BUILD_REPLAY_DIR = BUILD_DIR / "replay"
 BUILD_ECONOMICS_DIR = BUILD_DIR / "economics"
 
-PAPER_DIR = REPO_ROOT / "paper"
+PAPERS_DIR = REPO_ROOT / "papers"
+NASA_PAPER_DIR = PAPERS_DIR / "nasa-space-to-soil"
+SOFTWAREX_PAPER_DIR = PAPERS_DIR / "softwarex"
+SOFTWAREX_FIGURES_DIR = SOFTWAREX_PAPER_DIR / "figures"
+
+# Backward-compatible aliases for the original technical paper.
+PAPER_DIR = NASA_PAPER_DIR
 PAPER_FIGURES_DIR = PAPER_DIR / "figures"
 PAPER_SCRIPTS_DIR = PAPER_DIR / "scripts"
 
@@ -38,4 +45,3 @@ TEST_ACCEPTED_FIXTURES_DIR = TEST_FIXTURES_DIR / "accepted"
 def ensure_dir(path: Path) -> Path:
     path.mkdir(parents=True, exist_ok=True)
     return path
-

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Deprecated compatibility wrapper for :mod:`cascade.simulation`.
 
 New code should run ``python cascade_simulation.py`` or import from

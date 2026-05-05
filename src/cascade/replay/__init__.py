@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Replay workflows for CASCADE."""
 
 from __future__ import annotations

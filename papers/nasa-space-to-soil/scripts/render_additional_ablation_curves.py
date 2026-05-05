@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Render the additional ablation figure for the CASCADE paper.
 
 The paper figure keeps the two clearest curves large and moves CSC saturation
@@ -15,7 +16,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 
-SRC_DIR = Path(__file__).resolve().parents[2] / "src"
+SRC_DIR = Path(__file__).resolve().parents[3] / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 

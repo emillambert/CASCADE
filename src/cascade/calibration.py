@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Offline CSC calibration for CASCADE.
 
 This module searches over CSC weights, CSC saturation constants, and the
