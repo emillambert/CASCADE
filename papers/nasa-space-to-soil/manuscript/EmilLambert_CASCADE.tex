@@ -129,7 +129,7 @@ The scheduler picks one of four actions each pass: SKIP (battery critical), MOD1
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\linewidth]{figures/architecture.pdf}
+\includegraphics[width=\linewidth]{../figures/architecture.pdf}
 \caption{CASCADE architecture and operating mix. The policy gate uses $\tau_{\max}$, SOC, and cadence $k$; the lower bar reports the 100-seed mean actions.}
 \label{fig:architecture}
 \end{figure}
@@ -173,14 +173,14 @@ No-belief CASCADE & 95.9\% & 587.9 & 100.0\% & 0.5\% & 76.2\% \\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\linewidth]{figures/additional_ablation_curves.pdf}
+\includegraphics[width=\linewidth]{../figures/additional_ablation_curves.pdf}
 \caption{Additional ablations. Panel~(a): threshold sweep showing operating point at 0.615 and the NDWI-removed FP penalty, with CSC saturation sensitivity overlaid as a callout. Panel~(b): sparse screening cadence holds recall above 99.6\% while compute falls monotonically with stride.}
 \label{fig:additional-ablations}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.98\linewidth]{figures/action_timeline_westlands_split.pdf}
+\includegraphics[width=0.98\linewidth]{../figures/action_timeline_westlands_split.pdf}
 \caption{Westlands replay: 2014 D4 Exceptional Drought (left) versus 2024 quiet season (right), identical parameters. Every post-warmup window triggers FUSE\_PRIORITY in 2014 (peak CSC 0.869); the 2024 season stays below the alert threshold (peak CSC 0.412) — a 2.1$\times$ separation with no retuning.}
 \label{fig:action-timeline}
 \end{figure}
@@ -237,7 +237,7 @@ The broader contribution is precision triage: read-only geo-tagged alert overlay
 \begingroup
 \footnotesize
 \bibliographystyle{unsrt}
-\bibliography{references}
+\bibliography{../references}
 \endgroup
 
 \end{document}

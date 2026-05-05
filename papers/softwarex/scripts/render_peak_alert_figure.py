@@ -15,10 +15,9 @@ import matplotlib as mpl
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import FancyBboxPatch, Rectangle
 
 
-SRC_DIR = Path(__file__).resolve().parents[2] / "src"
+SRC_DIR = Path(__file__).resolve().parents[3] / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
@@ -30,14 +29,11 @@ RAW_MAP = REPLAY_DIR / "peak_alert_map.png"
 METRICS_PATH = REPLAY_DIR / "replay_metrics.json"
 OUT_BASE = SOFTWAREX_FIGURES_DIR / "Figure_3_peak_alert_map"
 
-BLUE = "#1f77b4"
 RED = "#b00020"
-GREEN = "#2ca02c"
-ORANGE = "#d95f02"
 DARK = "#222222"
 EDGE = "#777777"
 GRID = "#e4e4e4"
-PANEL_BG = "#fafafa"
+MASKED_CELL = "#eeeeee"
 
 
 def configure_style() -> None:
@@ -93,80 +89,137 @@ def crop_map_panel(image: np.ndarray) -> np.ndarray:
         ),
         key=lambda pair: abs((pair[1] - pair[0]) - target_height),
     )
-    return image[y0 + 1 : y1, x0 + 1 : x1, :]
+    return image[y0 + 3 : y1 - 2, x0 + 3 : x1 - 2, :]
 
 
-def metric_box(ax, y: float, label: str, value: str, color: str) -> None:
-    box = FancyBboxPatch(
-        (0.0, y),
-        1.0,
-        0.135,
-        boxstyle="round,pad=0.009,rounding_size=0.012",
-        linewidth=0.8,
-        facecolor=PANEL_BG,
-        edgecolor="#cfcfcf",
-    )
-    ax.add_patch(box)
-    ax.add_patch(Rectangle((0.0, y), 0.02, 0.135, facecolor=color, edgecolor="none"))
-    ax.text(0.055, y + 0.087, label, ha="left", va="center", fontsize=7.5, color="#555555")
-    ax.text(0.055, y + 0.039, value, ha="left", va="center", fontsize=10.0, weight="bold", color=DARK)
+def trim_masked_perimeter(panel: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Remove fully masked perimeter rows/columns from a cropped diagnostic image."""
+    rgb = panel[..., :3]
+    masked = np.all(rgb > 0.96, axis=2)
+    while masked.shape[0] > 1 and masked[0, :].mean() > 0.95:
+        panel = panel[1:, :, :]
+        masked = masked[1:, :]
+    while masked.shape[0] > 1 and masked[-1, :].mean() > 0.95:
+        panel = panel[:-1, :, :]
+        masked = masked[:-1, :]
+    while masked.shape[1] > 1 and masked[:, 0].mean() > 0.95:
+        panel = panel[:, 1:, :]
+        masked = masked[:, 1:]
+    while masked.shape[1] > 1 and masked[:, -1].mean() > 0.95:
+        panel = panel[:, :-1, :]
+        masked = masked[:, :-1]
+    return panel, masked
+
+
+def infer_csc_grid(image: np.ndarray, *, vmax: float, n_cells: int = 12) -> np.ndarray:
+    """Recover the replay CSC grid from the tracked diagnostic PNG.
+
+    The release artifact stores the peak field as a rendered Matplotlib PNG,
+    not as a NumPy array.  This routine samples the center of each displayed
+    cell and maps the Inferno RGB value back to the nearest scalar value.
+    """
+    panel, _ = trim_masked_perimeter(crop_map_panel(image).copy())
+    height, width = panel.shape[:2]
+    cell_h = height / n_cells
+    cell_w = width / n_cells
+    cmap = mpl.colormaps["inferno"]
+    lookup = cmap(np.linspace(0.0, 1.0, 4096))[:, :3]
+    values = np.linspace(0.0, vmax, 4096)
+    grid = np.full((n_cells, n_cells), np.nan, dtype=float)
+    for row in range(n_cells):
+        for col in range(n_cells):
+            y0 = int((row + 0.35) * cell_h)
+            y1 = int((row + 0.65) * cell_h)
+            x0 = int((col + 0.35) * cell_w)
+            x1 = int((col + 0.65) * cell_w)
+            sample = panel[y0:y1, x0:x1, :3].reshape(-1, 3)
+            rgb = np.median(sample, axis=0)
+            if np.all(rgb > 0.96):
+                continue
+            idx = int(np.argmin(np.sum((lookup - rgb) ** 2, axis=1)))
+            grid[row, col] = values[idx]
+    return grid
 
 
 def render() -> None:
     configure_style()
     metrics = json.loads(METRICS_PATH.read_text(encoding="utf-8"))
     raw = mpimg.imread(RAW_MAP)
-    cropped = crop_map_panel(raw)
 
     peak_csc = float(metrics["peak_csc"])
     alert_thr = float(metrics["csc_alert_thr"])
     vmax = max(0.7, peak_csc)
+    grid = infer_csc_grid(raw, vmax=vmax)
+    peak_row, peak_col = np.unravel_index(np.nanargmax(grid), grid.shape)
 
-    fig = plt.figure(figsize=(7.45, 4.05))
-    ax_map = fig.add_axes((0.055, 0.135, 0.56, 0.76))
-    cax = fig.add_axes((0.635, 0.20, 0.026, 0.62))
-    ax_info = fig.add_axes((0.705, 0.135, 0.245, 0.76))
+    lon_min, lat_min, lon_max, lat_max = -120.55, 36.55, -120.45, 36.65
+    fig = plt.figure(figsize=(7.1, 3.65), layout="constrained")
+    gs = fig.add_gridspec(1, 2, width_ratios=[1.35, 0.82], wspace=0.12)
+    ax_map = fig.add_subplot(gs[0, 0])
+    ax_info = fig.add_subplot(gs[0, 1])
 
-    ax_map.imshow(cropped, interpolation="nearest")
-    ax_map.set_xticks([])
-    ax_map.set_yticks([])
+    cmap = mpl.colormaps["inferno"].copy()
+    cmap.set_bad(MASKED_CELL)
+    im = ax_map.imshow(
+        grid,
+        cmap=cmap,
+        vmin=0.0,
+        vmax=vmax,
+        interpolation="nearest",
+        origin="upper",
+        extent=[lon_min, lon_max, lat_min, lat_max],
+    )
+    ax_map.contour(
+        np.linspace(lon_min, lon_max, grid.shape[1]),
+        np.linspace(lat_max, lat_min, grid.shape[0]),
+        grid,
+        levels=[alert_thr],
+        colors=[RED],
+        linewidths=0.75,
+    )
+    peak_lon = lon_min + (peak_col + 0.5) * (lon_max - lon_min) / grid.shape[1]
+    peak_lat = lat_max - (peak_row + 0.5) * (lat_max - lat_min) / grid.shape[0]
+    ax_map.plot(peak_lon, peak_lat, marker="x", markersize=5.5, markeredgewidth=1.1, color=RED)
+    ax_map.set_xlabel("Longitude")
+    ax_map.set_ylabel("Latitude")
+    ax_map.set_title("(a) Peak CSC field, Westlands 2014", loc="left", pad=5, fontsize=10.0, weight="bold")
+    ax_map.set_xticks([-120.55, -120.50, -120.45])
+    ax_map.set_yticks([36.55, 36.60, 36.65])
+    ax_map.tick_params(length=3, width=0.65)
     for spine in ax_map.spines.values():
-        spine.set_visible(True)
         spine.set_linewidth(0.75)
         spine.set_color(EDGE)
-    ax_map.set_title("(a) Peak CSC field, Westlands 2014", loc="left", pad=5, fontsize=10.5, weight="bold")
-    ax_map.annotate(
-        f"peak CSC {peak_csc:.3f}",
-        xy=(0.73, 0.48),
-        xycoords="axes fraction",
-        xytext=(0.43, 0.88),
-        textcoords="axes fraction",
-        fontsize=8.0,
-        color=DARK,
-        arrowprops=dict(arrowstyle="->", lw=0.8, color=RED),
-        bbox=dict(boxstyle="round,pad=0.18", facecolor="white", edgecolor="#d0d0d0", linewidth=0.6),
-    )
-    norm = mpl.colors.Normalize(vmin=0.0, vmax=vmax)
-    sm = mpl.cm.ScalarMappable(norm=norm, cmap="inferno")
-    sm.set_array([])
-    cbar = fig.colorbar(sm, cax=cax)
-    cbar.ax.set_title("CSC", fontsize=7.8, pad=4)
-    cbar.ax.axhline(alert_thr, color=RED, linewidth=1.2)
+    cbar = fig.colorbar(im, ax=ax_map, fraction=0.046, pad=0.035)
+    cbar.set_label("CSC")
+    cbar.ax.axhline(alert_thr, color=RED, linewidth=0.9)
 
     ax_info.set_axis_off()
-    ax_info.text(0.0, 0.98, "(b) Replay values", ha="left", va="top", fontsize=10.5, weight="bold", color=DARK)
-    ax_info.text(0.0, 0.885, "Peak alert window: 13 Aug 2014", ha="left", va="top", fontsize=8.0, color="#555555")
-    metric_box(ax_info, 0.70, "Peak CSC", f"{peak_csc:.3f}", RED)
-    metric_box(ax_info, 0.52, "Alert threshold", f"{alert_thr:.3f}", ORANGE)
-    metric_box(ax_info, 0.34, "Priority windows", f"{metrics['alert_windows']} / {metrics['valid_windows']}", BLUE)
-    metric_box(ax_info, 0.16, "Mean valid pixels", f"{100 * float(metrics['mean_valid_fraction']):.1f}%", GREEN)
+    ax_info.set_xlim(0.0, 1.0)
+    ax_info.set_ylim(0.0, 1.0)
+    ax_info.text(0.0, 1.0, "(b) Replay summary", ha="left", va="top", fontsize=10.0, weight="bold", color=DARK)
+    rows = [
+        ("AOI", "Westlands / Firebaugh"),
+        ("Peak window", "13 Aug 2014"),
+        ("Peak CSC", f"{peak_csc:.3f}"),
+        ("Alert threshold", f"{alert_thr:.3f}"),
+        ("Priority windows", f"{metrics['alert_windows']} / {metrics['valid_windows']}"),
+        ("Mean valid pixels", f"{100 * float(metrics['mean_valid_fraction']):.1f}%"),
+    ]
+    y_top = 0.83
+    row_h = 0.105
+    ax_info.hlines(y_top, 0.0, 1.0, color="#9e9e9e", linewidth=0.55)
+    for idx, (label, value) in enumerate(rows):
+        y = y_top - (idx + 0.5) * row_h
+        ax_info.text(0.02, y, label, ha="left", va="center", fontsize=7.7, color="#555555")
+        ax_info.text(0.56, y, value, ha="left", va="center", fontsize=7.7, color=DARK)
+        ax_info.hlines(y_top - (idx + 1) * row_h, 0.0, 1.0, color="#c7c7c7", linewidth=0.45)
     ax_info.text(
         0.0,
-        0.025,
-        "Rendered from the tracked offline replay artifact.",
+        0.11,
+        "Red contour marks CSC >= alert threshold;\nred cross marks the peak replay cell.",
         ha="left",
         va="bottom",
-        fontsize=7.4,
+        fontsize=7.2,
         color="#555555",
     )
 

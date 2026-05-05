@@ -27,7 +27,8 @@ __pycache__/
 *.pyc
 *.aux
 *.bbl
-!papers/nasa-space-to-soil/EmilLambert_CASCADE.bbl
+!papers/nasa-space-to-soil/manuscript/EmilLambert_CASCADE.bbl
+*.spl
 *.blg
 *.log
 *.out

@@ -41,7 +41,7 @@ The `Makefile` uses `.venv/bin/python` when it exists and falls back to
 | `python -m cascade.replay --year 2024` | Reads the tracked 2024 Westlands replay artifact when present. |
 | `make repro-2014` | Runs the benchmark, then the 2014 paper-anchor replay. |
 | `make repro-2024` | Runs the benchmark, then the 2024 paper-anchor replay. |
-| `make figures` | Promotes selected regenerated outputs into `artifacts/` and `papers/nasa-space-to-soil/figures/`. |
+| `make figures` | Promotes selected regenerated outputs into `artifacts/`, `papers/nasa-space-to-soil/figures/`, and `papers/softwarex/figures/`. |
 
 Expected regenerated benchmark outputs land in `build/benchmark/`. Expected
 tracked reviewer outputs are already under `artifacts/benchmark/`,

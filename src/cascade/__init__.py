@@ -17,3 +17,4 @@ from cascade.core import (  # noqa: F401
     posterior_tail_probability,
     update_stress_belief,
 )
+from cascade.replay import ReplayResult, replay  # noqa: F401

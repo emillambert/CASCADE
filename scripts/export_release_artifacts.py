@@ -22,8 +22,8 @@ from cascade.paths import (
     BUILD_ECONOMICS_DIR,
     BUILD_REPLAY_DIR,
     PAPER_FIGURES_DIR,
-    SOFTWAREX_PAPER_DIR,
     SOFTWAREX_FIGURES_DIR,
+    SOFTWAREX_SCRIPTS_DIR,
     ensure_dir,
 )
 
@@ -56,10 +56,6 @@ SOFTWAREX_FIGURE_FILES = (
         PAPER_FIGURES_DIR / "action_timeline_westlands_split.pdf",
         SOFTWAREX_FIGURES_DIR / "Figure_2_westlands_replay.pdf",
     ),
-    (
-        PAPER_FIGURES_DIR / "additional_ablation_curves.pdf",
-        SOFTWAREX_FIGURES_DIR / "Figure_4_ablation_curves.pdf",
-    ),
 )
 
 
@@ -75,13 +71,19 @@ def _copy_tree(src, dst) -> None:
 
 
 def _render_softwarex_peak_alert_figure() -> None:
-    script = SOFTWAREX_PAPER_DIR / "render_peak_alert_figure.py"
+    script = SOFTWAREX_SCRIPTS_DIR / "render_peak_alert_figure.py"
     if script.exists():
         runpy.run_path(str(script), run_name="__main__")
 
 
 def _render_softwarex_architecture_figure() -> None:
-    script = SOFTWAREX_PAPER_DIR / "render_architecture_figure.py"
+    script = SOFTWAREX_SCRIPTS_DIR / "render_architecture_figure.py"
+    if script.exists():
+        runpy.run_path(str(script), run_name="__main__")
+
+
+def _render_softwarex_baseline_comparison_figure() -> None:
+    script = SOFTWAREX_SCRIPTS_DIR / "render_baseline_comparison_figure.py"
     if script.exists():
         runpy.run_path(str(script), run_name="__main__")
 
@@ -118,6 +120,7 @@ def main() -> None:
 
     _render_softwarex_architecture_figure()
     _render_softwarex_peak_alert_figure()
+    _render_softwarex_baseline_comparison_figure()
 
 
 if __name__ == "__main__":

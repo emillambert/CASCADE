@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import importlib
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_root_wrappers_reexport_canonical_symbols() -> None:
@@ -11,11 +15,10 @@ def test_root_wrappers_reexport_canonical_symbols() -> None:
     assert cascade_core.Config is canonical.Config
 
 
-def test_legacy_masfe_wrappers_still_resolve() -> None:
-    masfe_core = importlib.import_module("masfe_core")
-    masfe_simulation = importlib.import_module("masfe_simulation")
-    canonical_core = importlib.import_module("cascade.core")
-    canonical_simulation = importlib.import_module("cascade.simulation")
+def test_legacy_masfe_wrappers_are_archived() -> None:
+    archive = ROOT / "archive" / "legacy-root-scripts"
 
-    assert masfe_core.MASFEPolicy is canonical_core.CASCADEPolicy
-    assert masfe_simulation.run_monte_carlo is canonical_simulation.run_monte_carlo
+    assert (archive / "masfe_core.py").is_file()
+    assert (archive / "masfe_simulation.py").is_file()
+    assert not (ROOT / "masfe_core.py").exists()
+    assert not (ROOT / "masfe_simulation.py").exists()

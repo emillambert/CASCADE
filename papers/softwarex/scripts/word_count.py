@@ -14,7 +14,7 @@ import subprocess
 from pathlib import Path
 
 
-TEX = Path(__file__).with_name("cascade_softwarex.tex")
+TEX = Path(__file__).resolve().parents[1] / "manuscript" / "cascade_softwarex.tex"
 
 
 def clean_latex(text: str) -> str:

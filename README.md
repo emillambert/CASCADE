@@ -32,8 +32,8 @@ CASCADE is a reusable research-software repository containing:
 - **Real-scene MODIS replay**: AppEEARS-backed replays over the Westlands AOI.
 - **CSC calibration**: offline parameter search with accepted calibration fixtures.
 - **Economics model**: a rollout model and accepted baseline fixtures.
-- **SoftwareX source**: `papers/softwarex/` (submission bundle).
-- **Technical disclosure paper**: `papers/nasa-space-to-soil/EmilLambert_CASCADE.tex` and compiled PDF.
+- **SoftwareX source**: `papers/softwarex/manuscript/` plus submission files in `papers/softwarex/submission/`.
+- **Technical disclosure paper**: `papers/nasa-space-to-soil/manuscript/EmilLambert_CASCADE.tex` and compiled PDF.
 
 ## Verified headline metrics (paper numbers)
 
@@ -44,12 +44,6 @@ CASCADE is a reusable research-software repository containing:
 ## Installation
 
 Reviewer target: **Python `>=3.10,<3.13`** (fresh virtual environment).
-
-Install the release package from PyPI once `cascade-eo` is published:
-
-```bash
-python -m pip install cascade-eo
-```
 
 Install from a source checkout:
 
@@ -127,7 +121,7 @@ make repro-2024
 ```
 
 After reviewing regenerated files under `build/`, promote selected outputs into
-tracked `artifacts/` and `papers/nasa-space-to-soil/figures/`:
+tracked `artifacts/` and paper figure folders:
 
 ```bash
 make figures
@@ -185,8 +179,8 @@ python scripts/unit_economics.py
 - **Economics**: `src/cascade/economics.py`
 - **Tracked outputs**: `artifacts/`
 - **Transient outputs**: `build/`
-- **SoftwareX paper**: `papers/softwarex/cascade_softwarex.tex`
-- **Technical paper**: `papers/nasa-space-to-soil/EmilLambert_CASCADE.tex`
+- **SoftwareX paper**: `papers/softwarex/manuscript/cascade_softwarex.tex`
+- **Technical paper**: `papers/nasa-space-to-soil/manuscript/EmilLambert_CASCADE.tex`
 
 More detail: [docs/repo_structure.md](docs/repo_structure.md)
 

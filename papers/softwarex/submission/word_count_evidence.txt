@@ -5,18 +5,18 @@ Tool:
 TeXcount version 3.1.1, 2018 Oct 28
 
 Command:
-perl /tmp/cascade-texcount/texcount.pl -inc -sum papers/softwarex/cascade_softwarex.tex
+perl /tmp/cascade-texcount/texcount.pl -inc -sum papers/softwarex/manuscript/cascade_softwarex.tex
 
 Output:
-File: papers/softwarex/cascade_softwarex.tex
+File: papers/softwarex/manuscript/cascade_softwarex.tex
 Encoding: ascii
-Sum count: 1758
-Words in text: 1535
+Sum count: 1851
+Words in text: 1587
 Words in headers: 57
-Words outside text (captions, etc.): 157
+Words outside text (captions, etc.): 190
 Number of headers: 16
-Number of floats/tables/figures: 5
-Number of math inlines: 7
+Number of floats/tables/figures: 7
+Number of math inlines: 15
 Number of math displayed: 2
 
 SoftwareX gate:
