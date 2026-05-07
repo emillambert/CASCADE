@@ -13,7 +13,7 @@
 \usepackage{fancyhdr}
 \setlength{\emergencystretch}{3em}
 
-\title{CASCADE: A Software Framework and Synthetic Benchmark for Onboard Anomaly Triage}
+\title{CASCADE: A Software Framework and Synthetic Benchmark for Onboard Anomaly Triage in Earth Observation}
 \author{Emil Wes Lambert\\Delft University of Technology\\\texttt{e.w.lambert@student.tudelft.nl}\\\texttt{ORCID: 0000-0002-2459-9172}}
 \date{Technical report, May 2026}
 
@@ -59,7 +59,7 @@ w_E\frac{[E_{0,i}-E_i]_+}{s_E\sigma_E}
 +w_N\frac{[N_{0,i}-N_i]_+}{s_N\sigma_N},
 \label{eq:csc}
 \end{equation}
-clipped to $[0,1]$, where $[x]_+=\max(x,0)$. Here $\sigma_E$, $\sigma_L$, and $\sigma_N$ are fixed normalizers (EVI, LST [K], NDWI) that convert raw drops/rises to standardized anomaly magnitudes, and $s_E$, $s_L$, and $s_N$ are saturation constants that set the anomaly level at which each channel alone would reach a clipped value of $1.0$. The default weights are $0.578$, $0.246$, and $0.176$ for EVI, LST, and NDWI respectively.
+clipped to $[0,1]$, where $[x]_+=\max(x,0)$. Here $\sigma_E$, $\sigma_L$, and $\sigma_N$ are fixed normalizers (EVI~\cite{huete2002modis}, LST~\cite{wan1996generalized} [K], NDWI~\cite{gao1996ndwi}) that convert raw drops/rises to standardized anomaly magnitudes, and $s_E$, $s_L$, and $s_N$ are saturation constants that set the anomaly level at which each channel alone would reach a clipped value of $1.0$. The default weights are $0.578$, $0.246$, and $0.176$ for EVI, LST, and NDWI respectively.
 In the reference implementation, each channel term is clamped to $[0,1]$ before weighting, and the weighted sum is then clipped again to $[0,1]$.
 
 \begin{table}[H]
