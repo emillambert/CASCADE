@@ -14,15 +14,17 @@ benchmark.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
 import shutil
+import subprocess
 import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -31,9 +33,14 @@ import requests
 
 from cascade.core import (
     CSC_ALERT_THRESHOLD_DEFAULT,
+    CSC_DEFAULTS,
+    CSC_SIGMAS,
+    LEGACY_CSC_SATURATION_DEFAULTS,
+    LEGACY_CSC_WEIGHTS,
     Config,
     CASCADEPolicy,
     State,
+    _normalized_weights,
     action_gsd_m,
     action_tile_density_mb_per_km2,
     compute_csc,
@@ -191,6 +198,12 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=CSC_ALERT_THRESHOLD_DEFAULT,
         help="Override the CSC priority-alert threshold for replay sensitivity checks.",
+    )
+    parser.add_argument(
+        "--priority-mode",
+        choices=sorted(CASCADEPolicy.PRIORITY_MODES),
+        default="legacy_max",
+        help="Priority promotion mode: legacy max-pixel behavior or spatially coherent alerts.",
     )
     parser.add_argument(
         "--bundle-dir",
@@ -934,12 +947,220 @@ def classify_fusion_mode(*, ndwi_windows: int, fallback_windows: int) -> str:
     return "no_action_fusion"
 
 
-def replay_output_dir_name(aoi: str, start: date, end: date, csc_alert_thr: float) -> str:
+def max_connected_component(mask: np.ndarray) -> int:
+    """Return the largest 4-connected true component size."""
+
+    active = np.asarray(mask, dtype=bool)
+    if active.size == 0 or not np.any(active):
+        return 0
+    visited = np.zeros(active.shape, dtype=bool)
+    largest = 0
+    rows, cols = active.shape
+    for row in range(rows):
+        for col in range(cols):
+            if not active[row, col] or visited[row, col]:
+                continue
+            stack = [(row, col)]
+            visited[row, col] = True
+            size = 0
+            while stack:
+                r, c = stack.pop()
+                size += 1
+                for nr, nc in ((r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)):
+                    if 0 <= nr < rows and 0 <= nc < cols and active[nr, nc] and not visited[nr, nc]:
+                        visited[nr, nc] = True
+                        stack.append((nr, nc))
+            largest = max(largest, size)
+    return largest
+
+
+def spatial_priority_stats(csc: np.ndarray, threshold: float) -> dict[str, float | int]:
+    finite = np.isfinite(csc)
+    finite_values = csc[finite]
+    finite_count = int(finite_values.size)
+    if finite_count == 0:
+        return {
+            "csc_p95": 0.0,
+            "csc_p99": 0.0,
+            "alert_fraction": 0.0,
+            "max_connected_component": 0,
+            "alert_pixels": 0,
+        }
+    alert_mask = finite & (csc >= threshold)
+    alert_pixels = int(np.count_nonzero(alert_mask))
+    return {
+        "csc_p95": float(np.nanpercentile(finite_values, 95)),
+        "csc_p99": float(np.nanpercentile(finite_values, 99)),
+        "alert_fraction": float(alert_pixels / finite_count),
+        "max_connected_component": max_connected_component(alert_mask),
+        "alert_pixels": alert_pixels,
+    }
+
+
+def csc_component_terms(
+    evi_t: np.ndarray,
+    lst_t: np.ndarray,
+    evi_base: np.ndarray,
+    lst_base: np.ndarray,
+    *,
+    ndwi_t: np.ndarray | None = None,
+    ndwi_base: np.ndarray | None = None,
+) -> dict[str, np.ndarray]:
+    sigma_e = CSC_SIGMAS["evi"]
+    sigma_l = CSC_SIGMAS["lst"]
+    sigma_n = CSC_SIGMAS["ndwi"]
+    evi_drop_raw = np.maximum(0.0, (evi_base - evi_t) / sigma_e)
+    lst_rise_raw = np.maximum(0.0, (lst_t - lst_base) / sigma_l)
+
+    if ndwi_t is None or ndwi_base is None:
+        evi_weight, lst_weight = _normalized_weights(LEGACY_CSC_WEIGHTS)
+        evi_term = np.clip(
+            evi_drop_raw / max(LEGACY_CSC_SATURATION_DEFAULTS["evi"], 1e-9),
+            0,
+            1,
+        )
+        lst_term = np.clip(
+            lst_rise_raw / max(LEGACY_CSC_SATURATION_DEFAULTS["lst"], 1e-9),
+            0,
+            1,
+        )
+        ndwi_drop_raw = np.zeros_like(evi_term)
+        ndwi_weight = 0.0
+        ndwi_term = np.zeros_like(evi_term)
+    else:
+        evi_weight, lst_weight, ndwi_weight = _normalized_weights(CSC_DEFAULTS.weights())
+        evi_term = np.clip(evi_drop_raw / max(CSC_DEFAULTS.evi_saturation, 1e-9), 0, 1)
+        lst_term = np.clip(lst_rise_raw / max(CSC_DEFAULTS.lst_saturation, 1e-9), 0, 1)
+        ndwi_drop_raw = np.maximum(0.0, (ndwi_base - ndwi_t) / sigma_n)
+        ndwi_term = np.clip(ndwi_drop_raw / max(CSC_DEFAULTS.ndwi_saturation, 1e-9), 0, 1)
+
+    return {
+        "EVI": evi_weight * evi_term,
+        "LST": lst_weight * lst_term,
+        "NDWI": ndwi_weight * ndwi_term,
+        "evi_drop_sigma": evi_drop_raw,
+        "lst_rise_sigma": lst_rise_raw,
+        "ndwi_drop_sigma": ndwi_drop_raw,
+    }
+
+
+def peak_component_diagnostics(csc: np.ndarray, terms: dict[str, np.ndarray] | None) -> tuple[str | None, dict[str, float]]:
+    if terms is None or not np.isfinite(csc).any():
+        return None, {}
+    peak_index = np.unravel_index(int(np.nanargmax(csc)), csc.shape)
+    weighted = {
+        "EVI": float(terms["EVI"][peak_index]),
+        "LST": float(terms["LST"][peak_index]),
+        "NDWI": float(terms["NDWI"][peak_index]),
+    }
+    raw = {
+        "evi_drop_sigma": float(terms["evi_drop_sigma"][peak_index]),
+        "lst_rise_sigma": float(terms["lst_rise_sigma"][peak_index]),
+        "ndwi_drop_sigma": float(terms["ndwi_drop_sigma"][peak_index]),
+    }
+    dominant = max(weighted, key=weighted.get)
+    return dominant, {**weighted, **raw}
+
+
+def current_git_commit() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=REPO_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    commit = result.stdout.strip()
+    return commit or None
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def source_bundle_hash(bundle_dir: Path, manifest: dict[str, Any] | None) -> str:
+    """Hash the resolved manifest plus stable GeoTIFF metadata and checksums."""
+
+    digest = hashlib.sha256()
+    manifest_payload = manifest or {}
+    stable_manifest = {
+        key: manifest_payload.get(key)
+        for key in ("task_id", "aoi", "bbox", "start", "end", "requested_layers")
+    }
+    digest.update(json.dumps(stable_manifest, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+
+    manifest_files = manifest_payload.get("files") if manifest_payload else None
+    file_items = manifest_files if isinstance(manifest_files, list) else []
+    if file_items:
+        paths = [bundle_dir / str(item.get("file_name", "")) for item in file_items]
+    else:
+        paths = find_tifs(bundle_dir)
+
+    for path in sorted(paths, key=lambda item: item.name):
+        if not path.exists() or not path.is_file():
+            continue
+        stat = path.stat()
+        entry = {
+            "name": path.name,
+            "size": stat.st_size,
+            "sha256": _sha256_file(path),
+        }
+        if file_items:
+            match = next((item for item in file_items if item.get("file_name") == path.name), {})
+            for key in ("file_id", "file_type", "sha256"):
+                if match.get(key):
+                    entry[f"manifest_{key}"] = match[key]
+        digest.update(json.dumps(entry, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+    return digest.hexdigest()
+
+
+def replay_provenance(
+    *,
+    aoi: str,
+    bbox: tuple[float, float, float, float],
+    start: date,
+    end: date,
+    bundle_dir: Path,
+    csc_stack_present: bool,
+) -> dict[str, Any]:
+    manifest = load_manifest(bundle_dir / "bundle_manifest.json")
+    return {
+        "aoi": aoi,
+        "bbox": [float(value) for value in bbox],
+        "start_date": start.isoformat(),
+        "end_date": end.isoformat(),
+        "code_commit": current_git_commit(),
+        "appeears_task_id": manifest.get("task_id") if manifest else None,
+        "source_bundle_hash": source_bundle_hash(bundle_dir, manifest),
+        "created_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "layers": list(REQUESTED_LAYER_KEYS),
+        "csc_stack_present": csc_stack_present,
+    }
+
+
+def replay_output_dir_name(
+    aoi: str,
+    start: date,
+    end: date,
+    csc_alert_thr: float,
+    priority_mode: str = "legacy_max",
+) -> str:
     stem = f"{aoi}_{start.isoformat()}_{end.isoformat()}"
     if abs(csc_alert_thr - CSC_ALERT_THRESHOLD_DEFAULT) < 1e-9:
-        return stem
-    thr_token = f"{csc_alert_thr:.3f}".replace(".", "p")
-    return f"{stem}_thr_{thr_token}"
+        base = stem
+    else:
+        thr_token = f"{csc_alert_thr:.3f}".replace(".", "p")
+        base = f"{stem}_thr_{thr_token}"
+    if priority_mode == "legacy_max":
+        return base
+    return f"{base}_{priority_mode}"
 
 
 def replay_series(
@@ -959,10 +1180,14 @@ def replay_series(
     csc_snapshots: list[np.ndarray] = []
     peak_alert_map = None
     peak_csc = -1.0
+    peak_component = None
+    peak_component_values: dict[str, float] = {}
+    ever_alert_mask: np.ndarray | None = None
     default_shape = next(
         (entry["evi"].shape for entry in series if not entry.get("clouded") and "evi" in entry),
         (10, 10),
     )
+    peak_stats = spatial_priority_stats(np.zeros(default_shape, dtype="float32"), policy.csc_alert_thr)
 
     for entry in series:
         step_date = entry["date"]
@@ -1085,6 +1310,7 @@ def replay_series(
         )
         action = policy.act(state)
         action_for_log = action
+        component_terms = None
 
         if action in ("FUSE", "FUSE_PRIORITY"):
             if ndwi is not None and ndwi_base is not None and np.isfinite(ndwi).any():
@@ -1096,9 +1322,18 @@ def replay_series(
                     ndwi_t=ndwi,
                     ndwi_base=ndwi_base,
                 )
+                component_terms = csc_component_terms(
+                    evi,
+                    lst,
+                    evi_base,
+                    lst_base,
+                    ndwi_t=ndwi,
+                    ndwi_base=ndwi_base,
+                )
                 note = "real-scene replay with NDWI"
             else:
                 new_csc = compute_csc(evi, lst, evi_base, lst_base)
+                component_terms = csc_component_terms(evi, lst, evi_base, lst_base)
                 note = "real-scene replay (EVI/LST fallback)"
             steps_since_fuse = 0
         elif action == "MOD13":
@@ -1111,9 +1346,18 @@ def replay_series(
                     ndwi_t=ndwi,
                     ndwi_base=ndwi_base,
                 )
+                component_terms = csc_component_terms(
+                    evi,
+                    lst_base,
+                    evi_base,
+                    lst_base,
+                    ndwi_t=ndwi,
+                    ndwi_base=ndwi_base,
+                )
                 note = "real-scene replay with NDWI"
             else:
                 stage1_csc = compute_csc(evi, lst_base, evi_base, lst_base)
+                component_terms = csc_component_terms(evi, lst_base, evi_base, lst_base)
                 note = "real-scene replay (EVI/LST fallback)"
             new_csc = csc * 0.70 + stage1_csc * 0.30
             steps_since_fuse += 1
@@ -1123,7 +1367,8 @@ def replay_series(
             note = "real-scene replay"
 
         priority_confirmed = False
-        if action == "FUSE" and policy.should_priority_downlink(state, new_csc):
+        candidate_stats = spatial_priority_stats(new_csc, policy.csc_alert_thr)
+        if action == "FUSE" and policy.should_priority_downlink(state, new_csc, candidate_stats):
             priority_confirmed = True
             action_for_log = "FUSE_PRIORITY" if priority_confirmed else "FUSE"
 
@@ -1138,6 +1383,11 @@ def replay_series(
             history_ndwi = history_ndwi[-WARMUP_VALID_STEPS :]
 
         csc_max = float(np.nanmax(csc))
+        alert_mask = np.isfinite(csc) & (csc >= policy.csc_alert_thr)
+        if ever_alert_mask is None:
+            ever_alert_mask = alert_mask.copy()
+        else:
+            ever_alert_mask |= alert_mask
         alert_pixels = int(np.nansum(csc >= policy.csc_alert_thr)) if priority_confirmed else 0
         posterior_mean_max = float(np.nanmax(posterior_mean(alpha_state, beta_state)))
         posterior_tail_max = float(np.nanmax(posterior_tail_probability(alpha_state, beta_state)))
@@ -1160,6 +1410,8 @@ def replay_series(
         if csc_max > peak_csc:
             peak_csc = csc_max
             peak_alert_map = csc.copy()
+            peak_stats = candidate_stats
+            peak_component, peak_component_values = peak_component_diagnostics(csc, component_terms)
 
     action_steps = [step for step in steps if step.action != "BASELINE"]
     action_counts: dict[str, int] = {}
@@ -1183,6 +1435,16 @@ def replay_series(
         "first_alert_date": alert_steps[0].step_date.isoformat() if alert_steps else None,
         "peak_alert_date": max(alert_steps, key=lambda s: s.csc_max).step_date.isoformat() if alert_steps else None,
         "peak_csc": round(max((step.csc_max for step in action_steps), default=0.0), 3),
+        "csc_p95": round(float(peak_stats["csc_p95"]), 3),
+        "csc_p99": round(float(peak_stats["csc_p99"]), 3),
+        "alert_fraction": round(float(peak_stats["alert_fraction"]), 6),
+        "max_connected_component": int(peak_stats["max_connected_component"]),
+        "ever_alert_pixels": int(np.count_nonzero(ever_alert_mask)) if ever_alert_mask is not None else 0,
+        "peak_component": peak_component,
+        "peak_component_values": {
+            key: round(float(value), 6)
+            for key, value in peak_component_values.items()
+        },
         "mean_valid_fraction": round(
             float(np.mean([step.valid_fraction for step in action_steps])) if action_steps else 0.0,
             3,
@@ -1196,6 +1458,7 @@ def replay_series(
         ),
         "nominal_soc": TARGET_SOC,
         "csc_alert_thr": round(float(policy.csc_alert_thr), 6),
+        "priority_mode": policy.priority_mode,
         "notes": "Real-scene policy replay on official MODIS products; not a labeled anomaly benchmark.",
     }
     return steps, metrics, peak_alert_map, csc_snapshots
@@ -1229,6 +1492,42 @@ def save_csc_stack(output_dir: Path, steps: list[ReplayStep], csc_snapshots: lis
         actions=np.array([step.action for step in steps], dtype="U16"),
         csc=np.stack(csc_snapshots, axis=0),
     )
+
+
+def crop_to_finite_extent(array: np.ndarray) -> np.ndarray:
+    """Remove all-NaN outer rows/columns so plot panels show the valid AOI extent."""
+
+    finite = np.isfinite(array)
+    if not finite.any():
+        return array
+    rows = np.where(finite.any(axis=1))[0]
+    cols = np.where(finite.any(axis=0))[0]
+    return array[rows[0] : rows[-1] + 1, cols[0] : cols[-1] + 1]
+
+
+def save_peak_alert_map(output_dir: Path, peak_alert_map: np.ndarray | None) -> None:
+    import matplotlib.pyplot as plt
+
+    if peak_alert_map is None:
+        peak_alert_map = np.zeros((10, 10), dtype="float32")
+    plot_map = crop_to_finite_extent(peak_alert_map)
+    vmax = max(0.7, float(np.nanmax(plot_map))) if np.isfinite(plot_map).any() else 0.7
+
+    fig, ax = plt.subplots(figsize=(6, 5))
+    im = ax.imshow(
+        plot_map,
+        cmap="inferno",
+        vmin=0.0,
+        vmax=vmax,
+        interpolation="nearest",
+        aspect="equal",
+    )
+    ax.set_title("Peak replay CSC map")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label="CSC")
+    fig.savefig(output_dir / "peak_alert_map.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
 
 
 def save_plots(output_dir: Path, steps: list[ReplayStep], peak_alert_map: np.ndarray | None) -> None:
@@ -1275,16 +1574,7 @@ def save_plots(output_dir: Path, steps: list[ReplayStep], peak_alert_map: np.nda
     fig.savefig(output_dir / "replay_summary.png", dpi=200)
     plt.close(fig)
 
-    if peak_alert_map is None:
-        peak_alert_map = np.zeros((10, 10), dtype="float32")
-    fig, ax = plt.subplots(figsize=(6, 5))
-    im = ax.imshow(peak_alert_map, cmap="inferno", vmin=0.0, vmax=max(0.7, float(np.nanmax(peak_alert_map))))
-    ax.set_title("Peak replay CSC map")
-    ax.set_xticks([])
-    ax.set_yticks([])
-    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label="CSC")
-    fig.savefig(output_dir / "peak_alert_map.png", dpi=200, bbox_inches="tight")
-    plt.close(fig)
+    save_peak_alert_map(output_dir, peak_alert_map)
 
 
 def run_window(args: argparse.Namespace, start: date, end: date):
@@ -1315,7 +1605,7 @@ def run_window(args: argparse.Namespace, start: date, end: date):
             "Earthdata credentials and --force-download, or supply a complete bundle via "
             "--bundle-dir/--bundle-zip."
         )
-    policy = CASCADEPolicy(csc_alert_thr=args.csc_alert_thr)
+    policy = CASCADEPolicy(csc_alert_thr=args.csc_alert_thr, priority_mode=args.priority_mode)
     steps, metrics, peak_alert_map, csc_snapshots = replay_series(
         series,
         policy,
@@ -1327,11 +1617,22 @@ def run_window(args: argparse.Namespace, start: date, end: date):
         start,
         end,
         args.csc_alert_thr,
+        args.priority_mode,
     )
     output_dir.mkdir(parents=True, exist_ok=True)
+    metrics.update(
+        replay_provenance(
+            aoi=args.aoi,
+            bbox=resolve_aoi_bbox(args.aoi, args.bbox),
+            start=start,
+            end=end,
+            bundle_dir=bundle_dir,
+            csc_stack_present=True,
+        )
+    )
     save_timeline_csv(output_dir, steps)
-    save_metrics_json(output_dir, metrics)
     save_csc_stack(output_dir, steps, csc_snapshots)
+    save_metrics_json(output_dir, metrics)
     save_plots(output_dir, steps, peak_alert_map)
     return output_dir, metrics
 

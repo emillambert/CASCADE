@@ -310,8 +310,14 @@ def simulate(
     cfg: Config,
     outer_seed: int,
     csc_kwargs: Dict | None = None,
+    *,
+    trace: bool = False,
 ) -> Dict:
-    """Evaluate one policy over one synthetic season and return aggregate metrics."""
+    """Evaluate one policy over one synthetic season and return aggregate metrics.
+
+    If ``trace=True``, include per-pass time series useful for paper figures and
+    diagnostics (e.g., trajectory plots, detection-latency analysis).
+    """
 
     csc_kwargs = csc_kwargs or {}
     rng = np.random.default_rng(outer_seed * 10_000 + POLICY_SEED_OFFSET[policy_name])
@@ -342,10 +348,29 @@ def simulate(
 
     energy = data_vol = 0.0
     tp = fp = 0
-    actions = []
-    alerts = []
-    batt_hist = []
+    actions: list[str] = []
+    alerts: list[dict] = []
+    batt_hist: list[float] = []
     detected_patches = set()
+    trace_payload: dict[str, list] | None = None
+    if trace:
+        trace_payload = {
+            "t": [],
+            "op": [],
+            "downlink_window": [],
+            "clouded": [],
+            "soc": [],
+            "action": [],
+            "steps_since_fuse": [],
+            "max_csc": [],
+            "max_evi_anom": [],
+            "max_ndwi_anom": [],
+            "max_posterior_mean": [],
+            "max_posterior_tail": [],
+            "tp": [],
+            "fp": [],
+            "priority_tp_patches": [],
+        }
 
     for t in range(n_t):
         op = (t * 5.0) % cfg.orbit_min / cfg.orbit_min
@@ -465,6 +490,11 @@ def simulate(
             fp += int(np.sum(detected & ~data["truth"][t]))
             for idx in np.where(detected & data["truth"][t])[0]:
                 detected_patches.add(int(idx))
+            if trace_payload is not None and action == "FUSE_PRIORITY":
+                priority_tp = np.where(detected & data["truth"][t])[0].astype(int).tolist()
+                trace_payload["priority_tp_patches"].append(priority_tp)
+        elif trace_payload is not None:
+            trace_payload["priority_tp_patches"].append([])
 
         if action == "RAW":
             data_mb = cfg.raw_mb
@@ -502,6 +532,24 @@ def simulate(
         actions.append(action)
         batt_hist.append(batt)
 
+        if trace_payload is not None:
+            trace_payload["t"].append(int(t))
+            trace_payload["op"].append(float(op))
+            trace_payload["downlink_window"].append(bool(dl_window))
+            trace_payload["clouded"].append(bool(clouded))
+            trace_payload["soc"].append(float(batt))
+            trace_payload["action"].append(str(action))
+            trace_payload["steps_since_fuse"].append(int(steps_sf))
+            trace_payload["max_csc"].append(float(np.nanmax(new_csc)) if new_csc.size else 0.0)
+            trace_payload["max_evi_anom"].append(float(np.nanmax(evi_anom)) if evi_anom.size else 0.0)
+            trace_payload["max_ndwi_anom"].append(float(np.nanmax(ndwi_anom)) if ndwi_anom.size else 0.0)
+            trace_payload["max_posterior_mean"].append(float(np.nanmax(posterior_mean(alpha_for_state, beta_for_state))))
+            trace_payload["max_posterior_tail"].append(
+                float(np.nanmax(posterior_tail_probability(alpha_for_state, beta_for_state)))
+            )
+            trace_payload["tp"].append(int(tp))
+            trace_payload["fp"].append(int(fp))
+
         if policy_name == "EVI_ONLY_THRESHOLD" and action == "MOD13" and dl_window and not clouded:
             if evi_only_detected is not None and evi_only_detected.any():
                 alerts.append(
@@ -521,7 +569,7 @@ def simulate(
             )
 
     action_dist = {action_name: actions.count(action_name) for action_name in set(actions)}
-    return {
+    out = {
         "name": policy_name,
         "energy": energy,
         "data_mb": data_vol,
@@ -536,6 +584,9 @@ def simulate(
         "seasonal_average_compute_pct": cfg.seasonal_average_compute_pct(action_dist, n_t) * 100.0,
         "detection_threshold": detection_threshold,
     }
+    if trace_payload is not None:
+        out["trace"] = trace_payload
+    return out
 
 
 def mean_std_ci(values: list[float]) -> dict:

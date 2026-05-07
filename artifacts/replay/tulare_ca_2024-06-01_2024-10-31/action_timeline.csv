@@ -1,0 +1,11 @@
+date,action,valid_fraction,csc_max,alert_pixels,gsd_m,tile_density_mb_per_km2,posterior_mean_max,posterior_tail_max,note
+2024-06-09,BASELINE,1.000,0.180,0,0.0,0.00,0.500,0.500,baseline warmup
+2024-06-25,BASELINE,1.000,0.180,0,0.0,0.00,0.500,0.500,baseline warmup
+2024-07-11,BASELINE,1.000,0.180,0,0.0,0.00,0.500,0.500,baseline warmup
+2024-07-27,FUSE,1.000,0.497,0,10.0,1.80,0.667,0.750,real-scene replay with NDWI
+2024-08-12,FUSE_PRIORITY,1.000,0.744,1,4.6,8.40,0.750,0.875,real-scene replay with NDWI
+2024-08-28,FUSE_PRIORITY,1.000,0.653,1,4.6,8.40,0.800,0.938,real-scene replay with NDWI
+2024-09-13,FUSE_PRIORITY,1.000,0.791,4,4.6,8.40,0.833,0.969,real-scene replay with NDWI
+2024-09-29,FUSE_PRIORITY,1.000,0.809,6,4.6,8.40,0.857,0.984,real-scene replay with NDWI
+2024-10-15,FUSE_PRIORITY,0.975,0.754,1,4.6,8.40,0.875,0.992,real-scene replay with NDWI
+2024-10-31,FUSE_PRIORITY,0.914,0.716,1,4.6,8.40,0.875,0.992,real-scene replay with NDWI

@@ -44,15 +44,27 @@ CI runs `pytest -q --cov=src/cascade --cov-fail-under=60` across Python 3.10,
 ## What CI protects
 
 The automated suite protects deterministic helper behavior, seeded benchmark
-behavior, replay schemas and accounting, compatibility wrappers, and the
-accepted JSON outputs used by the README and paper. The validation layer checks
-that tracked artifacts still match:
+behavior, replay schemas and accounting, compatibility wrappers, and accepted
+JSON outputs used by the README and paper. Replay artifacts now have an
+additional provenance gate before they can become accepted validation evidence:
+they must record AOI name, bbox, date range, code commit, AppEEARS task ID when
+available, source bundle hash, creation timestamp, input layers, and
+`csc_stack_present`, and they must include a neighboring `csc_stack.npz`.
+
+The validation layer checks that tracked release artifacts still match:
 
 - `artifacts/benchmark/simulation_metrics.json`
 - `artifacts/benchmark/roc_metrics.json`
 - `artifacts/calibration/calibration_summary.json`
 - `artifacts/replay/.../replay_metrics.json`
 - `artifacts/economics/unit_economics.json`
+
+The old Westlands 2024 quiet-season artifact was generated from an older
+wrong-AOI bundle and is deprecated. The current accepted Westlands replay
+artifacts are regenerated from the current AOI and include provenance,
+`source_bundle_hash`, and `csc_stack.npz`. These artifacts support replay
+auditability and policy-stress interpretation; they are not a contract for a
+drought-vs-quiet validation claim.
 
 The current paper-aligned headline metrics are 99.1% downlink reduction, 38.3%
 energy saving, 77.6% downlink reduction vs fixed onboard, 25.4% energy saving
@@ -63,7 +75,8 @@ vs fixed onboard, 100.0% recall, and 0.6% false-positive rate.
 The suite does not replace live external validation. These steps remain manual:
 
 - Force a live AppEEARS/MODIS replay with valid Earthdata credentials.
-- Review new `build/replay/` maps, timelines, and `replay_metrics.json`.
+- Review new `build/replay/` maps, timelines, `csc_stack.npz`, and
+  `replay_metrics.json`.
 - Rerun full calibration if CSC defaults are intentionally changed.
 - Review any promoted artifact before updating accepted fixtures.
 - Check the compiled paper PDF separately for layout, page count, fonts, and

@@ -1,0 +1,10 @@
+date,action,valid_fraction,csc_max,alert_pixels,gsd_m,tile_density_mb_per_km2,posterior_mean_max,posterior_tail_max,note
+2014-06-10,BASELINE,1.000,0.180,0,0.0,0.00,0.500,0.500,baseline warmup
+2014-06-26,BASELINE,1.000,0.180,0,0.0,0.00,0.500,0.500,baseline warmup
+2014-07-12,BASELINE,0.978,0.180,0,0.0,0.00,0.500,0.500,baseline warmup
+2014-07-28,FUSE,1.000,0.577,0,10.0,1.80,0.667,0.750,real-scene replay with NDWI
+2014-08-13,FUSE,1.000,0.427,0,10.0,1.80,0.750,0.875,real-scene replay with NDWI
+2014-08-29,FUSE_PRIORITY,1.000,0.618,1,4.6,8.40,0.800,0.938,real-scene replay with NDWI
+2014-09-14,FUSE_PRIORITY,1.000,0.625,1,4.6,8.40,0.833,0.969,real-scene replay with NDWI
+2014-09-30,FUSE_PRIORITY,0.997,0.754,4,4.6,8.40,0.857,0.984,real-scene replay with NDWI
+2014-10-16,FUSE_PRIORITY,0.996,0.696,4,4.6,8.40,0.875,0.992,real-scene replay with NDWI

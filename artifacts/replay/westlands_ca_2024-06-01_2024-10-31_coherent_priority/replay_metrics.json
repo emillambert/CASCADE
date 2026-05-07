@@ -1,0 +1,58 @@
+{
+  "aoi": "westlands_ca",
+  "valid_windows": 7,
+  "cloud_obscured_windows": 0,
+  "baseline_windows": 3,
+  "action_distribution": {
+    "FUSE": 7
+  },
+  "alert_windows": 0,
+  "first_alert_date": null,
+  "peak_alert_date": null,
+  "peak_csc": 0.865,
+  "csc_p95": 0.243,
+  "csc_p99": 0.722,
+  "alert_fraction": 0.020833,
+  "max_connected_component": 2,
+  "ever_alert_pixels": 7,
+  "peak_component": "EVI",
+  "peak_component_values": {
+    "EVI": 0.577777,
+    "LST": 0.134858,
+    "NDWI": 0.152782,
+    "evi_drop_sigma": 7.210118,
+    "lst_rise_sigma": 2.716675,
+    "ndwi_drop_sigma": 5.203035
+  },
+  "mean_valid_fraction": 0.82,
+  "bundle_has_mod09": true,
+  "ndwi_windows": 7,
+  "fallback_windows": 0,
+  "fusion_mode": "ndwi_full",
+  "nominal_soc": 0.84,
+  "csc_alert_thr": 0.615018,
+  "priority_mode": "coherent_priority",
+  "notes": "Real-scene policy replay on official MODIS products; not a labeled anomaly benchmark.",
+  "bbox": [
+    -120.55,
+    36.55,
+    -120.45,
+    36.65
+  ],
+  "start_date": "2024-06-01",
+  "end_date": "2024-10-31",
+  "code_commit": "e7685be5af98ed6b0f8dcfb8aef9202763204d05",
+  "appeears_task_id": "5c69eca4-969e-4004-baee-6525686602b1",
+  "source_bundle_hash": "2fdcf7c277fc95b193bd7fef4435057f1e812b300580e54b8c6c3584f3601355",
+  "created_utc": "2026-05-06T09:56:33Z",
+  "layers": [
+    "MOD13A1.061:_500m_16_days_EVI",
+    "MOD13A1.061:_500m_16_days_pixel_reliability",
+    "MOD11A1.061:LST_Day_1km",
+    "MOD11A1.061:QC_Day",
+    "MOD09A1.061:sur_refl_b02",
+    "MOD09A1.061:sur_refl_b06",
+    "MOD09A1.061:sur_refl_qc_500m"
+  ],
+  "csc_stack_present": true
+}

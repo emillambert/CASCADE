@@ -337,6 +337,8 @@ class CASCADEPolicy:
     Two-stage adaptive scheduling policy used in the paper and code submission.
     """
 
+    PRIORITY_MODES = {"legacy_max", "coherent_priority"}
+
     def __init__(
         self,
         evi_fuse_thr=0.18,
@@ -348,7 +350,13 @@ class CASCADEPolicy:
         posterior_tail_thr=0.70,
         posterior_mean_thr=0.55,
         min_evidence=2,
+        priority_mode: str = "legacy_max",
+        coherent_alert_fraction: float = 0.05,
+        coherent_min_component: int = 4,
     ):
+        if priority_mode not in self.PRIORITY_MODES:
+            valid = ", ".join(sorted(self.PRIORITY_MODES))
+            raise ValueError(f"Unknown priority_mode {priority_mode!r}; expected one of: {valid}")
         self.evi_fuse_thr = evi_fuse_thr
         self.ndwi_fuse_thr = ndwi_fuse_thr
         self.csc_alert_thr = csc_alert_thr
@@ -358,6 +366,9 @@ class CASCADEPolicy:
         self.posterior_tail_thr = posterior_tail_thr
         self.posterior_mean_thr = posterior_mean_thr
         self.min_evidence = min_evidence
+        self.priority_mode = priority_mode
+        self.coherent_alert_fraction = coherent_alert_fraction
+        self.coherent_min_component = coherent_min_component
 
     def act(self, s: State) -> str:
         if s.soc < self.batt_crit:
@@ -372,20 +383,7 @@ class CASCADEPolicy:
             return "FUSE"
         return "MOD13"
 
-    def should_priority_downlink(self, s: State, fused_csc: np.ndarray) -> bool:
-        """Gate FUSE→FUSE_PRIORITY under a duty-cycled downlink window.
-
-        Requires (i) a contact window, (ii) fused CSC above the alert threshold, and
-        (iii) a belief-informed stress signal. ``min_evidence`` defaults to 2 (total
-        pseudo-count α+β on the hottest patch): a stricter count of 3 rarely co-occurred
-        with a downlink slot and high CSC in the benchmark, producing zero priority
-        alerts even though the promotion path is implemented.
-        """
-        if not s.downlink:
-            return False
-        if float(np.nanmax(fused_csc)) < self.csc_alert_thr:
-            return False
-
+    def _belief_priority_gate(self, s: State, fused_csc: np.ndarray) -> bool:
         mean_max = float(np.nanmax(posterior_mean(s.alpha, s.beta)))
         evidence_max = float(np.nanmax(posterior_evidence(s.alpha, s.beta)))
         tail_max = float(np.nanmax(posterior_tail_probability(s.alpha, s.beta)))
@@ -401,6 +399,52 @@ class CASCADEPolicy:
         if evidence_max >= 4.0 and float(np.nanmax(fused_csc)) >= self.csc_alert_thr:
             return True
         return False
+
+    def should_priority_downlink(
+        self,
+        s: State,
+        fused_csc: np.ndarray,
+        priority_stats: dict[str, float] | None = None,
+    ) -> bool:
+        """Gate FUSE→FUSE_PRIORITY under a duty-cycled downlink window.
+
+        Requires (i) a contact window, (ii) fused CSC above the alert threshold, and
+        (iii) a belief-informed stress signal. ``min_evidence`` defaults to 2 (total
+        pseudo-count α+β on the hottest patch): a stricter count of 3 rarely co-occurred
+        with a downlink slot and high CSC in the benchmark, producing zero priority
+        alerts even though the promotion path is implemented.
+        """
+        if not s.downlink:
+            return False
+        if float(np.nanmax(fused_csc)) < self.csc_alert_thr:
+            return False
+        if not self._belief_priority_gate(s, fused_csc):
+            return False
+        if self.priority_mode == "legacy_max":
+            return True
+
+        stats = priority_stats or {}
+        finite = np.isfinite(fused_csc)
+        finite_count = int(np.count_nonzero(finite))
+        alert_fraction = float(
+            stats.get(
+                "alert_fraction",
+                np.count_nonzero(finite & (fused_csc >= self.csc_alert_thr)) / max(finite_count, 1),
+            )
+        )
+        max_component = int(stats.get("max_connected_component", 0))
+        if "csc_p95" in stats:
+            csc_p95 = float(stats["csc_p95"])
+        elif finite_count:
+            csc_p95 = float(np.nanpercentile(fused_csc[finite], 95))
+        else:
+            csc_p95 = 0.0
+
+        return (
+            csc_p95 >= self.csc_alert_thr
+            and alert_fraction >= self.coherent_alert_fraction
+            and max_component >= self.coherent_min_component
+        )
 
 
 class AblateNoBeliefPolicy(CASCADEPolicy):
