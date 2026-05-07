@@ -36,6 +36,7 @@ The `Makefile` uses `.venv/bin/python` when it exists and falls back to
 | --- | --- |
 | `make test` | Runs `python -m pytest -q`. |
 | `python examples/westlands_replay.py` | Runs the SoftwareX worked example from tracked 2014 artifacts. |
+| `python examples/wildfire_skeleton.py` | Runs a small non-CSC custom-index example. |
 | `python -m cascade.simulate` | Runs the reviewer-fast benchmark path and skips slow additional ablations by default. |
 | `python -m cascade.replay --year 2014` | Reads the tracked 2014 Westlands replay artifact when present. |
 | `python -m cascade.replay --year 2024` | Reads the tracked 2024 Westlands replay artifact when present. |

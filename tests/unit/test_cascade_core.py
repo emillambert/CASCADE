@@ -180,3 +180,67 @@ def test_priority_downlink_and_ablation_policy_gate_on_expected_signals() -> Non
     assert ablation.act(make_state(evi_anom=np.array([0.19], dtype="float32"))) == "FUSE"
     assert ablation.act(make_state(ndwi_anom=np.array([0.13], dtype="float32"))) == "FUSE"
     assert ablation.act(make_state()) == "MOD13"
+
+
+def test_priority_mode_rejects_unknown_values() -> None:
+    with pytest.raises(ValueError, match="priority_mode"):
+        CASCADEPolicy(priority_mode="mystery")
+
+
+def test_legacy_priority_mode_keeps_single_pixel_promotion() -> None:
+    policy = CASCADEPolicy(priority_mode="legacy_max")
+    state = make_state(alpha=np.array([[2.0]], dtype="float32"), beta=np.array([[1.0]], dtype="float32"))
+    csc = np.array([[policy.csc_alert_thr + 0.10]], dtype="float32")
+
+    assert policy.should_priority_downlink(state, csc)
+
+
+def test_coherent_priority_rejects_sparse_exceedances() -> None:
+    policy = CASCADEPolicy(priority_mode="coherent_priority")
+    state = make_state(
+        alpha=np.full((4, 4), 2.0, dtype="float32"),
+        beta=np.ones((4, 4), dtype="float32"),
+    )
+    csc = np.full((4, 4), 0.10, dtype="float32")
+    csc[0, 0] = policy.csc_alert_thr + 0.10
+    stats = {
+        "csc_p95": float(policy.csc_alert_thr + 0.05),
+        "alert_fraction": 1.0 / 16.0,
+        "max_connected_component": 1,
+    }
+
+    assert not policy.should_priority_downlink(state, csc, stats)
+
+
+def test_coherent_priority_rejects_spatial_extent_without_p95_intensity() -> None:
+    policy = CASCADEPolicy(priority_mode="coherent_priority")
+    state = make_state(
+        alpha=np.full((8, 8), 2.0, dtype="float32"),
+        beta=np.ones((8, 8), dtype="float32"),
+    )
+    csc = np.full((8, 8), 0.10, dtype="float32")
+    csc[2:4, 2:4] = policy.csc_alert_thr + 0.10
+    stats = {
+        "csc_p95": float(policy.csc_alert_thr - 0.01),
+        "alert_fraction": 4.0 / 64.0,
+        "max_connected_component": 4,
+    }
+
+    assert not policy.should_priority_downlink(state, csc, stats)
+
+
+def test_coherent_priority_accepts_spatially_coherent_field() -> None:
+    policy = CASCADEPolicy(priority_mode="coherent_priority")
+    state = make_state(
+        alpha=np.full((8, 8), 2.0, dtype="float32"),
+        beta=np.ones((8, 8), dtype="float32"),
+    )
+    csc = np.full((8, 8), 0.10, dtype="float32")
+    csc[2:4, 2:4] = policy.csc_alert_thr + 0.10
+    stats = {
+        "csc_p95": float(policy.csc_alert_thr + 0.05),
+        "alert_fraction": 4.0 / 64.0,
+        "max_connected_component": 4,
+    }
+
+    assert policy.should_priority_downlink(state, csc, stats)

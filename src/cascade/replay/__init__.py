@@ -54,6 +54,7 @@ def replay(
     aoi: str = "westlands_ca",
     cache_dir: str | None = None,
     prefer_artifacts: bool = True,
+    priority_mode: str = "legacy_max",
 ) -> dict[str, Any]:
     """Run (or reuse cached) MODIS replay for paper-anchor years.
 
@@ -62,7 +63,7 @@ def replay(
     if year not in _YEAR_WINDOWS:
         raise ValueError(f"Unsupported replay year: {year}. Supported: {sorted(_YEAR_WINDOWS)}")
 
-    if prefer_artifacts:
+    if prefer_artifacts and priority_mode == "legacy_max":
         artifact_path = _ARTIFACT_REPLAY_METRICS.get(year)
         if artifact_path and artifact_path.exists():
             metrics = json.loads(artifact_path.read_text(encoding="utf-8"))
@@ -95,6 +96,7 @@ def replay(
         download_only=False,
         disable_date_extension=True,
         require_full_fusion=True,
+        priority_mode=priority_mode,
     )
 
     # modis.run_window expects a float for csc_alert_thr; mirror CLI default by

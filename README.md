@@ -7,18 +7,18 @@
 [![CI](https://github.com/emillambert/CASCADE/actions/workflows/ci.yml/badge.svg)](https://github.com/emillambert/CASCADE/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
 
-CASCADE (An Onboard Crop Anomaly Screening, Confirmation, and Alert Downlink Engine) is an open-source Python package for testing onboard Earth-observation triage policies for agricultural drought and crop-stress monitoring.
+CASCADE is an open-source Python package for testing onboard Earth-observation triage policies for crop-stress monitoring.
 
 CASCADE turns crop-stress monitoring into an **onboard scheduling problem**: a Bayesian belief gate drives a finite-horizon MDP-style policy over four actions (**SKIP**, **MOD13**, **FUSE**, **FUSE_PRIORITY**) while fusing MOD13A1 EVI, MOD11A1 LST, and MOD09A1-derived NDWI into a three-channel **Crop Stress Composite (CSC)**. The repository includes the reusable package, offline replay artifacts, validation fixtures, and SoftwareX submission materials.
 
 ## Highlights
 
 - **Paper-aligned headline metrics** (100-seed Monte Carlo): **99.1%** downlink reduction, **38.3%** energy saving, **0.6%** FP rate, **92.5% / 49.2%** CPU (peak / seasonal).
-- **Real-scene replay anchors** (Westlands Water District, Firebaugh, CA):
-  - **2024 quiet season**: peak CSC **`0.412`** vs threshold **`0.615`** → **no** `FUSE_PRIORITY` expected.
-  - **2014 D4 drought**: peak CSC **`0.869`**, **`FUSE_PRIORITY` at 6/6 windows** → **`2.1×`** the 2024 peak (**no retuning**).
+- **Real-scene replay diagnostics** (Westlands Water District, Firebaugh, CA):
+  - **Legacy max-CSC mode**: 2014 peak CSC **`0.869`** with **6** priority windows; 2024 peak CSC **`0.865`** with **5** priority windows.
+  - **Coherent-priority mode**: both years are suppressed because the current-AOI MODIS alert fields are spatially sparse under p95/extent/component gating.
 - **One-command reproducibility**: `make repro-2014`, `make repro-2024`, `make test`.
-- **Canonical claims protected by tests**: failing a paper anchor fails CI.
+- **Accepted artifacts protected by tests**: replay artifacts must include AOI provenance, source-bundle hashes, and CSC stacks.
 
 [![A SmallSat That Flags Drought 16 Days Early - NASA Space-to-Soil 2026](https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F2153258640-feae61727b4da89f0391f5507f22403fde3257dead4d2a5b5ed0f517a6525f44-d_295x166%3Fregion%3Dus&src1=http%3A%2F%2Ff.vimeocdn.com%2Fp%2Fimages%2Fcrawler_play.png)](https://vimeo.com/1188883695?share=copy&fl=sv&fe=ci)
 
@@ -29,17 +29,27 @@ CASCADE turns crop-stress monitoring into an **onboard scheduling problem**: a B
 CASCADE is a reusable research-software repository containing:
 
 - **Synthetic benchmark**: a 100-seed Monte Carlo study (ROC sweep + ablations + sensitivity).
-- **Real-scene MODIS replay**: AppEEARS-backed replays over the Westlands AOI.
+- **Real-scene MODIS replay**: AppEEARS-backed policy-stress replays over the Westlands AOI.
 - **CSC calibration**: offline parameter search with accepted calibration fixtures.
 - **Economics model**: a rollout model and accepted baseline fixtures.
 - **SoftwareX source**: `papers/softwarex/manuscript/` plus submission files in `papers/softwarex/submission/`.
-- **Technical disclosure paper**: `papers/nasa-space-to-soil/manuscript/EmilLambert_CASCADE.tex` and compiled PDF.
+- **NASA submission freeze**: `papers/nasa-space-to-soil/manuscript/EmilLambert_CASCADE.tex` and compiled PDF.
+- **Corrected arXiv prerelease**: `papers/02_arxiv/manuscript/cascade_arxiv.tex`.
 
 ## Verified headline metrics (paper numbers)
 
 | vs raw downlink | vs fixed onboard | Recall | FP rate | CPU (peak / seasonal) |
 |:---:|:---:|:---:|:---:|:---:|
 | **99.1%** downlink reduction<br>**38.3%** energy saving | **77.6%** downlink reduction<br>**25.4%** energy saving | **100.0%** | **0.6%** | **92.5% / 49.2%** |
+
+## Known limitations
+
+The real-scene MODIS replay is not a labelled drought-validation benchmark. It
+demonstrates policy replay, artifact provenance, source-bundle hashing,
+component attribution, and priority-gate behavior. Current max-pixel CSC replay
+can trigger on sparse vegetation/moisture changes; `coherent_priority` mode is
+provided for spatially stricter alerting. Multi-region drought validation
+against external labels remains future work.
 
 ## Installation
 
@@ -68,7 +78,7 @@ python -m pip install -r requirements.txt -r requirements-dev.txt
 
 ## Usage (fast path)
 
-Run the SoftwareX worked example. It reads the tracked 2014 Westlands D4 replay
+Run the SoftwareX worked example. It reads the tracked 2014 Westlands replay
 artifact by default, so it does not require Earthdata credentials:
 
 ```bash
@@ -92,12 +102,26 @@ Run the synthetic benchmark (skips slow “additional ablations” by default):
 python -m cascade.simulate
 ```
 
+Run the custom-index skeleton that reuses CASCADE's policy on a non-CSC wildfire
+risk field:
+
+```bash
+python examples/wildfire_skeleton.py
+```
+
 Run the paper-anchor replays. These prefer tracked artifacts when present, so
 they work offline and return the same JSON payloads used by tests:
 
 ```bash
 python -m cascade.replay --year 2014
 python -m cascade.replay --year 2024
+```
+
+Evaluate the stricter coherent-priority replay gate:
+
+```bash
+python -m cascade.replay --year 2014 --priority-mode coherent_priority --no-prefer-artifacts
+python -m cascade.replay --year 2024 --priority-mode coherent_priority --no-prefer-artifacts
 ```
 
 Run tests:
@@ -180,19 +204,22 @@ python scripts/unit_economics.py
 - **Tracked outputs**: `artifacts/`
 - **Transient outputs**: `build/`
 - **SoftwareX paper**: `papers/softwarex/manuscript/cascade_softwarex.tex`
-- **Technical paper**: `papers/nasa-space-to-soil/manuscript/EmilLambert_CASCADE.tex`
+- **Corrected arXiv prerelease**: `papers/02_arxiv/manuscript/cascade_arxiv.tex`
+- **NASA submission freeze**: `papers/nasa-space-to-soil/manuscript/EmilLambert_CASCADE.tex`
 
 More detail: [docs/repo_structure.md](docs/repo_structure.md)
 
 ## Concise docs
 
 - [Repository structure](docs/repo_structure.md)
-- [Reproducibility](docs/reproducibility.md)
+- [arXiv prerelease reproducibility](REPRODUCIBILITY.md)
+- [Changelog](CHANGELOG.md)
+- [Legacy reproducibility notes](docs/reproducibility.md)
 - [Validation](docs/validation.md)
 - [Replay anchors](docs/replay_anchors.md)
 - [Unit economics](docs/unit_economics.md)
 
-## For judges — 5-minute evaluation path
+## For judges - 5-minute evaluation path
 
 1. Read **Highlights** + the **metrics table** above.
 2. Open `artifacts/benchmark/roc.png`.
@@ -202,21 +229,22 @@ More detail: [docs/repo_structure.md](docs/repo_structure.md)
 
 ## Citation
 
-If you use this repository, please cite the tagged release and the SoftwareX
-paper when available:
+If you use this repository, please cite the corrected arXiv prerelease and the
+SoftwareX paper when available:
 
 ```bibtex
 @software{lambert_cascade_2026,
   author = {Lambert, Emil Wes},
-  title = {CASCADE: An Onboard Crop Anomaly Screening, Confirmation, and Alert Downlink Engine},
-  version = {1.0.0},
+  title = {CASCADE: A Software Framework and Synthetic Benchmark for Onboard Anomaly Triage on SmallSat Earth-Observation Missions},
+  version = {v1.1.0-arxiv},
   year = {2026},
-  url = {https://github.com/emillambert/CASCADE/releases/tag/v1.0.0}
+  url = {https://github.com/emillambert/CASCADE/releases/tag/v1.1.0-arxiv}
 }
 ```
 
-The SoftwareX DOI and optional Zenodo DOI will be added after acceptance or
-release archiving. GitHub also reads the metadata in `CITATION.cff`.
+The arXiv identifier, SoftwareX DOI, and optional Zenodo DOI will be added after
+assignment or release archiving. GitHub also reads the metadata in
+`CITATION.cff`.
 
 ## Support
 

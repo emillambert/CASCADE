@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 
+from cascade.core import CASCADEPolicy
 from cascade.replay import replay
 
 
@@ -12,6 +13,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--year", type=int, required=True, choices=[2014, 2024])
     parser.add_argument("--aoi", default="westlands_ca")
     parser.add_argument("--cache-dir", default=None)
+    parser.add_argument(
+        "--priority-mode",
+        choices=sorted(CASCADEPolicy.PRIORITY_MODES),
+        default="legacy_max",
+        help="Priority promotion mode to evaluate.",
+    )
     parser.add_argument(
         "--prefer-artifacts",
         action=argparse.BooleanOptionalAction,
@@ -25,6 +32,7 @@ def main(argv: list[str] | None = None) -> int:
         aoi=args.aoi,
         cache_dir=args.cache_dir,
         prefer_artifacts=bool(args.prefer_artifacts),
+        priority_mode=args.priority_mode,
     )
     print(json.dumps(metrics, indent=2))
     return 0

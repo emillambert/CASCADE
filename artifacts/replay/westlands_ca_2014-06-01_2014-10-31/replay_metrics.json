@@ -10,6 +10,20 @@
   "first_alert_date": "2014-07-28",
   "peak_alert_date": "2014-08-13",
   "peak_csc": 0.869,
+  "csc_p95": 0.556,
+  "csc_p99": 0.78,
+  "alert_fraction": 0.041667,
+  "max_connected_component": 3,
+  "ever_alert_pixels": 10,
+  "peak_component": "EVI",
+  "peak_component_values": {
+    "EVI": 0.577777,
+    "LST": 0.115001,
+    "NDWI": 0.176184,
+    "evi_drop_sigma": 7.17381,
+    "lst_rise_sigma": 2.316666,
+    "ndwi_drop_sigma": 6.65515
+  },
   "mean_valid_fraction": 0.852,
   "bundle_has_mod09": true,
   "ndwi_windows": 6,
@@ -17,5 +31,28 @@
   "fusion_mode": "ndwi_full",
   "nominal_soc": 0.84,
   "csc_alert_thr": 0.615018,
-  "notes": "Real-scene policy replay on official MODIS products; not a labeled anomaly benchmark."
+  "priority_mode": "legacy_max",
+  "notes": "Real-scene policy replay on official MODIS products; not a labeled anomaly benchmark.",
+  "bbox": [
+    -120.55,
+    36.55,
+    -120.45,
+    36.65
+  ],
+  "start_date": "2014-06-01",
+  "end_date": "2014-10-31",
+  "code_commit": "e7685be5af98ed6b0f8dcfb8aef9202763204d05",
+  "appeears_task_id": "91047ea3-fff3-4bb8-999b-44fcefe9b2d9",
+  "source_bundle_hash": "a865aa79f8183fdaaa15736002449a11cc25bd6feef8a01439ccda9a35babf08",
+  "created_utc": "2026-05-06T09:56:30Z",
+  "layers": [
+    "MOD13A1.061:_500m_16_days_EVI",
+    "MOD13A1.061:_500m_16_days_pixel_reliability",
+    "MOD11A1.061:LST_Day_1km",
+    "MOD11A1.061:QC_Day",
+    "MOD09A1.061:sur_refl_b02",
+    "MOD09A1.061:sur_refl_b06",
+    "MOD09A1.061:sur_refl_qc_500m"
+  ],
+  "csc_stack_present": true
 }

@@ -22,12 +22,12 @@ junit.xml
 .hypothesis/
 runs/
 data/cache/
-artifacts/replay/*/csc_stack.npz
 __pycache__/
 *.pyc
 *.aux
 *.bbl
 !papers/nasa-space-to-soil/manuscript/EmilLambert_CASCADE.bbl
+!papers/02_arxiv/manuscript/cascade_arxiv.bbl
 *.spl
 *.blg
 *.log

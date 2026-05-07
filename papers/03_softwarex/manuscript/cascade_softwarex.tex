@@ -109,7 +109,7 @@ CASCADE is organized as a Python package under \texttt{src/cascade/}. The core m
 \label{fig:architecture}
 \end{figure}
 
-The repository separates transient and release-grade outputs. Generators write to \texttt{build/}; reviewed outputs are promoted into \texttt{artifacts/}; tests compare accepted JSON fixtures against those tracked artifacts. This layout lets reviewers reproduce headline claims without live credentials while preserving a live AppEEARS path for users who need to replay new areas.
+The repository separates transient and release-grade outputs. Generators write to \texttt{build/}; reviewed outputs are promoted into \texttt{artifacts/}; tests compare accepted JSON fixtures against tracked non-replay artifacts and require provenance before replay outputs can become accepted evidence. This layout lets reviewers reproduce headline resource metrics without live credentials while preserving a live AppEEARS path for users who need to replay new areas.
 
 \subsection{Software functionalities}
 
@@ -156,7 +156,7 @@ CSC alert threshold & 0.615 \\
 \label{tab:calibration}
 \end{table}
 
-Command-line entry points support the same workflows. The simulation command runs the fast benchmark path, while the replay command selects either the 2014 or 2024 Westlands evidence and prefers tracked artifacts when present. Calibration and economics scripts regenerate the matching release artifacts. The SoftwareX example, \path{examples/westlands_replay.py}, is intentionally short and offline by default.
+Command-line entry points support the same workflows. The simulation command runs the fast benchmark path, while the replay command selects either the 2014 or 2024 Westlands run and can prefer tracked legacy artifacts when present. Calibration and economics scripts regenerate the matching release artifacts. The SoftwareX example, \path{examples/westlands_replay.py}, is intentionally short and offline by default.
 
 \section{Illustrative examples}
 
@@ -183,7 +183,7 @@ action distribution:
 \begin{figure}[!h]
 \centering
 \includegraphics[width=\linewidth]{../figures/Figure_2_westlands_replay.pdf}
-\caption{Westlands replay with unchanged policy parameters. \texttt{MOD13} denotes vegetation-only screening, \texttt{FUSE} denotes full CSC generation, and \texttt{FUSE\_PRIORITY} denotes fused alert tiles during downlink windows. The 2014 D4 drought season triggers priority alerts in every active post-warmup window, while the 2024 quiet season remains below the calibrated CSC alert threshold of 0.615.}
+\caption{Westlands replay with unchanged policy parameters. \texttt{MOD13} denotes vegetation-only screening, \texttt{FUSE} denotes full CSC generation, and \texttt{FUSE\_PRIORITY} denotes fused alert tiles during downlink windows. The replay is reported as a policy-stress demonstration rather than a labeled drought benchmark; priority decisions are sensitive to rolling-baseline vegetation, thermal, and moisture changes.}
 \label{fig:timeline}
 \end{figure}
 
@@ -218,13 +218,13 @@ The package also improves existing remote-sensing questions. Many drought and cr
 \label{fig:baseline-comparison}
 \end{figure}
 
-The Westlands replay is not a labeled anomaly-recall benchmark; it is an archival real-scene check that the same committed policy separates a known drought year from a quiet season. The 2014 California exceptional drought replay reaches peak CSC 0.869 and issues six priority alerts across six active post-warmup windows. The 2024 quiet-season replay peaks at CSC 0.412 and issues no priority alerts. Both runs use the same calibrated 0.615 alert threshold and the same tracked code path, providing a reproducible bridge between synthetic calibration and historical evidence of the 2012--2014 California drought \cite{griffin-anchukaitis-2014}.
+The Westlands replay is not a labeled anomaly-recall benchmark; it is an archival real-scene policy-stress demonstration. Regeneration of the current Westlands/Firebaugh AOI shows that the rolling-baseline CSC can trigger sparse priority alerts in both a known drought year and a nominally quieter comparison year, indicating sensitivity to within-season vegetation and moisture changes. The replay therefore bridges synthetic calibration and historical MODIS scenes, but drought-specific validation requires spatial coherence diagnostics, reproducible AOI provenance, and agreement with independent drought context \cite{griffin-anchukaitis-2014}.
 
 Daily practice impact is currently prospective because CASCADE is pre-flight research software, not an operational advisory service. Its chosen lane is as a reference implementation for the NASA Space-to-Soil challenge community and as a pre-flight testbed for mission designers preparing hardware-in-the-loop or hosted-payload experiments. The package changes that workflow by replacing spreadsheet-level resource assumptions with executable replay, fixtures, and CI, giving future users a stable baseline before deployed uptake or commercial adoption can be measured.
 
 \section{Conclusions}
 
-CASCADE provides an executable, tested package for studying onboard Bayesian triage of crop stress from Earth observations. Its contribution is the integration of a CSC anomaly score, Beta-posterior belief gate, resource-aware action policy, simulation benchmark, and MODIS replay harness in a single open-source repository. The current release reproduces the Westlands drought/quiet-season separation and protects paper-facing metrics through CI and accepted artifacts. Future work will extend the replay set beyond Westlands, run hardware-in-the-loop tests on flight-like processors, and generalize the anomaly-index interface to additional environmental monitoring domains.
+CASCADE provides an executable, tested package for studying onboard Bayesian triage of crop stress from Earth observations. Its contribution is the integration of a CSC anomaly score, Beta-posterior belief gate, resource-aware action policy, simulation benchmark, and MODIS replay harness in a single open-source repository. The current release demonstrates adaptive crop-stress prioritization and protects synthetic benchmark metrics through CI and accepted artifacts. Multi-region drought validation against external labels remains future work, alongside hardware-in-the-loop tests on flight-like processors and generalization of the anomaly-index interface to additional environmental monitoring domains.
 
 \section*{Funding}
 
